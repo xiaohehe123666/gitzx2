@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cron表达式解析 - 在线Cron生成器/解析器</title>
+    <meta name="description" content="免费在线Cron表达式解析工具：解析5字段Cron表达式，显示下一次执行时间，支持通配符、范围、步进，自动生成中文说明，附常用定时任务示例">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .cr-hero { padding: 7rem 0 2rem; text-align: center; }
+        .cr-hero .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; background: rgba(244,63,94,0.1); color: #FB7185;
+            border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem;
+        }
+        .cr-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .cr-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+        .cr-section { padding: 1rem 0 2rem; max-width: 900px; margin: 0 auto; }
+        .cr-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 1.75rem; box-shadow: var(--shadow-lg); margin-bottom: 1.5rem;
+        }
+        .cr-card-title { display: flex; align-items: center; gap: 0.6rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; }
+        .cr-card-title i { width: 20px; height: 20px; color: #FB7185; }
+
+        .cr-fields { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.6rem; margin-bottom: 1rem; }
+        .cr-field { text-align: center; }
+        .cr-field input {
+            width: 100%; text-align: center; padding: 0.65rem 0.2rem;
+            background: var(--bg); color: var(--text); border: 1px solid var(--border);
+            border-radius: 12px; font-family: 'SF Mono', 'Consolas', monospace; font-size: 1rem; font-weight: 700;
+        }
+        .cr-field input:focus { outline: none; border-color: #FB7185; box-shadow: 0 0 0 3px rgba(244,63,94,0.1); }
+        .cr-field .label { font-size: 0.75rem; color: var(--text-light); margin-top: 0.35rem; }
+
+        .cr-btns { display: flex; gap: 0.6rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .cr-btn {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            padding: 0.6rem 1.2rem; border: none; border-radius: 12px;
+            font-family: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .cr-btn i { width: 16px; height: 16px; }
+        .cr-btn-primary { background: linear-gradient(135deg, #E11D48, #F43F5E); color: #fff; }
+        .cr-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(244,63,94,0.35); }
+        .cr-btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .cr-btn-ghost:hover { border-color: #FB7185; color: #FB7185; }
+
+        .cr-desc {
+            display: none; margin-top: 1.25rem; padding: 0.9rem 1.1rem;
+            background: rgba(244,63,94,0.05); border: 1px solid rgba(244,63,94,0.2);
+            border-radius: 12px; font-size: 0.9rem; color: var(--text);
+        }
+        .cr-desc.visible { display: flex; gap: 0.6rem; align-items: flex-start; }
+        .cr-desc i { width: 17px; height: 17px; color: #FB7185; flex-shrink: 0; margin-top: 2px; }
+
+        .cr-next { display: none; margin-top: 1rem; }
+        .cr-next.visible { display: block; }
+        .cr-next .next-big {
+            font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700;
+            color: #FB7185; margin-bottom: 0.75rem;
+        }
+        .cr-list { display: flex; flex-direction: column; gap: 0.4rem; }
+        .cr-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 0.5rem 0.9rem; font-size: 0.85rem; color: var(--text-secondary);
+        }
+        .cr-item .idx {
+            width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0;
+            background: rgba(244,63,94,0.12); color: #FB7185;
+            display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700;
+        }
+        .cr-item .time { font-family: 'SF Mono', 'Consolas', monospace; font-weight: 600; color: var(--text); }
+
+        .cr-examples { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1rem; }
+        .cr-example {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.9rem;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+            cursor: pointer; font-size: 0.83rem; color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .cr-example:hover { border-color: #FB7185; color: #FB7185; }
+        .cr-example code { font-family: 'SF Mono', 'Consolas', monospace; color: #FB7185; font-weight: 600; white-space: nowrap; }
+        .cr-example span { margin-left: auto; text-align: right; font-size: 0.78rem; }
+
+        @media (max-width: 640px) {
+            .cr-fields { grid-template-columns: repeat(3, 1fr); }
+            .cr-fields .cr-field:nth-child(4), .cr-fields .cr-field:nth-child(5) { grid-column: span 1.5; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <section class="cr-hero">
+        <div class="hero-badge"><i data-lucide="clock-3"></i><span>Cron 解析 · 下一次执行时间 · 中文说明</span></div>
+        <h1 class="hero-title">Cron 表达式<span class="gradient-text" style="background:linear-gradient(135deg,#E11D48,#F43F5E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">解析器</span></h1>
+        <p class="hero-description">解析 5 字段 Cron 表达式，计算下一次执行时间，自动生成中文描述。</p>
+    </section>
+
+    <section class="cr-section">
+        <div class="cr-card">
+            <div class="cr-card-title"><i data-lucide="settings-2"></i>Cron 表达式（5 字段）</div>
+            <div class="cr-fields">
+                <div class="cr-field"><input id="f1" value="*"><div class="label">分 (0-59)</div></div>
+                <div class="cr-field"><input id="f2" value="*"><div class="label">时 (0-23)</div></div>
+                <div class="cr-field"><input id="f3" value="*"><div class="label">日 (1-31)</div></div>
+                <div class="cr-field"><input id="f4" value="*"><div class="label">月 (1-12)</div></div>
+                <div class="cr-field"><input id="f5" value="*"><div class="label">周 (0-7, 0/7=周日)</div></div>
+            </div>
+            <div class="cr-btns">
+                <button class="cr-btn cr-btn-primary" id="btnParse"><i data-lucide="play"></i>解析执行时间</button>
+                <button class="cr-btn cr-btn-ghost" id="btnReset"><i data-lucide="rotate-ccw"></i>重置为每分钟</button>
+            </div>
+
+            <div class="cr-desc" id="descBox"><i data-lucide="info"></i><span id="descText"></span></div>
+            <div class="cr-next" id="nextBox">
+                <div class="next-big" id="nextTime"></div>
+                <div class="cr-list" id="nextList"></div>
+            </div>
+        </div>
+
+        <div class="cr-card">
+            <div class="cr-card-title"><i data-lucide="list"></i>常用示例（点击填入）</div>
+            <div class="cr-examples" id="examples"></div>
+        </div>
+    </section>
+
+    <script>
+        (function() {
+            var examples = [
+                ['* * * * *', '每分钟', '每分钟执行一次'],
+                ['*/5 * * * *', '每5分钟', '每 5 分钟执行一次'],
+                ['0 * * * *', '每小时', '每小时整点执行'],
+                ['0 2 * * *', '每天凌晨2点', '每天凌晨 02:00 执行'],
+                ['0 0 */1 * *', '每天0点', '每天零点执行'],
+                ['30 8 * * 1-5', '工作日8:30', '周一至周五 08:30 执行'],
+                ['0 9 * * 1', '每周一9点', '每周一 09:00 执行'],
+                ['0 0 1 * *', '每月1日', '每月 1 日零点执行'],
+                ['0 0 1 1 *', '每年1月1日', '每年 1 月 1 日零点执行'],
+                ['0 0/30 9-18 * *', '工作时段每30分钟', '每天 9-18 点每 30 分钟执行']
+            ];
+            var examplesBox = document.getElementById('examples');
+            examples.forEach(function(ex) {
+                var div = document.createElement('div');
+                div.className = 'cr-example';
+                div.innerHTML = '<code>' + ex[0] + '</code><span>' + ex[2] + '</span>';
+                div.addEventListener('click', function() { setFields(ex[0]); parse(); });
+                examplesBox.appendChild(div);
+            });
+
+            function setFields(expr) {
+                var parts = expr.trim().split(/\s+/);
+                for (var i = 0; i < 5; i++) document.getElementById('f' + (i + 1)).value = parts[i] || '*';
+            }
+
+            document.getElementById('btnReset').addEventListener('click', function() {
+                for (var i = 1; i <= 5; i++) document.getElementById('f' + i).value = '*';
+                parse();
+            });
+            document.getElementById('btnParse').addEventListener('click', parse);
+
+            // ---------- Cron 解析 ----------
+            function parseField(str, min, max) {
+                var set = {};
+                str.split(',').forEach(function(part) {
+                    part = part.trim();
+                    if (!part) return;
+                    var step = 1, m;
+                    if ((m = part.match(/^(.+)\/(\d+)$/))) { part = m[1]; step = parseInt(m[2]) || 1; }
+                    var start, end;
+                    if (part === '*') { start = min; end = max; }
+                    else if ((m = part.match(/^(\d+)-(\d+)$/))) { start = parseInt(m[1]); end = parseInt(m[2]); }
+                    else { start = end = parseInt(part); }
+                    if (isNaN(start)) throw new Error('无效字段: ' + str);
+                    for (var v = start; v <= end; v += step) { if (v >= min && v <= max) set[v] = true; }
+                });
+                return set;
+            }
+
+            function match(field, v) { return field[v] === true; }
+
+            function nextTimes(expr, count) {
+                var min = parseField(expr[0], 0, 59), hour = parseField(expr[1], 0, 23);
+                var dom = parseField(expr[2], 1, 31), mon = parseField(expr[3], 1, 12), dow = parseField(expr[4], 0, 7);
+                if (dow[7]) dow[0] = true;
+                var out = [];
+                var t = new Date();
+                t.setSeconds(0, 0);
+                t.setMinutes(t.getMinutes() + 1);
+                var guard = 0;
+                while (out.length < count && guard < 100000) {
+                    guard++;
+                    var M = t.getMonth() + 1;
+                    if (!match(mon, M)) { t.setDate(1); t.setHours(0, 0, 0, 0); t.setMonth(M); continue; }
+                    if (!match(hour, t.getHours())) { t.setHours(t.getHours() + 1, 0, 0, 0); continue; }
+                    if (!match(min, t.getMinutes())) { t.setMinutes(t.getMinutes() + 1); continue; }
+                    var D = t.getDate(), W = t.getDay();
+                    var dayOk = match(dom, D) || match(dow, W);
+                    if (!dayOk) { t.setHours(0, 0, 0, 0); t.setDate(D + 1); continue; }
+                    out.push(new Date(t));
+                    t.setMinutes(t.getMinutes() + 1);
+                }
+                return out;
+            }
+
+            function describe(expr) {
+                var p = expr.map(function(e, i) {
+                    var name = ['分', '时', '日', '月', '周'][i];
+                    var m = e.match(/^(\d+)\/(\d+)$/);
+                    if (e === '*') return name + '：每' + name;
+                    if (m) return name + '：每' + m[2] + name;
+                    if (/^\d+$/.test(e)) return name + '：' + e;
+                    return name + '：' + e;
+                });
+                return '表达式含义：' + p.join('，');
+            }
+
+            function parse() {
+                var expr = [];
+                for (var i = 1; i <= 5; i++) expr.push(document.getElementById('f' + i).value.trim() || '*');
+                try {
+                    var times = nextTimes(expr, 5);
+                    document.getElementById('descBox').classList.add('visible');
+                    document.getElementById('descText').textContent = describe(expr);
+                    document.getElementById('nextBox').classList.add('visible');
+                    document.getElementById('nextTime').textContent = '下一次执行：' + formatDate(times[0]);
+                    var list = document.getElementById('nextList');
+                    list.innerHTML = '';
+                    times.forEach(function(t, idx) {
+                        var div = document.createElement('div');
+                        div.className = 'cr-item';
+                        div.innerHTML = '<span class="idx">' + (idx + 1) + '</span><span class="time">' + formatDate(t) + '</span>';
+                        list.appendChild(div);
+                    });
+                } catch (e) {
+                    document.getElementById('descBox').classList.remove('visible');
+                    document.getElementById('nextBox').classList.remove('visible');
+                    Auth.showToast && Auth.showToast('表达式无效：' + (e.message || e), 'error');
+                }
+            }
+
+            function formatDate(d) {
+                var w = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+                    ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' （' + w[d.getDay()] + '）';
+            }
+            function pad(n) { return String(n).padStart(2, '0'); }
+
+            parse();
+        })();
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #1D4ED8, #0284C7);">
+                    <i data-lucide="timer"></i>
+                </div>
+                <span>Cron表达式解析</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

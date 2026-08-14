@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP查询 - 查询IP归属地和域名信息</title>
+    <meta name="description" content="免费在线IP查询工具，查询IP归属地、运营商、时区、经纬度等信息，支持域名DNS记录解析">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .ip-section { padding: 2rem 0 4rem; }
+        .ip-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow: var(--shadow-xl);
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+        .search-box {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .search-input-wrap {
+            flex: 1;
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.75rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #0EA5E9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            pointer-events: none;
+        }
+        .search-btn {
+            background: linear-gradient(135deg, #0EA5E9, #3B82F6);
+            color: white;
+            border: none;
+            padding: 0 1.75rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .search-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(14, 165, 233, 0.3);
+        }
+        .search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .quick-actions { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .quick-btn {
+            background: rgba(14, 165, 233, 0.08);
+            color: #0EA5E9;
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+        .quick-btn:hover { background: rgba(14, 165, 233, 0.15); }
+        .result-section { margin-top: 1.5rem; }
+        .result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .result-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            gap: 1rem;
+        }
+        .result-row:last-child { border-bottom: none; }
+        .result-label { color: var(--text-secondary); flex-shrink: 0; }
+        .result-value {
+            color: var(--text);
+            font-weight: 500;
+            text-align: right;
+            word-break: break-all;
+            font-family: 'Space Grotesk', monospace;
+        }
+        .dns-records-wrap { margin-top: 0.5rem; }
+        .dns-record {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.08);
+            color: #3B82F6;
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            margin: 0.2rem 0.25rem 0.2rem 0;
+            font-family: 'Space Grotesk', monospace;
+            word-break: break-all;
+        }
+        .dns-record-meta {
+            display: block;
+            font-size: 0.72rem;
+            color: var(--text-light);
+            margin-top: 0.15rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--text-light);
+        }
+        .empty-state i { opacity: 0.3; }
+        .loading-state {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--text-secondary);
+        }
+        .loading-state i { animation: spin 1s linear infinite; }
+        .error-state {
+            text-align: center;
+            padding: 1.25rem;
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.06);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .error-state i { display: inline-block; vertical-align: middle; margin-right: 0.4rem; }
+        .history-section { max-width: 800px; margin: 2rem auto 0; }
+        .history-title {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .history-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.875rem 1.25rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .history-item:hover { border-color: #0EA5E9; transform: translateX(2px); }
+        .history-query { font-weight: 500; color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+        .history-time { font-size: 0.78rem; color: var(--text-light); margin-top: 0.15rem; }
+        .history-clear-btn {
+            margin-left: auto;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .history-clear-btn:hover { color: var(--error); border-color: var(--error); }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @media (max-width: 640px) {
+            .search-box { flex-direction: column; }
+            .search-btn { padding: 0.875rem; justify-content: center; }
+            .result-row { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+            .result-value { text-align: left; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #0EA5E9, #3B82F6);">
+                    <i data-lucide="globe"></i>
+                </div>
+                <span class="logo-text">IP查询</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="search"></i>
+                    <span>IP归属地 · 域名DNS · 网络信息</span>
+                </div>
+                <h1 class="hero-title">
+                    IP<span class="gradient-text" style="background:linear-gradient(135deg,#0EA5E9,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">查询</span>
+                </h1>
+                <p class="hero-description">
+                    免费在线IP查询工具，查询IP归属地、运营商、时区、经纬度等信息，支持域名DNS记录解析（A、CNAME、MX），历史记录本地保存。
+                </p>
+            </div>
+        </section>
+
+        <section class="ip-section">
+            <div class="ip-card">
+                <div class="search-box">
+                    <div class="search-input-wrap">
+                        <i data-lucide="search" class="search-icon" style="width:18px;height:18px;"></i>
+                        <input type="text" id="queryInput" class="search-input" placeholder="输入IP地址或域名（如 8.8.8.8 或 example.com）" autocomplete="off">
+                    </div>
+                    <button class="search-btn" id="queryBtn">
+                        <i data-lucide="search" style="width:18px;height:18px;"></i>
+                        <span>查询</span>
+                    </button>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="quick-btn" id="myIpBtn">
+                        <i data-lucide="my-location" style="width:14px;height:14px;"></i>
+                        查询我的IP
+                    </button>
+                </div>
+
+                <div id="resultArea">
+                    <div class="empty-state">
+                        <i data-lucide="search" style="width:48px;height:48px;"></i>
+                        <p style="margin-top:1rem;">输入IP地址或域名开始查询</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history-section">
+                <h3 class="history-title">
+                    <i data-lucide="history" style="width:20px;height:20px;"></i>
+                    查询历史
+                    <button class="history-clear-btn" id="clearHistoryBtn" style="display:none;">
+                        <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
+                        清空
+                    </button>
+                </h3>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">暂无查询记录</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var HISTORY_KEY_PREFIX = 'toolbox_ipquery_';
+        var MAX_HISTORY = 10;
+
+        // DNS 记录类型编号（Google DNS over HTTPS 返回的 type 字段）
+        var DNS_TYPE_MAP = { 1: 'A', 2: 'NS', 5: 'CNAME', 6: 'SOA', 15: 'MX', 16: 'TXT', 28: 'AAAA' };
+
+        var queryInput = document.getElementById('queryInput');
+        var queryBtn = document.getElementById('queryBtn');
+        var myIpBtn = document.getElementById('myIpBtn');
+        var resultArea = document.getElementById('resultArea');
+        var historyList = document.getElementById('historyList');
+        var clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+        function getStorageKey() {
+            var username = (window.Auth && typeof Auth.getCurrentUser === 'function' && Auth.getCurrentUser()) || 'guest';
+            return HISTORY_KEY_PREFIX + username;
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            var div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML;
+        }
+
+        function isIP(query) {
+            return /^(\d{1,3}\.){3}\d{1,3}$/.test(query);
+        }
+
+        function isDomain(query) {
+            // 域名：包含字母，且不是纯 IP
+            return /^[a-zA-Z][a-zA-Z0-9-]*([.][a-zA-Z0-9-]+)+$/.test(query);
+        }
+
+        function showLoading(msg) {
+            resultArea.innerHTML =
+                '<div class="loading-state">' +
+                    '<i data-lucide="loader" style="width:32px;height:32px;"></i>' +
+                    '<p style="margin-top:1rem;">' + escapeHtml(msg || '查询中...') + '</p>' +
+                '</div>';
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function showError(msg) {
+            resultArea.innerHTML =
+                '<div class="error-state">' +
+                    '<i data-lucide="alert-circle" style="width:18px;height:18px;"></i>' +
+                    escapeHtml(msg) +
+                '</div>';
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function showEmpty() {
+            resultArea.innerHTML =
+                '<div class="empty-state">' +
+                    '<i data-lucide="search" style="width:48px;height:48px;"></i>' +
+                    '<p style="margin-top:1rem;">输入IP地址或域名开始查询</p>' +
+                '</div>';
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // 通过 ipapi.co 查询指定 IP
+        async function queryIPInfo(ip) {
+            var url = 'https://ipapi.co/' + encodeURIComponent(ip) + '/json/';
+            var response = await fetch(url);
+            if (!response.ok) throw new Error('查询失败：HTTP ' + response.status);
+            var data = await response.json();
+            if (data.error) throw new Error(data.reason || 'IP 查询失败');
+            return data;
+        }
+
+        // 查询本机 IP
+        async function queryMyIP() {
+            var url = 'https://ipapi.co/json/';
+            var response = await fetch(url);
+            if (!response.ok) throw new Error('查询失败：HTTP ' + response.status);
+            var data = await response.json();
+            if (data.error) throw new Error(data.reason || 'IP 查询失败');
+            return data;
+        }
+
+        // 通过 Google DNS over HTTPS 查询 DNS 记录
+        async function queryDNS(domain, type) {
+            var url = 'https://dns.google/resolve?name=' + encodeURIComponent(domain) + '&type=' + type;
+            var response = await fetch(url);
+            if (!response.ok) throw new Error('DNS 查询失败：HTTP ' + response.status);
+            return await response.json();
+        }
+
+        function renderIPCard(data) {
+            var location = [data.country_name, data.region, data.city].filter(Boolean).join(' / ') || '未知';
+            var latLon = (data.latitude !== null && data.latitude !== undefined && data.longitude !== null && data.longitude !== undefined)
+                ? (data.latitude + ', ' + data.longitude)
+                : '未知';
+
+            var rows = [
+                { label: 'IP地址', value: data.ip || '未知' },
+                { label: '归属地', value: location },
+                { label: '运营商', value: data.org || '未知' },
+                { label: '时区', value: data.timezone || '未知' },
+                { label: '经纬度', value: latLon },
+                { label: '国家代码', value: data.country_code || data.country || '未知' },
+                { label: '邮编', value: data.postal || '未知' },
+                { label: '语言', value: data.languages || '未知' },
+                { label: '货币', value: data.currency || '未知' }
+            ];
+
+            var rowsHtml = '';
+            for (var i = 0; i < rows.length; i++) {
+                rowsHtml += '<div class="result-row">' +
+                    '<span class="result-label">' + escapeHtml(rows[i].label) + '</span>' +
+                    '<span class="result-value">' + escapeHtml(rows[i].value) + '</span>' +
+                '</div>';
+            }
+
+            return '<div class="result-card">' +
+                '<div class="result-card-title"><i data-lucide="map-pin" style="width:18px;height:18px;color:#0EA5E9;"></i> IP信息</div>' +
+                rowsHtml +
+            '</div>';
+        }
+
+        function renderDNSCard(domain, dnsData, typeName) {
+            var answers = (dnsData && dnsData.Answer) || [];
+            var html = '<div class="result-card">' +
+                '<div class="result-card-title"><i data-lucide="server" style="width:18px;height:18px;color:#3B82F6;"></i> DNS记录 - ' + escapeHtml(typeName) + '</div>';
+
+            if (answers.length === 0) {
+                html += '<div class="empty-state" style="padding:1rem;font-size:0.875rem;">无 ' + escapeHtml(typeName) + ' 记录</div>';
+            } else {
+                html += '<div class="dns-records-wrap">';
+                for (var i = 0; i < answers.length; i++) {
+                    var a = answers[i];
+                    var realType = DNS_TYPE_MAP[a.type] || typeName;
+                    html += '<span class="dns-record">' +
+                        escapeHtml(a.data) +
+                        '<span class="dns-record-meta">类型: ' + escapeHtml(realType) + ' · TTL: ' + (a.TTL || '-') + 's</span>' +
+                    '</span>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        async function doQuery(query) {
+            query = (query || '').trim();
+            if (!query) {
+                showError('请输入IP地址或域名');
+                return;
+            }
+
+            showLoading('正在查询 ' + query + ' ...');
+
+            try {
+                var html = '';
+
+                if (isIP(query)) {
+                    // IP 查询
+                    var ipData = await queryIPInfo(query);
+                    html += renderIPCard(ipData);
+                    resultArea.innerHTML = html;
+                    if (window.lucide) lucide.createIcons();
+                    saveHistory(query);
+                } else if (isDomain(query)) {
+                    // 域名查询：先查 DNS，再根据 A 记录查 IP 归属
+                    var types = ['A', 'CNAME', 'MX'];
+                    var dnsResults = [];
+                    var firstARecordIP = null;
+
+                    for (var i = 0; i < types.length; i++) {
+                        try {
+                            var dns = await queryDNS(query, types[i]);
+                            dnsResults.push({ type: types[i], data: dns });
+                            // 收集第一个 A 记录的 IP
+                            if (types[i] === 'A' && dns.Answer && dns.Answer.length > 0 && !firstARecordIP) {
+                                firstARecordIP = dns.Answer[0].data;
+                            }
+                        } catch (e) {
+                            dnsResults.push({ type: types[i], data: null, error: e.message });
+                        }
+                    }
+
+                    // 如果有 A 记录，查询 IP 归属地
+                    if (firstARecordIP && isIP(firstARecordIP)) {
+                        try {
+                            var aIpData = await queryIPInfo(firstARecordIP);
+                            html += renderIPCard(aIpData);
+                        } catch (e) {
+                            // 忽略 IP 归属查询失败
+                        }
+                    }
+
+                    // 渲染 DNS 记录卡片
+                    for (var j = 0; j < dnsResults.length; j++) {
+                        var r = dnsResults[j];
+                        if (r.data) {
+                            html += renderDNSCard(query, r.data, r.type);
+                        } else {
+                            html += '<div class="result-card">' +
+                                '<div class="result-card-title"><i data-lucide="server" style="width:18px;height:18px;color:#3B82F6;"></i> DNS记录 - ' + escapeHtml(r.type) + '</div>' +
+                                '<div class="error-state" style="margin:0;">查询失败：' + escapeHtml(r.error) + '</div>' +
+                            '</div>';
+                        }
+                    }
+
+                    if (!html) {
+                        showError('未查询到任何结果');
+                        return;
+                    }
+                    resultArea.innerHTML = html;
+                    if (window.lucide) lucide.createIcons();
+                    saveHistory(query);
+                } else {
+                    showError('请输入有效的 IP 地址或域名（如 8.8.8.8 或 example.com）');
+                }
+            } catch (e) {
+                showError(e.message || '查询失败，请稍后重试');
+            }
+        }
+
+        async function doMyIPQuery() {
+            showLoading('正在查询您的 IP ...');
+            try {
+                var data = await queryMyIP();
+                resultArea.innerHTML = renderIPCard(data);
+                if (window.lucide) lucide.createIcons();
+                saveHistory('我的IP: ' + (data.ip || ''));
+            } catch (e) {
+                showError(e.message || '查询失败，请稍后重试');
+            }
+        }
+
+        function saveHistory(query) {
+            try {
+                var key = getStorageKey();
+                var list = JSON.parse(localStorage.getItem(key) || '[]');
+                // 去重
+                list = list.filter(function(item) {
+                    var q = (typeof item === 'string') ? item : item.query;
+                    return q !== query;
+                });
+                list.unshift({ query: query, time: Date.now() });
+                if (list.length > MAX_HISTORY) list = list.slice(0, MAX_HISTORY);
+                localStorage.setItem(key, JSON.stringify(list));
+                renderHistory();
+            } catch (e) {}
+        }
+
+        function renderHistory() {
+            try {
+                var key = getStorageKey();
+                var list = JSON.parse(localStorage.getItem(key) || '[]');
+                if (!list || list.length === 0) {
+                    historyList.innerHTML = '<div class="empty-state">暂无查询记录</div>';
+                    clearHistoryBtn.style.display = 'none';
+                    return;
+                }
+                clearHistoryBtn.style.display = 'inline-flex';
+                var html = '';
+                for (var i = 0; i < list.length; i++) {
+                    var item = list[i];
+                    var q = (typeof item === 'string') ? item : item.query;
+                    var timeStr = new Date(item.time).toLocaleString('zh-CN');
+                    html += '<div class="history-item" data-query="' + escapeHtml(q) + '">' +
+                        '<div>' +
+                            '<div class="history-query">' + escapeHtml(q) + '</div>' +
+                            '<div class="history-time">' + timeStr + '</div>' +
+                        '</div>' +
+                        '<i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text-light);"></i>' +
+                    '</div>';
+                }
+                historyList.innerHTML = html;
+                if (window.lucide) lucide.createIcons();
+
+                // 绑定点击事件
+                var items = historyList.querySelectorAll('.history-item');
+                for (var j = 0; j < items.length; j++) {
+                    items[j].addEventListener('click', function() {
+                        var q = this.getAttribute('data-query');
+                        // "我的IP: x.x.x.x" 形式提取 IP 重新查询
+                        if (q.indexOf('我的IP:') === 0) {
+                            var ip = q.split(':')[1].trim();
+                            queryInput.value = ip;
+                            if (ip && isIP(ip)) {
+                                doQuery(ip);
+                            } else {
+                                doMyIPQuery();
+                            }
+                        } else {
+                            queryInput.value = q;
+                            doQuery(q);
+                        }
+                    });
+                }
+            } catch (e) {
+                historyList.innerHTML = '<div class="empty-state">暂无查询记录</div>';
+                clearHistoryBtn.style.display = 'none';
+            }
+        }
+
+        function clearHistory() {
+            try {
+                var key = getStorageKey();
+                localStorage.removeItem(key);
+                renderHistory();
+            } catch (e) {}
+        }
+
+        queryBtn.addEventListener('click', function() {
+            doQuery(queryInput.value);
+        });
+        queryInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') doQuery(queryInput.value);
+        });
+        myIpBtn.addEventListener('click', doMyIPQuery);
+        clearHistoryBtn.addEventListener('click', clearHistory);
+
+        renderHistory();
+        if (window.lucide) lucide.createIcons();
+
+        // 认证状态变化时刷新历史（登录/登出后切换用户数据）
+        if (window.Auth) {
+            Auth.onAuthChange = function() {
+                try { renderHistory(); } catch (e) {}
+            };
+        }
+    })();
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #1D4ED8, #0284C7);">
+                    <i data-lucide="globe"></i>
+                </div>
+                <span>IP归属地查询</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

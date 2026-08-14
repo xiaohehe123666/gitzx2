@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表情包制作 - 图片加文字在线生成</title>
+    <meta name="description" content="免费在线表情包制作工具：上传图片添加顶部和底部文字，一键生成搞笑表情包，支持自定义字体、颜色、描边，本地处理不上传">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .mm-hero { padding: 7rem 0 2rem; text-align: center; }
+    .mm-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(217, 119, 6, 0.12); color: #D97706; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .mm-hero .hero-badge i { width: 16px; height: 16px; }
+    .mm-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .mm-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .mm-section { padding: 1rem 0 2rem; }
+    .mm-wrap { display: grid; grid-template-columns: 1fr 340px; gap: 1.25rem; align-items: start; }
+    .mm-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.25rem; box-shadow: var(--shadow-lg); }
+    .mm-dropzone { border: 2px dashed var(--border); border-radius: 16px; padding: 2rem 1.25rem; text-align: center; cursor: pointer; transition: all .25s ease; background: var(--bg); }
+    .mm-dropzone:hover, .mm-dropzone.drag { border-color: #D97706; background: rgba(217, 119, 6, 0.05); }
+    .mm-dropzone i { width: 40px; height: 40px; color: var(--text-light); margin-bottom: 0.65rem; }
+    .mm-dropzone p { color: var(--text-secondary); font-size: 0.9rem; }
+    .mm-dropzone strong { color: #D97706; }
+    .mm-canvas-box { margin-top: 1rem; text-align: center; }
+    .mm-canvas-box canvas { max-width: 100%; border-radius: 12px; border: 1px solid var(--border); background: #fff; }
+
+    .mm-field { margin-bottom: 0.9rem; }
+    .mm-field label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem; font-weight: 600; }
+    .mm-field input[type=text] { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
+    .mm-field input[type=color] { width: 42px; height: 38px; border: 1px solid var(--border); border-radius: 10px; padding: 2px; cursor: pointer; background: var(--bg); }
+    .mm-field select { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
+    .mm-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .mm-color-row { display: flex; align-items: center; gap: 0.6rem; }
+    .mm-color-row label { flex: 1; }
+    .mm-templates { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.25rem; }
+    .mm-chip { padding: 0.35rem 0.75rem; border: 1px solid var(--border); border-radius: 999px; font-size: 0.78rem; cursor: pointer; background: var(--bg-card); color: var(--text); transition: all .2s; }
+    .mm-chip:hover { border-color: #D97706; color: #D97706; }
+    .mm-actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+    .mm-btn { padding: 0.7rem 1.3rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s ease; }
+    .mm-btn i { width: 16px; height: 16px; }
+    .mm-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .mm-btn-primary { background: linear-gradient(135deg, #D97706, #F59E0B); color: #fff; border: none; }
+    .mm-btn-primary:hover { box-shadow: 0 6px 16px rgba(217, 119, 6, 0.3); }
+    .mm-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    @media (max-width: 900px) {
+        .mm-wrap { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+        .mm-hero { padding: 6rem 0 1.5rem; }
+        .mm-hero h1 { font-size: 1.85rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="smile-plus"></i>
+                </div>
+                <span class="logo-text">表情包制作</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#meme" class="nav-link active">表情包制作</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="mm-hero">
+            <div class="hero-badge"><i data-lucide="smile-plus"></i><span>图片加字 · 一键生成 · 免费下载</span></div>
+            <h1 class="hero-title">表情包<span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">制作</span></h1>
+            <p class="hero-description">上传图片，加上经典"顶部 + 底部"文字，轻松制作专属表情包。图片本地处理，不上传服务器。</p>
+        </section>
+
+        <section id="meme" class="mm-section">
+            <div class="container">
+                <div class="mm-wrap">
+                    <div class="mm-card">
+                        <div class="mm-dropzone" id="dz-meme">
+                            <i data-lucide="image-plus"></i>
+                            <p><strong>点击上传图片</strong> 或拖拽到此处</p>
+                            <p style="margin-top:0.3rem;font-size:0.8rem;">支持 PNG / JPG / WebP / GIF 静态帧</p>
+                        </div>
+                        <input type="file" id="file-meme" accept="image/*" hidden>
+                        <div class="mm-canvas-box" id="meme-preview" style="display:none;"><canvas id="meme-canvas"></canvas></div>
+                    </div>
+
+                    <div class="mm-card">
+                        <div class="mm-field"><label>顶部文字</label><input type="text" id="meme-top" placeholder="例如：不要跟我说话" maxlength="60"></div>
+                        <div class="mm-field"><label>底部文字</label><input type="text" id="meme-bottom" placeholder="例如：我在写代码" maxlength="60"></div>
+                        <div class="mm-row2">
+                            <div class="mm-field"><label>字号比例</label>
+                                <select id="meme-size"><option value="0.08">小</option><option value="0.11" selected>中</option><option value="0.15">大</option><option value="0.2">特大</option></select>
+                            </div>
+                            <div class="mm-field"><label>字体</label>
+                                <select id="meme-font">
+                                    <option value="Impact, 'Arial Black', sans-serif">经典粗体</option>
+                                    <option value="'PingFang SC', 'Microsoft YaHei', sans-serif">黑体</option>
+                                    <option value="'STKaiti', 'KaiTi', serif">楷体</option>
+                                    <option value="'Comic Sans MS', cursive">手写体</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mm-row2">
+                            <div class="mm-color-row"><label class="mm-field" style="margin:0;">文字颜色</label><input type="color" id="meme-color" value="#ffffff"></div>
+                            <div class="mm-color-row"><label class="mm-field" style="margin:0;">描边颜色</label><input type="color" id="meme-stroke" value="#000000"></div>
+                        </div>
+                        <div class="mm-field" style="margin-top:0.75rem;"><label>快速模板</label>
+                            <div class="mm-templates" id="meme-templates">
+                                <span class="mm-chip">震惊！</span>
+                                <span class="mm-chip">就这？</span>
+                                <span class="mm-chip">我不理解</span>
+                                <span class="mm-chip">离谱</span>
+                                <span class="mm-chip">笑死我了</span>
+                                <span class="mm-chip">真的假的</span>
+                                <span class="mm-chip">泪目</span>
+                                <span class="mm-chip">栓Q</span>
+                                <span class="mm-chip">学到了</span>
+                                <span class="mm-chip">牛逼</span>
+                            </div>
+                        </div>
+                        <div class="mm-actions">
+                            <button type="button" class="mm-btn mm-btn-primary" id="btn-meme"><i data-lucide="download"></i>生成并下载</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="smile-plus"></i>
+                </div>
+                <span>表情包制作</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+        var img = null;
+        var canvas = document.getElementById('meme-canvas');
+        var ctx = canvas.getContext('2d');
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        var dz = document.getElementById('dz-meme');
+        var input = document.getElementById('file-meme');
+        dz.addEventListener('click', function() { input.click(); });
+        dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag'); });
+        dz.addEventListener('dragleave', function() { dz.classList.remove('drag'); });
+        dz.addEventListener('drop', function(e) {
+            e.preventDefault(); dz.classList.remove('drag');
+            if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); }
+        });
+        input.addEventListener('change', function() {
+            if (!this.files.length) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var im = new Image();
+                im.onload = function() {
+                    img = im;
+                    document.getElementById('meme-preview').style.display = 'block';
+                    draw();
+                };
+                im.src = e.target.result;
+            };
+            reader.readAsDataURL(this.files[0]);
+        });
+
+        function wrapText(line, maxWidth, font) {
+            ctx.font = font;
+            var words = line.split('');
+            var lines = [];
+            var cur = '';
+            for (var i = 0; i < words.length; i++) {
+                var test = cur + words[i];
+                if (ctx.measureText(test).width > maxWidth && cur) {
+                    lines.push(cur);
+                    cur = words[i];
+                } else {
+                    cur = test;
+                }
+            }
+            lines.push(cur);
+            return lines;
+        }
+
+        function drawText(text, y, fontSize, color, strokeColor) {
+            if (!text.trim()) return;
+            var maxWidth = canvas.width * 0.92;
+            ctx.font = fontSize + 'px ' + document.getElementById('meme-font').value;
+            var lines = wrapText(text, maxWidth, ctx.font);
+            var lineHeight = fontSize * 1.15;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = color;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = Math.max(2, fontSize * 0.14);
+            ctx.lineJoin = 'round';
+            lines.forEach(function(line, i) {
+                var ly = y + i * lineHeight;
+                ctx.strokeText(line, canvas.width / 2, ly);
+                ctx.fillText(line, canvas.width / 2, ly);
+            });
+        }
+
+        function draw() {
+            if (!img) return;
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            var fontSize = Math.max(18, canvas.width * parseFloat(document.getElementById('meme-size').value));
+            var top = document.getElementById('meme-top').value;
+            var bottom = document.getElementById('meme-bottom').value;
+            var color = document.getElementById('meme-color').value;
+            var stroke = document.getElementById('meme-stroke').value;
+            var pad = canvas.height * 0.02;
+            if (top.trim()) drawText(top, pad, fontSize, color, stroke);
+            if (bottom.trim()) {
+                // 底部从下往上画
+                var maxWidth = canvas.width * 0.92;
+                ctx.font = fontSize + 'px ' + document.getElementById('meme-font').value;
+                var lines = wrapText(bottom, maxWidth, ctx.font);
+                var lineHeight = fontSize * 1.15;
+                var startY = canvas.height - pad - lines.length * lineHeight;
+                drawText(bottom, startY, fontSize, color, stroke);
+            }
+        }
+
+        ['meme-top', 'meme-bottom', 'meme-size', 'meme-font', 'meme-color', 'meme-stroke'].forEach(function(id) {
+            document.getElementById(id).addEventListener('input', function() { if (img) draw(); });
+            document.getElementById(id).addEventListener('change', function() { if (img) draw(); });
+        });
+
+        document.querySelectorAll('#meme-templates .mm-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                var top = document.getElementById('meme-top');
+                if (!top.value) { top.value = chip.textContent; }
+                else { document.getElementById('meme-bottom').value = chip.textContent; }
+                if (img) draw();
+                showToast('已套用模板文字', 'success');
+            });
+        });
+
+        document.getElementById('btn-meme').addEventListener('click', function() {
+            if (!img) { showToast('请先上传图片', 'error'); return; }
+            draw();
+            var a = document.createElement('a');
+            a.download = '表情包_' + Date.now() + '.png';
+            a.href = canvas.toDataURL('image/png');
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            showToast('已下载表情包', 'success');
+        });
+    })();
+    </script>
+</body>
+</html>

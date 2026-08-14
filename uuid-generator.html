@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UUID 生成器 - 批量生成唯一标识符</title>
+    <meta name="description" content="免费在线 UUID 生成器：批量生成 UUID v4、v1，支持大写、去横线、数量自定义，一键复制或下载，开发调试必备工具">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .uu-hero { padding: 7rem 0 2rem; text-align: center; }
+    .uu-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(5, 150, 105, 0.1); color: #059669; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .uu-hero .hero-badge i { width: 16px; height: 16px; }
+    .uu-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .uu-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .uu-section { padding: 1rem 0 2rem; }
+    .uu-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.4rem; box-shadow: var(--shadow-lg); max-width: 760px; margin: 0 auto; }
+
+    .uu-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; }
+    .uu-field label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem; font-weight: 600; }
+    .uu-field input, .uu-field select { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
+    .uu-switch-row { display: flex; gap: 1.25rem; margin-top: 1rem; flex-wrap: wrap; }
+    .uu-switch { display: flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; }
+    .uu-switch input { accent-color: #059669; width: 16px; height: 16px; cursor: pointer; }
+
+    .uu-actions { display: flex; gap: 0.75rem; margin-top: 1.1rem; flex-wrap: wrap; }
+    .uu-btn { padding: 0.7rem 1.3rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s; }
+    .uu-btn i { width: 16px; height: 16px; }
+    .uu-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .uu-btn-primary { background: linear-gradient(135deg, #059669, #10B981); color: #fff; border: none; }
+    .uu-btn-primary:hover { box-shadow: 0 6px 16px rgba(5, 150, 105, 0.3); }
+
+    .uu-output { margin-top: 1.25rem; }
+    .uu-output-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .uu-output-head button { border: none; background: none; color: var(--primary-light); cursor: pointer; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .uu-output-head button i { width: 14px; height: 14px; }
+    .uu-textarea { width: 100%; min-height: 300px; border: 1px solid var(--border); border-radius: 14px; padding: 0.9rem 1rem; font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace; font-size: 0.82rem; line-height: 1.7; resize: vertical; background: var(--bg); color: var(--text); }
+
+    @media (max-width: 768px) {
+        .uu-hero { padding: 6rem 0 1.5rem; }
+        .uu-hero h1 { font-size: 1.85rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #059669, #10B981);">
+                    <i data-lucide="fingerprint"></i>
+                </div>
+                <span class="logo-text">UUID 生成器</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#uuid" class="nav-link active">UUID 生成器</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="uu-hero">
+            <div class="hero-badge"><i data-lucide="fingerprint"></i><span>批量生成 · 一键复制 · 开发必备</span></div>
+            <h1 class="hero-title">UUID <span class="gradient-text" style="background:linear-gradient(135deg,#059669,#10B981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">生成器</span></h1>
+            <p class="hero-description">批量生成 UUID v4 随机标识符，支持大小写、去横线、自定义数量，全自动本地生成。</p>
+        </section>
+
+        <section id="uuid" class="uu-section">
+            <div class="container">
+                <div class="uu-card">
+                    <div class="uu-controls">
+                        <div class="uu-field"><label>版本</label>
+                            <select id="uu-version">
+                                <option value="v4">UUID v4（随机）</option>
+                                <option value="v1">UUID v1（时间戳）</option>
+                            </select>
+                        </div>
+                        <div class="uu-field"><label>生成数量</label><input type="number" id="uu-count" value="10" min="1" max="500"></div>
+                    </div>
+                    <div class="uu-switch-row">
+                        <label class="uu-switch"><input type="checkbox" id="uu-upper">大写字母</label>
+                        <label class="uu-switch"><input type="checkbox" id="uu-hyphen" checked>包含连字符</label>
+                        <label class="uu-switch"><input type="checkbox" id="uu-braces">花括号包裹</label>
+                    </div>
+                    <div class="uu-actions">
+                        <button type="button" class="uu-btn uu-btn-primary" id="uu-gen"><i data-lucide="refresh-cw"></i>生成</button>
+                        <button type="button" class="uu-btn" id="uu-copy"><i data-lucide="copy"></i>复制全部</button>
+                        <button type="button" class="uu-btn" id="uu-download"><i data-lucide="download"></i>下载 TXT</button>
+                    </div>
+                    <div class="uu-output">
+                        <div class="uu-output-head"><span id="uu-count-info">0 个</span><button type="button" id="uu-clear"><i data-lucide="trash-2"></i>清空</button></div>
+                        <textarea class="uu-textarea" id="uu-output" readonly placeholder="点击"生成"按钮生成 UUID…"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #059669, #10B981);">
+                    <i data-lucide="fingerprint"></i>
+                </div>
+                <span>UUID 生成器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+        var output = document.getElementById('uu-output');
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        function genUuidV4() {
+            if (window.crypto && crypto.getRandomValues) {
+                var bytes = new Uint8Array(16);
+                crypto.getRandomValues(bytes);
+                bytes[6] = (bytes[6] & 0x0f) | 0x40;
+                bytes[8] = (bytes[8] & 0x3f) | 0x80;
+                var hex = Array.prototype.map.call(bytes, function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+                return hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
+            }
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function genUuidV1() {
+            var time = new Date().getTime();
+            var timeHex = time.toString(16).padStart(12, '0').slice(-12);
+            var timeLow = timeHex.slice(-8);
+            var timeMid = timeHex.slice(-12, -8);
+            var timeHigh = timeHex.slice(0, 4);
+            var node = Array.prototype.map.call(new Uint8Array(6), function() { return crypto.getRandomValues(new Uint8Array(1))[0]; }).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+            var clockSeq = crypto.getRandomValues(new Uint8Array(2))[0].toString(16).padStart(2, '0') + '8' + crypto.getRandomValues(new Uint8Array(1))[0].toString(16).padStart(1, '0');
+            return timeLow + '-' + timeMid + '-1' + timeHigh.slice(1) + '-' + clockSeq + '-' + node;
+        }
+
+        function format(uuid) {
+            var upper = document.getElementById('uu-upper').checked;
+            var hyphen = document.getElementById('uu-hyphen').checked;
+            var braces = document.getElementById('uu-braces').checked;
+            if (upper) uuid = uuid.toUpperCase();
+            if (!hyphen) uuid = uuid.replace(/-/g, '');
+            if (braces) uuid = '{' + uuid + '}';
+            return uuid;
+        }
+
+        function generate() {
+            var count = Math.min(500, Math.max(1, parseInt(document.getElementById('uu-count').value) || 10));
+            var version = document.getElementById('uu-version').value;
+            var lines = [];
+            for (var i = 0; i < count; i++) {
+                lines.push(format(version === 'v4' ? genUuidV4() : genUuidV1()));
+            }
+            output.value = lines.join('\n');
+            document.getElementById('uu-count-info').textContent = count + ' 个';
+            showToast('已生成 ' + count + ' 个 UUID', 'success');
+        }
+
+        document.getElementById('uu-gen').addEventListener('click', generate);
+        document.getElementById('uu-count').addEventListener('change', function() {
+            var v = Math.min(500, Math.max(1, parseInt(this.value) || 10));
+            this.value = v;
+        });
+        ['uu-upper', 'uu-hyphen', 'uu-braces'].forEach(function(id) {
+            document.getElementById(id).addEventListener('change', function() {
+                if (output.value) generate();
+            });
+        });
+        document.getElementById('uu-copy').addEventListener('click', function() {
+            if (!output.value) { showToast('请先生成 UUID', 'error'); return; }
+            output.select();
+            try {
+                navigator.clipboard.writeText(output.value).then(function() { showToast('已复制到剪贴板', 'success'); })
+                    .catch(function() {
+                        document.execCommand('copy');
+                        showToast('已复制到剪贴板', 'success');
+                    });
+            } catch (e) {
+                document.execCommand('copy');
+                showToast('已复制到剪贴板', 'success');
+            }
+        });
+        document.getElementById('uu-download').addEventListener('click', function() {
+            if (!output.value) { showToast('请先生成 UUID', 'error'); return; }
+            var blob = new Blob([output.value], { type: 'text/plain;charset=utf-8' });
+            var u = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = u;
+            a.download = 'uuids.txt';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            showToast('已下载', 'success');
+        });
+        document.getElementById('uu-clear').addEventListener('click', function() {
+            output.value = '';
+            document.getElementById('uu-count-info').textContent = '0 个';
+        });
+
+        generate();
+    })();
+    </script>
+</body>
+</html>

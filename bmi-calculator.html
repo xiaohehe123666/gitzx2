@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI计算器 - 体重指数/基础代谢率计算</title>
+    <meta name="description" content="免费在线BMI计算器：输入身高体重一键计算BMI体重指数，自动判断偏瘦/正常/超重/肥胖，同时计算基础代谢率(BMR)与标准体重，健康生活好帮手">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .bm-hero { padding: 7rem 0 2rem; text-align: center; }
+        .bm-hero .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; background: rgba(52,211,153,0.1); color: #34D399;
+            border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem;
+        }
+        .bm-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .bm-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+        .bm-section { padding: 1rem 0 2rem; max-width: 800px; margin: 0 auto; }
+        .bm-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 1.75rem; box-shadow: var(--shadow-lg); margin-bottom: 1.5rem;
+        }
+        .bm-card-title { display: flex; align-items: center; gap: 0.6rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; }
+        .bm-card-title i { width: 20px; height: 20px; color: #34D399; }
+
+        .bm-fields { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+        .bm-field { flex: 1; min-width: 160px; }
+        .bm-field label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.4rem; font-weight: 500; }
+        .bm-field .wrap { position: relative; }
+        .bm-field input {
+            width: 100%; padding: 0.65rem 3rem 0.65rem 0.9rem; box-sizing: border-box;
+            background: var(--bg); color: var(--text); border: 1px solid var(--border);
+            border-radius: 10px; font-family: inherit; font-size: 0.95rem;
+        }
+        .bm-field input:focus { outline: none; border-color: #34D399; }
+        .bm-field .unit {
+            position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+            font-size: 0.8rem; color: var(--text-light); pointer-events: none;
+        }
+        .bm-field select {
+            width: 100%; padding: 0.65rem 0.9rem; background: var(--bg); color: var(--text);
+            border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 0.9rem;
+        }
+
+        .bm-btn {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            padding: 0.65rem 1.5rem; border: none; border-radius: 12px;
+            font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .bm-btn i { width: 16px; height: 16px; }
+        .bm-btn-primary { background: linear-gradient(135deg, #059669, #34D399); color: #fff; }
+        .bm-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(52,211,153,0.35); }
+
+        .bm-result { display: none; margin-top: 1.5rem; }
+        .bm-result.visible { display: block; }
+        .bm-score {
+            text-align: center; padding: 1.75rem; border-radius: 16px;
+            background: var(--bg); border: 1px solid var(--border); margin-bottom: 1.25rem;
+        }
+        .bm-score .num { font-family: 'Space Grotesk', sans-serif; font-size: 3.2rem; font-weight: 700; line-height: 1; }
+        .bm-score .label { margin-top: 0.5rem; font-size: 1rem; font-weight: 600; }
+        .bm-score .desc { margin-top: 0.4rem; font-size: 0.82rem; color: var(--text-secondary); }
+
+        .bm-scale { padding: 0.25rem; margin: 1.25rem 0 0.5rem; }
+        .bm-bar { position: relative; height: 14px; border-radius: 999px; background: linear-gradient(90deg, #38BDF8 0%, #38BDF8 18%, #34D399 18%, #34D399 24%, #FBBF24 24%, #FBBF24 28%, #34D399 28%, #34D399 68%, #F97316 68%, #F97316 83%, #EF4444 83%, #EF4444 100%); }
+        .bm-marker {
+            position: absolute; top: -4px; width: 4px; height: 22px; border-radius: 4px;
+            background: #fff; border: 2px solid #1E293B; transition: left 0.4s ease;
+        }
+        .bm-labels { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--text-light); margin-top: 0.4rem; }
+
+        .bm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
+        .bm-item { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; }
+        .bm-item .k { font-size: 0.75rem; color: var(--text-light); margin-bottom: 0.3rem; font-weight: 600; }
+        .bm-item .v { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+
+        .bm-ref { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+        .bm-ref h4 { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.6rem; }
+        .bm-ref table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .bm-ref td, .bm-ref th { padding: 0.45rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+        .bm-ref th { color: var(--text-light); font-weight: 600; }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <section class="bm-hero">
+        <div class="hero-badge"><i data-lucide="heart-pulse"></i><span>BMI · 基础代谢 · 标准体重</span></div>
+        <h1 class="hero-title">BMI <span class="gradient-text" style="background:linear-gradient(135deg,#059669,#34D399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">计算器</span></h1>
+        <p class="hero-description">输入身高体重，一键计算 BMI 指数、基础代谢率（BMR）与标准体重范围。</p>
+    </section>
+
+    <section class="bm-section">
+        <div class="bm-card">
+            <div class="bm-card-title"><i data-lucide="user-round"></i>填写信息</div>
+            <div class="bm-fields">
+                <div class="bm-field">
+                    <label>性别</label>
+                    <select id="gender">
+                        <option value="male">男</option>
+                        <option value="female">女</option>
+                    </select>
+                </div>
+                <div class="bm-field">
+                    <label>年龄</label>
+                    <div class="wrap"><input type="number" id="age" value="28" min="1" max="120"><span class="unit">岁</span></div>
+                </div>
+                <div class="bm-field">
+                    <label>身高</label>
+                    <div class="wrap"><input type="number" id="height" value="170" min="50" max="250"><span class="unit">cm</span></div>
+                </div>
+                <div class="bm-field">
+                    <label>体重</label>
+                    <div class="wrap"><input type="number" id="weight" value="65" min="10" max="300"><span class="unit">kg</span></div>
+                </div>
+            </div>
+            <button class="bm-btn bm-btn-primary" id="btnCalc"><i data-lucide="calculator"></i>计算 BMI</button>
+
+            <div class="bm-result" id="result">
+                <div class="bm-score" id="scoreBox">
+                    <div class="num" id="bmiNum">0</div>
+                    <div class="label" id="bmiLabel"></div>
+                    <div class="desc" id="bmiDesc"></div>
+                    <div class="bm-scale">
+                        <div class="bm-bar"><div class="bm-marker" id="marker" style="left:50%;"></div></div>
+                        <div class="bm-labels"><span>偏瘦 &lt;18.5</span><span>正常 18.5-24</span><span>超重 24-28</span><span>肥胖 &gt;28</span></div>
+                    </div>
+                </div>
+                <div class="bm-grid">
+                    <div class="bm-item"><div class="k">基础代谢率 (BMR)</div><div class="v" id="bmrVal">-</div></div>
+                    <div class="bm-item"><div class="k">标准体重范围</div><div class="v" id="stdVal">-</div></div>
+                    <div class="bm-item"><div class="k">理想体重（±10%）</div><div class="v" id="idealVal">-</div></div>
+                    <div class="bm-item"><div class="k">当前体重对比</div><div class="v" id="diffVal">-</div></div>
+                </div>
+            </div>
+
+            <div class="bm-ref">
+                <h4>BMI 参考标准（中国标准）</h4>
+                <table>
+                    <tr><th>分类</th><th>BMI 范围</th><th>说明</th></tr>
+                    <tr><td>偏瘦</td><td>&lt; 18.5</td><td>体重偏低，建议适当增加营养</td></tr>
+                    <tr><td>正常</td><td>18.5 ~ 23.9</td><td>体重正常，继续保持</td></tr>
+                    <tr><td>超重</td><td>24 ~ 27.9</td><td>体重偏高，注意控制饮食和运动</td></tr>
+                    <tr><td>肥胖</td><td>≥ 28</td><td>肥胖，建议咨询专业医生制定计划</td></tr>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.getElementById('btnCalc').addEventListener('click', function() {
+            var gender = document.getElementById('gender').value;
+            var age = parseInt(document.getElementById('age').value) || 0;
+            var h = parseFloat(document.getElementById('height').value) || 0;
+            var w = parseFloat(document.getElementById('weight').value) || 0;
+            if (h <= 0 || w <= 0 || age <= 0) { Auth.showToast && Auth.showToast('请填写完整的身高、体重、年龄', 'error'); return; }
+
+            var hm = h / 100;
+            var bmi = w / (hm * hm);
+            var bmiRounded = bmi.toFixed(1);
+
+            var label, color, desc, minPos, maxPos;
+            if (bmi < 18.5) { label = '偏瘦'; color = '#38BDF8'; desc = '体重偏低，建议适当增加营养摄入'; }
+            else if (bmi < 24) { label = '正常'; color = '#34D399'; desc = '体重正常，继续保持健康生活方式'; }
+            else if (bmi < 28) { label = '超重'; color = '#FBBF24'; desc = '体重偏高，注意控制饮食并加强运动'; }
+            else { label = '肥胖'; color = '#EF4444'; desc = '肥胖，建议咨询专业医生制定减重计划'; }
+
+            document.getElementById('bmiNum').textContent = bmiRounded;
+            document.getElementById('bmiNum').style.color = color;
+            document.getElementById('bmiLabel').textContent = label;
+            document.getElementById('bmiLabel').style.color = color;
+            document.getElementById('bmiDesc').textContent = desc;
+
+            // 刻度位置（0-40 BMI 映射到 0-100%）
+            var pct = Math.max(2, Math.min(98, (bmi / 40) * 100));
+            document.getElementById('marker').style.left = pct + '%';
+            document.getElementById('marker').style.borderColor = color;
+
+            // BMR（Mifflin-St Jeor 公式）
+            var bmr = gender === 'male'
+                ? 10 * w + 6.25 * h - 5 * age + 5
+                : 10 * w + 6.25 * h - 5 * age - 161;
+            document.getElementById('bmrVal').textContent = Math.round(bmr) + ' kcal';
+
+            // 标准体重范围（BMI 18.5~23.9）
+            var stdLow = (18.5 * hm * hm).toFixed(1), stdHigh = (23.9 * hm * hm).toFixed(1);
+            document.getElementById('stdVal').textContent = stdLow + ' ~ ' + stdHigh + ' kg';
+
+            // 理想体重
+            var ideal = (21.7 * hm * hm).toFixed(1);
+            document.getElementById('idealVal').textContent = ideal + ' kg';
+
+            // 对比
+            var diff = w - parseFloat(ideal);
+            document.getElementById('diffVal').textContent = diff >= 0
+                ? '超理想 ' + diff.toFixed(1) + ' kg'
+                : '低于 ' + Math.abs(diff).toFixed(1) + ' kg';
+
+            document.getElementById('result').classList.add('visible');
+        });
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #0EA5E9, #38BDF8);">
+                    <i data-lucide="heart-pulse"></i>
+                </div>
+                <span>BMI计算器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

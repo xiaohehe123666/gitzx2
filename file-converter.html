@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>格式转换器 - 在线文件格式转换工具</title>
+    <meta name="description" content="免费在线文件格式转换器，支持图片、文本等多种格式互转">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                    <i data-lucide="repeat"></i>
+                </div>
+                <span class="logo-text">格式转换器</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#converter" class="nav-link active">转换</a>
+                <a href="#features" class="nav-link">特性</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="shield-check"></i>
+                    <span>本地转换 · 隐私安全</span>
+                </div>
+                <h1 class="hero-title">
+                    文件格式<br>
+                    <span class="gradient-text">转换工具</span>
+                </h1>
+                <p class="hero-description">
+                    免费在线格式转换器，支持图片、文本等多种格式互转，
+                    所有转换在您的浏览器本地完成，确保您的隐私安全。
+                </p>
+            </div>
+        </section>
+
+        <section id="converter" class="converter-section">
+            <div class="converter-card">
+                <div class="converter-header">
+                    <h2>选择文件</h2>
+                    <p>支持图片格式和文本格式转换</p>
+                </div>
+
+                <div class="converter-type-tabs">
+                    <button class="conv-tab active" data-type="image">
+                        <i data-lucide="image"></i>
+                        <span>图片格式转换</span>
+                    </button>
+                    <button class="conv-tab" data-type="text">
+                        <i data-lucide="file-text"></i>
+                        <span>文本格式转换</span>
+                    </button>
+                </div>
+
+                <div id="imageConverter" class="converter-type-panel">
+                    <div id="imageUploadZone" class="upload-zone">
+                        <div class="upload-content">
+                            <div class="upload-icon" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                                <i data-lucide="image-up"></i>
+                            </div>
+                            <h3>拖拽图片到此处</h3>
+                            <p>支持 PNG、JPG、WebP、BMP、GIF 格式</p>
+                            <button id="imageSelectBtn" class="btn-select" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                                <i data-lucide="folder-open"></i>
+                                选择图片
+                            </button>
+                            <input type="file" id="imageFileInput" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif" hidden>
+                        </div>
+                    </div>
+
+                    <div id="imageConvertPanel" class="convert-panel hidden">
+                        <div class="convert-file-info">
+                            <div class="file-info-icon">
+                                <i data-lucide="image"></i>
+                            </div>
+                            <div class="file-info-details">
+                                <h4 id="imageFileName">image.png</h4>
+                                <div class="file-info-meta">
+                                    <span id="imageFileSize">0 KB</span>
+                                    <span class="meta-sep">·</span>
+                                    <span id="imageDimensions">0×0</span>
+                                </div>
+                            </div>
+                            <div id="imagePreviewThumb" class="preview-thumb"></div>
+                            <button id="imageRemoveBtn" class="btn-icon">
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+
+                        <div class="convert-settings">
+                            <div class="setting-group">
+                                <label class="setting-label">
+                                    <span>源格式</span>
+                                    <span id="imageSourceFormat" class="setting-value">PNG</span>
+                                </label>
+                            </div>
+
+                            <div class="setting-group">
+                                <label class="setting-label">
+                                    <span>目标格式</span>
+                                </label>
+                                <div class="format-target-options">
+                                    <button class="target-format-btn" data-format="image/png" data-ext="png">PNG</button>
+                                    <button class="target-format-btn active" data-format="image/jpeg" data-ext="jpg">JPG</button>
+                                    <button class="target-format-btn" data-format="image/webp" data-ext="webp">WebP</button>
+                                    <button class="target-format-btn" data-format="image/bmp" data-ext="bmp">BMP</button>
+                                </div>
+                            </div>
+
+                            <div id="qualityGroup" class="setting-group">
+                                <label class="setting-label">
+                                    <span>压缩质量</span>
+                                    <span id="imageQualityValue" class="setting-value">90%</span>
+                                </label>
+                                <input type="range" id="imageQualitySlider" min="10" max="100" value="90" class="slider" style="--slider-color: #6366F1;">
+                            </div>
+                        </div>
+
+                        <button id="imageConvertBtn" class="btn-process" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                            <i data-lucide="refresh-cw"></i>
+                            开始转换
+                        </button>
+
+                        <div id="imageResultSection" class="result-section hidden">
+                            <div class="result-card">
+                                <div class="result-icon" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                                    <i data-lucide="check-circle"></i>
+                                </div>
+                                <h3>转换完成！</h3>
+                                <div class="result-stats">
+                                    <div class="result-stat">
+                                        <span class="stat-label">原始大小</span>
+                                        <span id="imageOriginalSize" class="stat-value">0 KB</span>
+                                    </div>
+                                    <div class="result-stat">
+                                        <span class="stat-label">转换后</span>
+                                        <span id="imageConvertedSize" class="stat-value">0 KB</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="result-actions">
+                                <button id="imageDownloadBtn" class="btn-download" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                                    <i data-lucide="download"></i>
+                                    下载文件
+                                </button>
+                                <button id="imageResetBtn" class="btn-secondary">
+                                    <i data-lucide="refresh-cw"></i>
+                                    重新选择
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="textConverter" class="converter-type-panel hidden">
+                    <div id="textInputZone" class="upload-zone">
+                        <div class="upload-content">
+                            <div class="upload-icon" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                                <i data-lucide="file-text"></i>
+                            </div>
+                            <h3>拖拽文本文件到此处</h3>
+                            <p>支持 TXT、JSON、CSV、XML、HTML 格式</p>
+                            <button id="textSelectBtn" class="btn-select" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                                <i data-lucide="folder-open"></i>
+                                选择文件
+                            </button>
+                            <input type="file" id="textFileInput" accept=".txt,.json,.csv,.xml,.html,.htm,.md,.yaml,.yml" hidden>
+                        </div>
+                    </div>
+
+                    <div id="textInputPanel" class="convert-panel hidden">
+                        <div class="convert-file-info">
+                            <div class="file-info-icon">
+                                <i data-lucide="file-text"></i>
+                            </div>
+                            <div class="file-info-details">
+                                <h4 id="textFileName">document.txt</h4>
+                                <div class="file-info-meta">
+                                    <span id="textFileSize">0 KB</span>
+                                    <span class="meta-sep">·</span>
+                                    <span id="textLines">0 行</span>
+                                </div>
+                            </div>
+                            <button id="textRemoveBtn" class="btn-icon">
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+
+                        <div class="text-preview-area">
+                            <textarea id="textContent" readonly placeholder="文件内容预览..."></textarea>
+                        </div>
+
+                        <div class="convert-settings">
+                            <div class="setting-group">
+                                <label class="setting-label">
+                                    <span>源格式</span>
+                                    <span id="textSourceFormat" class="setting-value">TXT</span>
+                                </label>
+                            </div>
+
+                            <div class="setting-group">
+                                <label class="setting-label">
+                                    <span>目标格式</span>
+                                </label>
+                                <div class="format-target-options">
+                                    <button class="target-format-btn" data-format="txt" data-ext="txt">TXT</button>
+                                    <button class="target-format-btn" data-format="json" data-ext="json">JSON</button>
+                                    <button class="target-format-btn" data-format="csv" data-ext="csv">CSV</button>
+                                    <button class="target-format-btn" data-format="xml" data-ext="xml">XML</button>
+                                    <button class="target-format-btn" data-format="html" data-ext="html">HTML</button>
+                                    <button class="target-format-btn" data-format="md" data-ext="md">Markdown</button>
+                                </div>
+                            </div>
+
+                            <div id="jsonOptions" class="setting-group hidden">
+                                <label class="setting-label">
+                                    <span>JSON格式化</span>
+                                </label>
+                                <div class="format-target-options">
+                                    <button class="target-format-btn active" data-format="pretty" data-ext="json">美化</button>
+                                    <button class="target-format-btn" data-format="minify" data-ext="json">压缩</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="textConvertBtn" class="btn-process" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                            <i data-lucide="refresh-cw"></i>
+                            开始转换
+                        </button>
+
+                        <div id="textResultSection" class="result-section hidden">
+                            <div class="result-card">
+                                <div class="result-icon" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                                    <i data-lucide="check-circle"></i>
+                                </div>
+                                <h3>转换完成！</h3>
+                                <div class="result-stats">
+                                    <div class="result-stat">
+                                        <span class="stat-label">原始大小</span>
+                                        <span id="textOriginalSize" class="stat-value">0 KB</span>
+                                    </div>
+                                    <div class="result-stat">
+                                        <span class="stat-label">转换后</span>
+                                        <span id="textConvertedSize" class="stat-value">0 KB</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="result-actions">
+                                <button id="textDownloadBtn" class="btn-download" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                                    <i data-lucide="download"></i>
+                                    下载文件
+                                </button>
+                                <button id="textCopyBtn" class="btn-secondary">
+                                    <i data-lucide="copy"></i>
+                                    复制内容
+                                </button>
+                                <button id="textResetBtn" class="btn-secondary">
+                                    <i data-lucide="refresh-cw"></i>
+                                    重新选择
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="errorSection" class="error-section hidden">
+                    <div class="error-icon">
+                        <i data-lucide="alert-circle"></i>
+                    </div>
+                    <h3>转换失败</h3>
+                    <p id="errorMessage">请重试或更换文件</p>
+                    <button id="retryBtn" class="btn-secondary">
+                        <i data-lucide="rotate-ccw"></i>
+                        重新尝试
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、高效、安全的格式转换工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(99, 102, 241, 0.1)); color: #7C3AED;">
+                        <i data-lucide="lock"></i>
+                    </div>
+                    <h3>隐私保护</h3>
+                    <p>所有转换在浏览器本地完成，文件不会上传到任何服务器</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(99, 102, 241, 0.1)); color: #7C3AED;">
+                        <i data-lucide="image"></i>
+                    </div>
+                    <h3>图片转换</h3>
+                    <p>支持 PNG、JPG、WebP、BMP 格式互转</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(99, 102, 241, 0.1)); color: #7C3AED;">
+                        <i data-lucide="file-code"></i>
+                    </div>
+                    <h3>文本转换</h3>
+                    <p>支持 TXT、JSON、CSV、XML、HTML、Markdown 格式互转</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(99, 102, 241, 0.1)); color: #7C3AED;">
+                        <i data-lucide="sliders"></i>
+                    </div>
+                    <h3>质量可调</h3>
+                    <p>图片转换支持调整压缩质量，满足不同需求</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(99, 102, 241, 0.1)); color: #7C3AED;">
+                        <i data-lucide="copy"></i>
+                    </div>
+                    <h3>一键复制</h3>
+                    <p>文本转换结果支持一键复制到剪贴板</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(99, 102, 241, 0.1)); color: #7C3AED;">
+                        <i data-lucide="zap"></i>
+                    </div>
+                    <h3>快速转换</h3>
+                    <p>基于 Canvas 和原生 API，转换速度快</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #7C3AED, #6366F1);">
+                    <i data-lucide="repeat"></i>
+                </div>
+                <span>格式转换器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var state = {
+            mode: 'image',
+            // image state
+            imageFile: null,
+            imageBlob: null,
+            imageType: 'image/png',
+            imageExt: 'png',
+            imageQuality: 0.9,
+            // text state
+            textFile: null,
+            textContent: '',
+            textSourceFormat: 'txt',
+            textTargetFormat: 'txt',
+            textJsonFormat: 'pretty',
+            textConverted: ''
+        };
+
+        var els = {
+            // tabs
+            convTabs: document.querySelectorAll('.conv-tab'),
+            imageConverter: document.getElementById('imageConverter'),
+            textConverter: document.getElementById('textConverter'),
+
+            // image
+            imageUploadZone: document.getElementById('imageUploadZone'),
+            imageSelectBtn: document.getElementById('imageSelectBtn'),
+            imageFileInput: document.getElementById('imageFileInput'),
+            imageConvertPanel: document.getElementById('imageConvertPanel'),
+            imageFileName: document.getElementById('imageFileName'),
+            imageFileSize: document.getElementById('imageFileSize'),
+            imageDimensions: document.getElementById('imageDimensions'),
+            imagePreviewThumb: document.getElementById('imagePreviewThumb'),
+            imageRemoveBtn: document.getElementById('imageRemoveBtn'),
+            imageSourceFormat: document.getElementById('imageSourceFormat'),
+            imageQualitySlider: document.getElementById('imageQualitySlider'),
+            imageQualityValue: document.getElementById('imageQualityValue'),
+            imageConvertBtn: document.getElementById('imageConvertBtn'),
+            imageResultSection: document.getElementById('imageResultSection'),
+            imageOriginalSize: document.getElementById('imageOriginalSize'),
+            imageConvertedSize: document.getElementById('imageConvertedSize'),
+            imageDownloadBtn: document.getElementById('imageDownloadBtn'),
+            imageResetBtn: document.getElementById('imageResetBtn'),
+
+            // text
+            textInputZone: document.getElementById('textInputZone'),
+            textSelectBtn: document.getElementById('textSelectBtn'),
+            textFileInput: document.getElementById('textFileInput'),
+            textInputPanel: document.getElementById('textInputPanel'),
+            textFileName: document.getElementById('textFileName'),
+            textFileSize: document.getElementById('textFileSize'),
+            textLines: document.getElementById('textLines'),
+            textRemoveBtn: document.getElementById('textRemoveBtn'),
+            textContent: document.getElementById('textContent'),
+            textSourceFormat: document.getElementById('textSourceFormat'),
+            jsonOptions: document.getElementById('jsonOptions'),
+            textConvertBtn: document.getElementById('textConvertBtn'),
+            textResultSection: document.getElementById('textResultSection'),
+            textOriginalSize: document.getElementById('textOriginalSize'),
+            textConvertedSize: document.getElementById('textConvertedSize'),
+            textDownloadBtn: document.getElementById('textDownloadBtn'),
+            textCopyBtn: document.getElementById('textCopyBtn'),
+            textResetBtn: document.getElementById('textResetBtn'),
+
+            // common
+            errorSection: document.getElementById('errorSection'),
+            errorMessage: document.getElementById('errorMessage'),
+            retryBtn: document.getElementById('retryBtn'),
+            targetFormatBtns: document.querySelectorAll('.target-format-btn'),
+            qualityGroup: document.getElementById('qualityGroup')
+        };
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        function show(el) { el.classList.remove('hidden'); }
+        function hide(el) { el.classList.add('hidden'); }
+
+        function showError(msg) {
+            els.errorMessage.textContent = msg;
+            show(els.errorSection);
+        }
+
+        function setMode(mode) {
+            state.mode = mode;
+            els.convTabs.forEach(function(tab) {
+                tab.classList.toggle('active', tab.getAttribute('data-type') === mode);
+            });
+            if (mode === 'image') {
+                show(els.imageConverter);
+                hide(els.textConverter);
+            } else {
+                show(els.textConverter);
+                hide(els.imageConverter);
+            }
+        }
+
+        // ============ Image Conversion ============
+
+        function getExtension(filename) {
+            var parts = filename.split('.');
+            return parts[parts.length - 1].toLowerCase();
+        }
+
+        function getImageType(ext) {
+            var map = {
+                png: 'image/png',
+                jpg: 'image/jpeg', jpeg: 'image/jpeg',
+                webp: 'image/webp',
+                bmp: 'image/bmp',
+                gif: 'image/gif'
+            };
+            return map[ext] || 'image/png';
+        }
+
+        function handleImageFile(file) {
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showError('请选择图片文件（PNG/JPG/WebP/BMP）');
+                return;
+            }
+
+            hide(els.errorSection);
+            hide(els.imageResultSection);
+
+            var ext = getExtension(file.name);
+            var type = getImageType(ext);
+
+            state.imageFile = file;
+            state.imageBlob = null;
+            state.imageType = type;
+            state.imageExt = ext;
+
+            els.imageFileName.textContent = file.name;
+            els.imageFileSize.textContent = formatSize(file.size);
+
+            var img = new Image();
+            img.onload = function() {
+                state.imageWidth = img.width;
+                state.imageHeight = img.height;
+                els.imageDimensions.textContent = img.width + '×' + img.height;
+                els.imagePreviewThumb.innerHTML = '<img src="' + img.src + '">';
+                els.imageSourceFormat.textContent = ext.toUpperCase();
+                show(els.imageConvertPanel);
+
+                // Update target format buttons
+                els.targetFormatBtns.forEach(function(btn) {
+                    var fmt = btn.getAttribute('data-format');
+                    btn.disabled = (fmt === type);
+                    btn.style.opacity = (fmt === type) ? '0.4' : '1';
+                });
+            };
+            img.onerror = function() {
+                showError('图片加载失败');
+            };
+            img.src = URL.createObjectURL(file);
+        }
+
+        function convertImage() {
+            if (!state.imageFile) return;
+
+            var targetFormat = state.imageType;
+            var targetExt = state.imageExt;
+            var quality = state.imageQuality;
+
+            if (targetFormat === state.imageType) {
+                // Same format - just download original
+                state.imageBlob = state.imageFile;
+            } else {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = new Image();
+                    img.onload = function() {
+                        var canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        var ctx = canvas.getContext('2d');
+
+                        if (targetFormat === 'image/jpeg') {
+                            ctx.fillStyle = '#FFFFFF';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        }
+
+                        ctx.drawImage(img, 0, 0);
+
+                        var mimeType = targetFormat;
+                        var q = (targetFormat === 'image/png' || targetFormat === 'image/bmp') ? undefined : quality;
+
+                        canvas.toBlob(function(blob) {
+                            if (!blob) {
+                                showError('转换失败，请尝试其他格式');
+                                return;
+                            }
+                            state.imageBlob = blob;
+                            showImageResult();
+                        }, mimeType, q);
+                    };
+                    img.onerror = function() {
+                        showError('图片解码失败');
+                    };
+                    img.src = e.target.result;
+                };
+                reader.onerror = function() {
+                    showError('文件读取失败');
+                };
+                reader.readAsDataURL(state.imageFile);
+                return;
+            }
+
+            showImageResult();
+        }
+
+        function showImageResult() {
+            if (!state.imageBlob) return;
+            hide(els.imageResultSection);
+
+            var origSize = state.imageFile.size;
+            var convSize = state.imageBlob.size;
+
+            els.imageOriginalSize.textContent = formatSize(origSize);
+            els.imageConvertedSize.textContent = formatSize(convSize);
+
+            show(els.imageResultSection);
+        }
+
+        function downloadImage() {
+            if (!state.imageBlob) return;
+            var baseName = state.imageFile.name.replace(/\.[^/.]+$/, '');
+            var fileName = baseName + '_converted.' + state.imageExt;
+
+            var url = URL.createObjectURL(state.imageBlob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function resetImage() {
+            state.imageFile = null;
+            state.imageBlob = null;
+            els.imageFileInput.value = '';
+            els.imagePreviewThumb.innerHTML = '';
+            hide(els.imageConvertPanel);
+            hide(els.imageResultSection);
+        }
+
+        // ============ Text Conversion ============
+
+        function getTextFormat(filename) {
+            var ext = getExtension(filename);
+            var map = {
+                txt: 'txt', text: 'txt',
+                json: 'json',
+                csv: 'csv',
+                xml: 'xml',
+                html: 'html', htm: 'html',
+                md: 'md', markdown: 'md',
+                yaml: 'yaml', yml: 'yaml'
+            };
+            return map[ext] || 'txt';
+        }
+
+        function handleTextFile(file) {
+            if (!file) return;
+
+            var ext = getExtension(file.name);
+            if (['txt', 'json', 'csv', 'xml', 'html', 'htm', 'md', 'yaml', 'yml'].indexOf(ext) === -1) {
+                showError('请选择 TXT、JSON、CSV、XML、HTML、Markdown 等文本文件');
+                return;
+            }
+
+            hide(els.errorSection);
+            hide(els.textResultSection);
+
+            state.textFile = file;
+            state.textSourceFormat = getTextFormat(file.name);
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var text = e.target.result;
+                state.textContent = text;
+
+                els.textFileName.textContent = file.name;
+                els.textFileSize.textContent = formatSize(file.size);
+                var lines = text.split('\n').length;
+                els.textLines.textContent = lines + ' 行';
+                els.textContent.value = text;
+                els.textSourceFormat.textContent = state.textSourceFormat.toUpperCase();
+
+                // Update target format buttons
+                els.targetFormatBtns.forEach(function(btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                });
+
+                show(els.textInputPanel);
+            };
+            reader.onerror = function() {
+                showError('文件读取失败');
+            };
+            reader.readAsText(file);
+        }
+
+        function convertText() {
+            if (!state.textContent) return;
+
+            var source = state.textSourceFormat;
+            var target = state.textTargetFormat;
+            var content = state.textContent;
+            var result = '';
+
+            try {
+                if (source === 'json' && target === 'json') {
+                    // JSON reformat
+                    var parsed = JSON.parse(content);
+                    if (state.textJsonFormat === 'pretty') {
+                        result = JSON.stringify(parsed, null, 2);
+                    } else {
+                        result = JSON.stringify(parsed);
+                    }
+                } else if (source === 'csv' && target === 'json') {
+                    // CSV to JSON
+                    result = csvToJson(content);
+                } else if (source === 'json' && target === 'csv') {
+                    // JSON to CSV
+                    result = jsonToCsv(content);
+                } else if (source === 'txt' && target === 'json') {
+                    // TXT to JSON array
+                    var lines = content.split('\n').filter(function(l) { return l.trim(); });
+                    result = JSON.stringify(lines, null, 2);
+                } else if (source === 'json' && target === 'txt') {
+                    // JSON to TXT
+                    var parsed2 = JSON.parse(content);
+                    result = '';
+                    if (Array.isArray(parsed2)) {
+                        result = parsed2.join('\n');
+                    } else {
+                        result = JSON.stringify(parsed2, null, 2);
+                    }
+                } else if (source === 'json' && target === 'xml') {
+                    // JSON to XML
+                    var parsed3 = JSON.parse(content);
+                    result = jsonToXml(parsed3);
+                } else if (source === 'json' && target === 'html') {
+                    // JSON to HTML table
+                    var parsed4 = JSON.parse(content);
+                    result = jsonToHtmlTable(parsed4);
+                } else if (source === 'csv' && target === 'html') {
+                    result = csvToHtmlTable(content);
+                } else if (source === 'txt' && target === 'html') {
+                    result = '<html><body><pre>' + escapeHtml(content) + '</pre></body></html>';
+                } else if (source === 'txt' && target === 'csv') {
+                    var lines2 = content.split('\n');
+                    result = lines2.map(function(l) {
+                        return '"' + l.replace(/"/g, '""') + '"';
+                    }).join('\n');
+                } else if (source === 'txt' && target === 'xml') {
+                    result = '<root>\n  <content>' + escapeHtml(content) + '</content>\n</root>';
+                } else if (source === 'json' && target === 'md') {
+                    var parsed5 = JSON.parse(content);
+                    result = jsonToMarkdown(parsed5);
+                } else if (source === 'csv' && target === 'md') {
+                    result = csvToMarkdown(content);
+                } else if (source === 'txt' && target === 'md') {
+                    result = content.split('\n').map(function(l) {
+                        return l.trim() ? l : '';
+                    }).join('\n\n');
+                } else if (source === 'html' && target === 'txt') {
+                    var tmp = document.createElement('div');
+                    tmp.innerHTML = content;
+                    result = tmp.textContent || '';
+                } else if (target === 'txt') {
+                    // Convert anything to text
+                    if (source === 'json') {
+                        result = JSON.stringify(JSON.parse(content), null, 2);
+                    } else {
+                        result = content;
+                    }
+                } else {
+                    // Same format or unsupported - just copy
+                    result = content;
+                }
+
+                state.textConverted = result;
+                showTextResult(result);
+            } catch (err) {
+                showError('转换失败：' + (err.message || '未知错误'));
+            }
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function csvToJson(csv) {
+            var lines = csv.split('\n');
+            var result = [];
+            var headers = lines[0].split(',').map(function(h) {
+                return h.replace(/^"|"$/g, '').replace(/""/g, '"');
+            });
+
+            for (var i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                var obj = {};
+                var values = parseCsvLine(lines[i]);
+                headers.forEach(function(h, idx) {
+                    obj[h] = values[idx] || '';
+                });
+                result.push(obj);
+            }
+            return JSON.stringify(result, null, 2);
+        }
+
+        function parseCsvLine(line) {
+            var result = [];
+            var current = '';
+            var inQuotes = false;
+
+            for (var i = 0; i < line.length; i++) {
+                var ch = line[i];
+                if (ch === '"') {
+                    inQuotes = !inQuotes;
+                } else if (ch === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += ch;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function jsonToCsv(jsonStr) {
+            var data = JSON.parse(jsonStr);
+            if (!Array.isArray(data) || data.length === 0) {
+                return '';
+            }
+
+            var headers = Object.keys(data[0]);
+            var csv = headers.join(',') + '\n';
+
+            data.forEach(function(row) {
+                var values = headers.map(function(h) {
+                    var val = row[h] !== undefined && row[h] !== null ? String(row[h]) : '';
+                    if (val.indexOf(',') !== -1 || val.indexOf('"') !== -1) {
+                        val = '"' + val.replace(/"/g, '""') + '"';
+                    }
+                    return val;
+                });
+                csv += values.join(',') + '\n';
+            });
+            return csv;
+        }
+
+        function jsonToXml(obj) {
+            function toXml(o, indent) {
+                if (typeof o !== 'object' || o === null) {
+                    return o;
+                }
+                var parts = [];
+                indent = indent || '';
+                for (var key in o) {
+                    if (o.hasOwnProperty(key)) {
+                        var val = o[key];
+                        if (typeof val === 'object' && val !== null) {
+                            parts.push(indent + '<' + key + '>');
+                            parts.push(toXml(val, indent + '  '));
+                            parts.push(indent + '</' + key + '>');
+                        } else {
+                            parts.push(indent + '<' + key + '>' + val + '</' + key + '>');
+                        }
+                    }
+                }
+                return parts.join('\n');
+            }
+            return '<?xml version="1.0" encoding="UTF-8"?>\n' + toXml({ root: obj });
+        }
+
+        function jsonToHtmlTable(obj) {
+            var data = Array.isArray(obj) ? obj : [obj];
+            if (data.length === 0) return '';
+
+            var headers = Object.keys(data[0]);
+            var html = '<table>\n<thead>\n<tr>';
+            headers.forEach(function(h) {
+                html += '<th>' + escapeHtml(h) + '</th>';
+            });
+            html += '</tr>\n</thead>\n<tbody>\n';
+
+            data.forEach(function(row) {
+                html += '<tr>';
+                headers.forEach(function(h) {
+                    html += '<td>' + escapeHtml(String(row[h] !== undefined ? row[h] : '')) + '</td>';
+                });
+                html += '</tr>\n';
+            });
+            html += '</tbody>\n</table>';
+            return html;
+        }
+
+        function csvToHtmlTable(csv) {
+            var lines = csv.split('\n');
+            if (lines.length < 2) return '';
+
+            var headers = parseCsvLine(lines[0]);
+            var html = '<table>\n<thead>\n<tr>';
+            headers.forEach(function(h) {
+                html += '<th>' + escapeHtml(h) + '</th>';
+            });
+            html += '</tr>\n</thead>\n<tbody>\n';
+
+            for (var i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                var values = parseCsvLine(lines[i]);
+                html += '<tr>';
+                values.forEach(function(v) {
+                    html += '<td>' + escapeHtml(v) + '</td>';
+                });
+                html += '</tr>\n';
+            }
+            html += '</tbody>\n</table>';
+            return html;
+        }
+
+        function jsonToMarkdown(obj) {
+            var data = Array.isArray(obj) ? obj : [obj];
+            if (data.length === 0) return '';
+
+            var headers = Object.keys(data[0]);
+            var md = '| ' + headers.join(' | ') + ' |\n';
+            md += '|' + headers.map(function() { return '---'; }).join('|') + '|\n';
+
+            data.forEach(function(row) {
+                md += '| ' + headers.map(function(h) {
+                    return String(row[h] !== undefined ? row[h] : '');
+                }).join(' | ') + ' |\n';
+            });
+            return md;
+        }
+
+        function csvToMarkdown(csv) {
+            var lines = csv.split('\n');
+            if (lines.length < 2) return '';
+
+            var headers = parseCsvLine(lines[0]);
+            var md = '| ' + headers.join(' | ') + ' |\n';
+            md += '|' + headers.map(function() { return '---'; }).join('|') + '|\n';
+
+            for (var i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                var values = parseCsvLine(lines[i]);
+                md += '| ' + values.join(' | ') + ' |\n';
+            }
+            return md;
+        }
+
+        function showTextResult(result) {
+            hide(els.textResultSection);
+
+            var origSize = state.textFile.size;
+            var convSize = new Blob([result]).size;
+
+            els.textOriginalSize.textContent = formatSize(origSize);
+            els.textConvertedSize.textContent = formatSize(convSize);
+
+            show(els.textResultSection);
+        }
+
+        function downloadText() {
+            if (!state.textConverted) return;
+            var ext = state.textTargetFormat;
+            if (ext === 'json' && state.textJsonFormat) ext = 'json';
+            var fileName = state.textFile.name.replace(/\.[^/.]+$/, '') + '_converted.' + ext;
+
+            var blob = new Blob([state.textConverted], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function copyText() {
+            if (!state.textConverted) return;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(state.textConverted).then(function() {
+                    var btn = els.textCopyBtn;
+                    var original = btn.innerHTML;
+                    btn.innerHTML = '<i data-lucide="check"></i> 已复制';
+                    setTimeout(function() {
+                        btn.innerHTML = original;
+                        if (window.lucide) lucide.createIcons();
+                    }, 1500);
+                });
+            }
+        }
+
+        function resetText() {
+            state.textFile = null;
+            state.textContent = '';
+            state.textConverted = '';
+            els.textFileInput.value = '';
+            els.textContent.value = '';
+            hide(els.textInputPanel);
+            hide(els.textResultSection);
+        }
+
+        function setupEvents() {
+            // Mode tabs
+            els.convTabs.forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    setMode(this.getAttribute('data-type'));
+                });
+            });
+
+            // Image events
+            els.imageSelectBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                els.imageFileInput.click();
+            });
+            els.imageUploadZone.addEventListener('click', function(e) {
+                if (e.target === els.imageSelectBtn || e.target.closest('.btn-select')) return;
+                els.imageFileInput.click();
+            });
+            els.imageFileInput.addEventListener('change', function(e) {
+                if (e.target.files[0]) handleImageFile(e.target.files[0]);
+            });
+            els.imageUploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            els.imageUploadZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            els.imageUploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                if (e.dataTransfer.files[0]) handleImageFile(e.dataTransfer.files[0]);
+            });
+
+            els.imageRemoveBtn.addEventListener('click', resetImage);
+            els.imageQualitySlider.addEventListener('input', function() {
+                var val = parseInt(this.value, 10);
+                state.imageQuality = val / 100;
+                els.imageQualityValue.textContent = val + '%';
+            });
+
+            els.imageConvertBtn.addEventListener('click', convertImage);
+            els.imageDownloadBtn.addEventListener('click', downloadImage);
+            els.imageResetBtn.addEventListener('click', resetImage);
+
+            // Text events
+            els.textSelectBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                els.textFileInput.click();
+            });
+            els.textInputZone.addEventListener('click', function(e) {
+                if (e.target === els.textSelectBtn || e.target.closest('.btn-select')) return;
+                els.textFileInput.click();
+            });
+            els.textFileInput.addEventListener('change', function(e) {
+                if (e.target.files[0]) handleTextFile(e.target.files[0]);
+            });
+            els.textInputZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            els.textInputZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            els.textInputZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                if (e.dataTransfer.files[0]) handleTextFile(e.dataTransfer.files[0]);
+            });
+
+            els.textRemoveBtn.addEventListener('click', resetText);
+            els.textConvertBtn.addEventListener('click', convertText);
+            els.textDownloadBtn.addEventListener('click', downloadText);
+            els.textCopyBtn.addEventListener('click', copyText);
+            els.textResetBtn.addEventListener('click', resetText);
+
+            els.retryBtn.addEventListener('click', function() {
+                hide(els.errorSection);
+            });
+
+            // Target format buttons
+            els.targetFormatBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var format = this.getAttribute('data-format');
+                    var ext = this.getAttribute('data-ext');
+
+                    // Handle image format buttons
+                    if (this.closest('#imageConvertPanel')) {
+                        els.targetFormatBtns.forEach(function(b) {
+                            if (b.closest('#imageConvertPanel')) b.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        state.imageType = format;
+                        state.imageExt = ext;
+
+                        // Show quality slider for lossy formats
+                        if (format === 'image/png' || format === 'image/bmp') {
+                            hide(els.qualityGroup);
+                        } else {
+                            show(els.qualityGroup);
+                        }
+                    } else if (this.closest('#textInputPanel')) {
+                        // Text target format
+                        var isJsonOption = this.closest('#jsonOptions');
+                        if (isJsonOption) {
+                            els.targetFormatBtns.forEach(function(b) {
+                                if (b.closest('#jsonOptions')) b.classList.remove('active');
+                            });
+                            this.classList.add('active');
+                            state.textJsonFormat = format;
+                        } else {
+                            els.targetFormatBtns.forEach(function(b) {
+                                if (b.closest('#textInputPanel') && !b.closest('#jsonOptions')) b.classList.remove('active');
+                            });
+                            this.classList.add('active');
+                            state.textTargetFormat = format;
+
+                            // Show JSON options when target is json
+                            if (format === 'json' && state.textSourceFormat === 'json') {
+                                show(els.jsonOptions);
+                            } else {
+                                hide(els.jsonOptions);
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        function init() {
+            setMode('image');
+            setupEvents();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

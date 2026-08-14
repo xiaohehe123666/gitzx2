@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>软件下载 - 专业软件仓库导航 | 在线工具箱</title>
+    <meta name="description" content="聚合国内常用软件下载站：多多软件站、下载快、魅力软件园、3322、华军软件园、PC下载网、ZOL、IT猫扑、羽兔网等专业设计软件与生活软件免费下载入口">
+    <meta name="keywords" content="软件下载,免费软件,专业软件,Adobe,CAD,绿色软件,软件下载站">
+    <meta name="theme-color" content="#0F172A">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="软件下载 - 专业软件仓库导航">
+    <meta property="og:description" content="聚合国内常用软件下载站，专业设计软件与生活软件下载入口">
+    <meta property="og:url" content="https://gitzx01.netlify.app/software.html">
+    <meta property="og:locale" content="zh_CN">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .rc-wrap {
+            padding-top: 76px;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+        .rc-toolbar {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.875rem 1.5rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+        }
+        .rc-toolbar-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+        .rc-toolbar-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), #0EA5E9);
+            color: #fff;
+        }
+        .rc-toolbar-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+        }
+        .rc-toolbar-sub {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 340px;
+        }
+        .rc-toolbar-actions {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .rc-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .rc-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+        .rc-btn-primary {
+            background: linear-gradient(135deg, var(--primary), #0EA5E9);
+            border: none;
+            color: #fff;
+        }
+        .rc-btn-primary:hover {
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(30, 58, 138, 0.3);
+        }
+        /* 站点切换条 */
+        .rc-tabs {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.5rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+        .rc-tab {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.375rem 0.875rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .rc-tab:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .rc-tab.active {
+            background: linear-gradient(135deg, var(--primary), #0EA5E9);
+            border-color: transparent;
+            color: #fff;
+        }
+        .rc-tab-ext {
+            border-style: dashed;
+        }
+        .rc-frame-wrap {
+            flex: 1;
+            position: relative;
+            min-height: 0;
+        }
+        .rc-notice {
+            flex-shrink: 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.625rem;
+            padding: 0.625rem 1.5rem;
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.12), rgba(239, 68, 68, 0.1));
+            border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+            color: var(--text);
+            font-size: 0.8125rem;
+            line-height: 1.6;
+        }
+        .rc-notice-icon {
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: #F59E0B;
+        }
+        .rc-notice b {
+            color: #F59E0B;
+        }
+        .rc-notice-close {
+            flex-shrink: 0;
+            margin-left: auto;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s ease;
+        }
+        .rc-notice-close:hover {
+            color: var(--text);
+        }
+        .rc-notice.hidden {
+            display: none;
+        }
+        .rc-frame {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+            background: #fff;
+        }
+        .rc-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.75rem;
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            z-index: 5;
+            transition: opacity 0.3s ease;
+        }
+        .rc-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .rc-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: rcSpin 0.8s linear infinite;
+        }
+        @keyframes rcSpin {
+            to { transform: rotate(360deg); }
+        }
+        @media (max-width: 640px) {
+            .rc-wrap { padding-top: 72px; }
+            .rc-toolbar { padding: 0.75rem 1rem; }
+            .rc-toolbar-sub { display: none; }
+            .rc-btn { padding: 0.4375rem 0.75rem; font-size: 0.75rem; }
+            .rc-tabs { padding: 0.5rem 1rem; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <span class="logo-text">在线工具箱</span>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="navigator.html" class="nav-link">导航</a>
+                <a href="ruancang.html" class="nav-link">软仓</a>
+                <a href="software.html" class="nav-link active">软件下载</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main class="rc-wrap">
+        <div class="rc-toolbar">
+            <div class="rc-toolbar-info">
+                <div class="rc-toolbar-icon">
+                    <i data-lucide="package-open" style="width:20px;height:20px;"></i>
+                </div>
+                <div>
+                    <div class="rc-toolbar-title">软件下载 · <span id="siteName">专业软件仓库导航</span></div>
+                    <div class="rc-toolbar-sub" id="siteDesc">聚合国内常用软件下载站，点击上方标签切换站点</div>
+                </div>
+            </div>
+            <div class="rc-toolbar-actions">
+                <button type="button" class="rc-btn" id="rcReloadBtn" title="重新加载">
+                    <i data-lucide="refresh-cw" style="width:15px;height:15px;"></i>
+                    刷新
+                </button>
+                <a href="#" target="_blank" rel="noopener" class="rc-btn rc-btn-primary" id="rcOpenBtn">
+                    <i data-lucide="external-link" style="width:15px;height:15px;"></i>
+                    打开原站
+                </a>
+            </div>
+        </div>
+
+        <div class="rc-tabs" id="rcTabs"></div>
+
+        <div class="rc-notice" id="rcNotice" role="note">
+            <span class="rc-notice-icon">
+                <i data-lucide="shield-alert" style="width:16px;height:16px;"></i>
+            </span>
+            <span>
+                <b>版权提醒：</b>本站嵌入的软件下载站均为第三方网站内容，其软件版权归原权利人所有。<br>
+                <b>免责公告：</b>本站仅提供浏览入口，不参与任何软件分发、破解或激活；下载安装前请自行甄别来源，建议优先通过官方渠道获取正版软件，本站不对第三方内容及其下载后果负责。
+            </span>
+            <button type="button" class="rc-notice-close" id="rcNoticeClose" title="关闭提示" aria-label="关闭提示">
+                <i data-lucide="x" style="width:16px;height:16px;"></i>
+            </button>
+        </div>
+
+        <div class="rc-frame-wrap">
+            <div class="rc-loading" id="rcLoading">
+                <div class="rc-spinner"></div>
+                <span>正在加载...</span>
+            </div>
+            <iframe id="rcFrame" class="rc-frame" src="" loading="eager" allowfullscreen referrerpolicy="no-referrer-when-downgrade" title="软件下载站"></iframe>
+        </div>
+    </main>
+
+    <script>
+        (function() {
+            // 可嵌入站点（已检测允许 iframe）
+            var SITES = [
+                { id: 'ddooo',   name: '多多软件站', url: 'https://www.ddooo.com/',       desc: 'Adobe 全家桶、CAD、设计类软件齐全，更新快' },
+                { id: 'downkuai', name: '下载快',     url: 'https://www.downkuai.com/',     desc: '设计/办公类专业软件，各版本归档全' },
+                { id: 'mfrjz',   name: '魅力软件园', url: 'https://www.mfrjz.com/',        desc: '专业设计软件资源站' },
+                { id: 's3322',   name: '3322软件站', url: 'https://www.32r.com/',          desc: '专业软件各版本归档齐全（原 3322.cc）' },
+                { id: 'onlinedown', name: '华军软件园', url: 'https://www.onlinedown.net/', desc: '老牌综合软件站，电脑/手机/苹果应用' },
+                { id: 'pcsoft',  name: 'PC下载网',   url: 'https://www.pcsoft.com.cn/',     desc: '绿色软件为主，日常工具齐全' },
+                { id: 'zol',     name: 'ZOL下载',    url: 'https://xiazai.zol.com.cn/',     desc: '消费类软件门户，装机工具多' },
+                { id: 'itmop',   name: 'IT猫扑',     url: 'https://www.itmop.com/',         desc: '绿色/常用软件下载' },
+                { id: 'yutu',    name: '羽兔网',     url: 'https://www.yutu.cn/',           desc: '设计资源与设计软件' }
+            ];
+            // 禁止嵌入、只能外链打开的站点
+            var EXTERNAL = [
+                { id: 'down423', name: '423Down', url: 'https://www.423down.com/', desc: '口碑较好的纯净下载站（限制嵌入，点击外链打开）' }
+            ];
+
+            var tabsWrap = document.getElementById('rcTabs');
+            var frame = document.getElementById('rcFrame');
+            var loading = document.getElementById('rcLoading');
+            var nameEl = document.getElementById('siteName');
+            var descEl = document.getElementById('siteDesc');
+            var openBtn = document.getElementById('rcOpenBtn');
+            var loaded = false;
+            var slowTimer = null;
+            var current = null;
+
+            function buildTabs() {
+                tabsWrap.innerHTML = '';
+                SITES.concat(EXTERNAL).forEach(function(site, i) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'rc-tab' + (i < SITES.length ? '' : ' rc-tab-ext');
+                    if (i >= SITES.length) {
+                        btn.innerHTML = '<i data-lucide="external-link" style="width:14px;height:14px;"></i> ' + site.name;
+                    } else {
+                        btn.textContent = site.name;
+                    }
+                    btn.title = site.desc;
+                    btn.setAttribute('data-site', site.id);
+                    btn.setAttribute('data-index', i);
+                    btn.addEventListener('click', function() {
+                        switchSite(site);
+                    });
+                    tabsWrap.appendChild(btn);
+                });
+                try { if (window.lucide) lucide.createIcons(); } catch (e) {}
+            }
+
+            function setActive(id) {
+                var tabs = tabsWrap.querySelectorAll('.rc-tab');
+                for (var i = 0; i < tabs.length; i++) {
+                    tabs[i].classList.toggle('active', tabs[i].getAttribute('data-site') === id);
+                }
+            }
+
+            function switchSite(site) {
+                if (current && current.id === site.id) return;
+                current = site;
+                nameEl.textContent = site.name;
+                descEl.textContent = site.desc;
+                openBtn.href = site.url;
+                setActive(site.id);
+                loading.style.display = 'flex';
+                loading.classList.remove('hidden');
+                var spinner = loading.querySelector('.rc-spinner');
+                if (spinner) spinner.style.display = '';
+                loading.querySelector('span').textContent = '正在加载 ' + site.name + ' ...';
+                loaded = false;
+                if (slowTimer) clearTimeout(slowTimer);
+                slowTimer = setTimeout(function() {
+                    if (!loaded) {
+                        var sp = loading.querySelector('.rc-spinner');
+                        if (sp) sp.style.display = 'none';
+                        loading.querySelector('span').textContent = '加载较慢...如果长时间空白，请点右上角"打开原站"直接访问';
+                    }
+                }, 10000);
+                frame.src = site.url;
+            }
+
+            // 从 URL 参数 ?site=xxx 选择初始站点
+            function initSite() {
+                var wanted = null;
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    wanted = params.get('site');
+                } catch (e) {}
+                var all = SITES.concat(EXTERNAL);
+                for (var i = 0; i < all.length; i++) {
+                    if (all[i].id === wanted) return all[i];
+                }
+                return SITES[0];
+            }
+
+            // 版权/免责公告：可关闭，7 天内不再重复显示
+            var notice = document.getElementById('rcNotice');
+            var noticeClose = document.getElementById('rcNoticeClose');
+            try {
+                var dismissedAt = localStorage.getItem('rc_notice_dismissed');
+                if (dismissedAt && (Date.now() - Number(dismissedAt) < 7 * 24 * 60 * 60 * 1000)) {
+                    notice.classList.add('hidden');
+                }
+            } catch (e) {}
+            noticeClose.addEventListener('click', function() {
+                notice.classList.add('hidden');
+                try { localStorage.setItem('rc_notice_dismissed', String(Date.now())); } catch (e) {}
+            });
+
+            // 加载完成隐藏遮罩
+            frame.addEventListener('load', function() {
+                loaded = true;
+                if (slowTimer) clearTimeout(slowTimer);
+                loading.classList.add('hidden');
+                setTimeout(function() { loading.style.display = 'none'; }, 350);
+            });
+
+            // 刷新按钮
+            document.getElementById('rcReloadBtn').addEventListener('click', function() {
+                if (!current) return;
+                loading.style.display = 'flex';
+                loading.classList.remove('hidden');
+                loaded = false;
+                frame.src = frame.src;
+            });
+
+            buildTabs();
+            switchSite(initSite());
+        })();
+    </script>
+</body>
+</html>

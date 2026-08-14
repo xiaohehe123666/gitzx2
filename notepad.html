@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记事本 - 快速记录你的想法</title>
+    <meta name="description" content="免费在线记事本/便签工具，支持多笔记管理、自动保存、置顶、颜色标签，数据本地存储">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    /* ============ 记事本页面专属样式 ============ */
+    .np-hero {
+        padding: 7rem 0 2rem;
+        text-align: center;
+    }
+    .np-hero .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        background: rgba(234, 179, 8, 0.12);
+        color: #B45309;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+    .np-hero .hero-badge i { width: 16px; height: 16px; }
+    .np-hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .np-hero p {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    .np-section { padding: 1rem 0 2rem; }
+
+    .np-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* 顶部工具栏 */
+    .np-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+    }
+    .np-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        height: 38px;
+        padding: 0 0.9rem;
+        background: linear-gradient(135deg, #EAB308, #F59E0B);
+        color: #fff;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.875rem;
+        font-weight: 600;
+        transition: all 0.18s ease;
+        box-shadow: 0 4px 12px rgba(234, 179, 8, 0.25);
+    }
+    .np-btn:hover { filter: brightness(0.96); }
+    .np-btn i { width: 16px; height: 16px; }
+    .np-btn-secondary {
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        border-color: var(--border);
+        box-shadow: none;
+    }
+    .np-btn-secondary:hover { color: #B45309; border-color: #F59E0B; }
+    .np-btn-danger {
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        border-color: var(--border);
+        box-shadow: none;
+    }
+    .np-btn-danger:hover { background: #FEF2F2; border-color: #FECACA; color: #DC2626; }
+
+    .np-search {
+        flex: 1;
+        min-width: 180px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        height: 38px;
+        padding: 0 0.85rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        transition: border-color 0.18s ease;
+    }
+    .np-search:focus-within { border-color: #F59E0B; }
+    .np-search i { width: 16px; height: 16px; color: var(--text-light); flex-shrink: 0; }
+    .np-search input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-family: inherit;
+        font-size: 0.875rem;
+        color: var(--text);
+    }
+    .np-search input::placeholder { color: var(--text-light); }
+
+    .np-count {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    .np-count strong { color: var(--text); font-weight: 600; }
+    .np-count i { width: 14px; height: 14px; color: #EAB308; }
+
+    /* 主体布局：左右分栏 */
+    .np-body {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        min-height: 560px;
+    }
+
+    /* 左侧笔记列表 */
+    .np-list-panel {
+        border-right: 1px solid var(--border);
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+        min-height: 560px;
+    }
+    .np-list-header {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .np-list-header i { width: 15px; height: 15px; color: #EAB308; }
+    .np-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.6rem;
+    }
+    .np-list::-webkit-scrollbar { width: 8px; }
+    .np-list::-webkit-scrollbar-track { background: transparent; }
+    .np-list::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+    .np-list::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+    .np-note-item {
+        position: relative;
+        padding: 0.75rem 0.85rem 0.75rem 0.95rem;
+        margin-bottom: 0.5rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        overflow: hidden;
+    }
+    .np-note-item::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 4px;
+        background: var(--note-color, #FFFFFF);
+        border-right: 1px solid var(--border);
+    }
+    .np-note-item:hover { border-color: #F59E0B; transform: translateY(-1px); box-shadow: var(--shadow); }
+    .np-note-item.active {
+        border-color: #F59E0B;
+        background: rgba(234, 179, 8, 0.06);
+        box-shadow: 0 0 0 1px #F59E0B inset;
+    }
+    .np-note-item.pinned::after {
+        content: '';
+        position: absolute;
+        top: 6px; right: 8px;
+        width: 0; height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 8px solid #F59E0B;
+    }
+    .np-note-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 0.75rem;
+    }
+    .np-note-preview {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        max-height: 2.4em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        margin-bottom: 0.35rem;
+    }
+    .np-note-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        color: var(--text-light);
+    }
+    .np-note-meta .np-pin-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        color: #F59E0B;
+        font-weight: 600;
+    }
+    .np-note-meta .np-pin-tag i { width: 11px; height: 11px; }
+
+    /* 空状态 */
+    .np-empty-list {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-light);
+    }
+    .np-empty-list i { width: 44px; height: 44px; margin-bottom: 0.75rem; opacity: 0.5; }
+    .np-empty-list p { font-size: 0.875rem; margin: 0; }
+
+    /* 右侧编辑区 */
+    .np-editor-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 560px;
+        background: var(--bg-card);
+    }
+    .np-editor-header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+    }
+    .np-title-input {
+        flex: 1;
+        min-width: 160px;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+    .np-title-input::placeholder { color: var(--text-light); font-weight: 500; }
+
+    .np-save-status {
+        font-size: 0.72rem;
+        color: var(--text-light);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        white-space: nowrap;
+    }
+    .np-save-status .dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #10B981;
+    }
+
+    /* 颜色选择圆点 */
+    .np-color-picker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.5rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+    }
+    .np-color-dot {
+        width: 18px; height: 18px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid var(--border);
+        transition: transform 0.15s ease, border-color 0.15s ease;
+        padding: 0;
+    }
+    .np-color-dot:hover { transform: scale(1.15); }
+    .np-color-dot.active { border-color: var(--text); transform: scale(1.15); }
+
+    .np-content-wrap {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 1rem 1.25rem 1.25rem;
+    }
+    .np-content {
+        flex: 1;
+        width: 100%;
+        border: none;
+        outline: none;
+        resize: none;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9375rem;
+        line-height: 1.75;
+        color: var(--text);
+        background: transparent;
+        min-height: 320px;
+    }
+    .np-content::placeholder { color: var(--text-light); }
+
+    /* 编辑器空状态 */
+    .np-editor-empty {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-light);
+        gap: 0.75rem;
+    }
+    .np-editor-empty i { width: 56px; height: 56px; opacity: 0.4; color: #EAB308; }
+    .np-editor-empty h3 { font-size: 1.1rem; color: var(--text-secondary); margin: 0; }
+    .np-editor-empty p { font-size: 0.875rem; margin: 0; max-width: 280px; }
+
+    /* Toast */
+    .np-toast {
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        background: #0F172A;
+        color: #fff;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: npToastDown 0.3s ease;
+    }
+    .np-toast.hidden { display: none; }
+    .np-toast i { width: 20px; height: 20px; color: #10B981; }
+    .np-toast.error i { color: #EF4444; }
+    @keyframes npToastDown {
+        from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* 移动端响应式 */
+    @media (max-width: 768px) {
+        .np-hero { padding: 6rem 0 1.5rem; }
+        .np-hero h1 { font-size: 1.85rem; }
+        .np-body { grid-template-columns: 1fr; }
+        .np-list-panel { border-right: none; border-bottom: 1px solid var(--border); min-height: auto; max-height: 280px; }
+        .np-editor-panel { min-height: 420px; }
+        .np-toolbar { padding: 0.65rem; }
+        .np-btn span.np-label { display: none; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #EAB308, #F59E0B);">
+                    <i data-lucide="sticky-note"></i>
+                </div>
+                <span class="logo-text">记事本</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#notepad" class="nav-link active">记事本</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="np-hero">
+            <div class="hero-badge">
+                <i data-lucide="sticky-note"></i>
+                <span>自动保存 · 多笔记 · 快速记录</span>
+            </div>
+            <h1 class="hero-title">
+                记事<span class="gradient-text" style="background:linear-gradient(135deg,#EAB308,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">本</span>
+            </h1>
+            <p class="hero-description">轻量级在线便签工具，支持多笔记管理、颜色标签、置顶与自动保存，所有内容仅存于本地浏览器，安全私密。</p>
+        </section>
+
+        <section id="notepad" class="np-section">
+            <div class="np-card">
+                <!-- 顶部工具栏 -->
+                <div class="np-toolbar">
+                    <button type="button" class="np-btn" id="newNoteBtn" title="新建笔记">
+                        <i data-lucide="plus"></i>
+                        <span class="np-label">新建笔记</span>
+                    </button>
+                    <div class="np-search">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="searchInput" placeholder="搜索笔记标题或内容..." autocomplete="off">
+                    </div>
+                    <span class="np-count">
+                        <i data-lucide="file-text"></i>
+                        共 <strong id="noteCount">0</strong> 条
+                    </span>
+                </div>
+
+                <!-- 主体：左右分栏 -->
+                <div class="np-body">
+                    <!-- 左侧笔记列表 -->
+                    <div class="np-list-panel">
+                        <div class="np-list-header">
+                            <i data-lucide="list"></i>
+                            <span>笔记列表</span>
+                        </div>
+                        <div class="np-list" id="noteList">
+                            <!-- 由 JS 渲染 -->
+                        </div>
+                    </div>
+
+                    <!-- 右侧编辑区 -->
+                    <div class="np-editor-panel" id="editorPanel">
+                        <!-- 由 JS 渲染：编辑器或空状态 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #EAB308, #F59E0B);">
+                    <i data-lucide="sticky-note"></i>
+                </div>
+                <span>记事本</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="np-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // 颜色选项：默认白、黄、绿、蓝、粉、紫
+        var COLORS = [
+            { key: 'white', name: '默认', bg: '#FFFFFF', dot: '#F1F5F9' },
+            { key: 'yellow', name: '黄色', bg: '#FEF9C3', dot: '#FDE047' },
+            { key: 'green', name: '绿色', bg: '#DCFCE7', dot: '#86EFAC' },
+            { key: 'blue', name: '蓝色', bg: '#DBEAFE', dot: '#93C5FD' },
+            { key: 'pink', name: '粉色', bg: '#FCE7F3', dot: '#F9A8D4' },
+            { key: 'purple', name: '紫色', bg: '#F3E8FF', dot: '#D8B4FE' }
+        ];
+
+        // 元素引用
+        var els = {
+            list: document.getElementById('noteList'),
+            editorPanel: document.getElementById('editorPanel'),
+            newBtn: document.getElementById('newNoteBtn'),
+            searchInput: document.getElementById('searchInput'),
+            count: document.getElementById('noteCount'),
+            toast: document.getElementById('toast'),
+            toastMsg: document.getElementById('toastMessage')
+        };
+
+        // 状态
+        var notes = [];
+        var currentId = null;
+        var saveTimer = null;
+        var searchQuery = '';
+
+        // ===== 工具函数 =====
+
+        // 获取用户名（未登录用 guest）
+        function getUsername() {
+            try {
+                if (window.Auth && typeof window.Auth.getCurrentUser === 'function') {
+                    return window.Auth.getCurrentUser() || 'guest';
+                }
+            } catch (e) {}
+            return 'guest';
+        }
+
+        // 存储键
+        function getStorageKey() {
+            return 'toolbox_notepad_' + getUsername();
+        }
+
+        // 生成唯一 id
+        function genId() {
+            return 'n_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        }
+
+        // HTML 转义
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            var div = document.createElement('div');
+            div.textContent = '' + str;
+            return div.innerHTML;
+        }
+
+        // 颜色配置查找
+        function findColor(key) {
+            for (var i = 0; i < COLORS.length; i++) {
+                if (COLORS[i].key === key) return COLORS[i];
+            }
+            return COLORS[0];
+        }
+
+        // 格式化时间
+        function formatTime(ts) {
+            try {
+                var d = new Date(ts);
+                var now = new Date();
+                var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+                if (d.toDateString() === now.toDateString()) {
+                    return '今天 ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+                }
+                var yesterday = new Date(now);
+                yesterday.setDate(now.getDate() - 1);
+                if (d.toDateString() === yesterday.toDateString()) {
+                    return '昨天 ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+                }
+                return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // Toast 提示
+        function showToast(msg, type) {
+            els.toastMsg.textContent = msg;
+            els.toast.classList.remove('hidden', 'error');
+            if (type === 'error') els.toast.classList.add('error');
+            if (window.lucide) lucide.createIcons();
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function () {
+                els.toast.classList.add('hidden');
+            }, 2000);
+        }
+
+        // ===== 数据读写 =====
+
+        function loadNotes() {
+            try {
+                var raw = localStorage.getItem(getStorageKey());
+                if (raw) {
+                    var parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) {
+                        notes = parsed;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error('加载笔记失败:', e);
+            }
+            notes = [];
+        }
+
+        function persistNotes() {
+            try {
+                localStorage.setItem(getStorageKey(), JSON.stringify(notes));
+                return true;
+            } catch (e) {
+                console.error('保存笔记失败:', e);
+                return false;
+            }
+        }
+
+        // ===== 笔记操作 =====
+
+        // 排序：置顶在前，再按更新时间倒序
+        function sortNotes() {
+            notes.sort(function (a, b) {
+                if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+                return (b.updatedAt || 0) - (a.updatedAt || 0);
+            });
+        }
+
+        // 新建笔记
+        function createNote() {
+            try {
+                var note = {
+                    id: genId(),
+                    title: '',
+                    content: '',
+                    color: 'white',
+                    pinned: false,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
+                };
+                notes.unshift(note);
+                sortNotes();
+                persistNotes();
+                currentId = note.id;
+                renderList();
+                renderEditor();
+                // 自动聚焦标题输入
+                var titleInput = document.getElementById('noteTitleInput');
+                if (titleInput) titleInput.focus();
+                showToast('已新建笔记');
+            } catch (e) {
+                console.error(e);
+                showToast('新建失败', 'error');
+            }
+        }
+
+        // 选中某条笔记
+        function selectNote(id) {
+            currentId = id;
+            renderList();
+            renderEditor();
+        }
+
+        // 删除当前笔记
+        function deleteCurrentNote() {
+            if (!currentId) return;
+            try {
+                if (!confirm('确定要删除这条笔记吗？此操作不可撤销。')) return;
+                var idx = -1;
+                for (var i = 0; i < notes.length; i++) {
+                    if (notes[i].id === currentId) { idx = i; break; }
+                }
+                if (idx === -1) return;
+                notes.splice(idx, 1);
+                currentId = notes.length > 0 ? notes[0].id : null;
+                persistNotes();
+                renderList();
+                renderEditor();
+                showToast('已删除笔记');
+            } catch (e) {
+                console.error(e);
+                showToast('删除失败', 'error');
+            }
+        }
+
+        // 切换置顶
+        function togglePin(id) {
+            try {
+                for (var i = 0; i < notes.length; i++) {
+                    if (notes[i].id === id) {
+                        notes[i].pinned = !notes[i].pinned;
+                        notes[i].updatedAt = Date.now();
+                        break;
+                    }
+                }
+                sortNotes();
+                persistNotes();
+                renderList();
+                renderEditor();
+                showToast(notes.length && findNoteById(id) && findNoteById(id).pinned ? '已置顶' : '已取消置顶');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function findNoteById(id) {
+            for (var i = 0; i < notes.length; i++) {
+                if (notes[i].id === id) return notes[i];
+            }
+            return null;
+        }
+
+        // 当前笔记字段更新
+        function updateCurrent(field, value) {
+            var note = findNoteById(currentId);
+            if (!note) return;
+            note[field] = value;
+            note.updatedAt = Date.now();
+            // 不立即写盘，使用防抖
+            debouncedSave();
+        }
+
+        // 防抖保存
+        function debouncedSave() {
+            if (saveTimer) clearTimeout(saveTimer);
+            saveTimer = setTimeout(function () {
+                persistNotes();
+                renderList(); // 列表预览同步
+                showSaveStatus(true);
+            }, 500);
+            showSaveStatus(false);
+        }
+
+        function showSaveStatus(saved) {
+            var status = document.getElementById('saveStatus');
+            if (!status) return;
+            var dot = status.querySelector('.dot');
+            var span = status.querySelector('span:last-child');
+            if (saved) {
+                if (dot) dot.style.background = '#10B981';
+                if (span) span.textContent = '已保存';
+            } else {
+                if (dot) dot.style.background = '#F59E0B';
+                if (span) span.textContent = '保存中...';
+            }
+        }
+
+        // ===== 渲染 =====
+
+        // 过滤后的笔记（搜索）
+        function getFilteredNotes() {
+            if (!searchQuery) return notes;
+            var q = searchQuery.toLowerCase();
+            var result = [];
+            for (var i = 0; i < notes.length; i++) {
+                var n = notes[i];
+                var title = (n.title || '').toLowerCase();
+                var content = (n.content || '').toLowerCase();
+                if (title.indexOf(q) !== -1 || content.indexOf(q) !== -1) {
+                    result.push(n);
+                }
+            }
+            return result;
+        }
+
+        // 渲染笔记列表
+        function renderList() {
+            var filtered = getFilteredNotes();
+            els.count.textContent = notes.length;
+
+            if (filtered.length === 0) {
+                if (notes.length === 0) {
+                    els.list.innerHTML =
+                        '<div class="np-empty-list">' +
+                            '<i data-lucide="sticky-note"></i>' +
+                            '<p>暂无笔记，点击"新建笔记"开始记录</p>' +
+                        '</div>';
+                } else {
+                    els.list.innerHTML =
+                        '<div class="np-empty-list">' +
+                            '<i data-lucide="search-x"></i>' +
+                            '<p>没有找到匹配的笔记</p>' +
+                        '</div>';
+                }
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            var html = '';
+            for (var i = 0; i < filtered.length; i++) {
+                var n = filtered[i];
+                var colorCfg = findColor(n.color);
+                var title = escapeHtml(n.title || '无标题');
+                var preview = escapeHtml(n.content || '空笔记');
+                var activeCls = (n.id === currentId) ? ' active' : '';
+                var pinnedCls = n.pinned ? ' pinned' : '';
+                var pinTag = n.pinned ?
+                    '<span class="np-pin-tag"><i data-lucide="pin"></i>置顶</span>' :
+                    '<span></span>';
+
+                html +=
+                    '<div class="np-note-item' + activeCls + pinnedCls + '" data-id="' + n.id + '" style="--note-color:' + colorCfg.bg + ';">' +
+                        '<div class="np-note-title">' + title + '</div>' +
+                        '<div class="np-note-preview">' + preview + '</div>' +
+                        '<div class="np-note-meta">' +
+                            pinTag +
+                            '<span>' + formatTime(n.updatedAt) + '</span>' +
+                        '</div>' +
+                    '</div>';
+            }
+            els.list.innerHTML = html;
+
+            // 绑定点击事件
+            var items = els.list.querySelectorAll('.np-note-item');
+            for (var k = 0; k < items.length; k++) {
+                (function (item) {
+                    item.addEventListener('click', function () {
+                        selectNote(item.getAttribute('data-id'));
+                    });
+                })(items[k]);
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // 渲染编辑器
+        function renderEditor() {
+            if (!currentId) {
+                els.editorPanel.innerHTML =
+                    '<div class="np-editor-empty">' +
+                        '<i data-lucide="sticky-note"></i>' +
+                        '<h3>开始记录你的想法</h3>' +
+                        '<p>从左侧选择一条笔记编辑，或点击"新建笔记"创建新内容</p>' +
+                    '</div>';
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            var note = findNoteById(currentId);
+            if (!note) {
+                currentId = null;
+                renderEditor();
+                return;
+            }
+
+            // 颜色圆点
+            var colorDots = '';
+            for (var i = 0; i < COLORS.length; i++) {
+                var c = COLORS[i];
+                var active = (note.color === c.key) ? ' active' : '';
+                colorDots +=
+                    '<button type="button" class="np-color-dot' + active + '" ' +
+                    'data-color="' + c.key + '" ' +
+                    'title="' + c.name + '" ' +
+                    'style="background:' + c.dot + ';"' +
+                    (c.key === 'white' ? ' data-white="1"' : '') +
+                    '></button>';
+            }
+
+            els.editorPanel.innerHTML =
+                '<div class="np-editor-header">' +
+                    '<input type="text" id="noteTitleInput" class="np-title-input" placeholder="输入笔记标题..." value="' + escapeHtml(note.title) + '">' +
+                    '<div class="np-color-picker" id="colorPicker">' + colorDots + '</div>' +
+                    '<button type="button" class="np-btn np-btn-secondary" id="pinBtn" title="' + (note.pinned ? '取消置顶' : '置顶') + '">' +
+                        '<i data-lucide="pin" ' + (note.pinned ? 'style="fill:currentColor;color:#F59E0B;"' : '') + '></i>' +
+                        '<span class="np-label">' + (note.pinned ? '已置顶' : '置顶') + '</span>' +
+                    '</button>' +
+                    '<button type="button" class="np-btn np-btn-danger" id="deleteBtn" title="删除笔记">' +
+                        '<i data-lucide="trash-2"></i>' +
+                        '<span class="np-label">删除</span>' +
+                    '</button>' +
+                    '<span class="np-save-status" id="saveStatus">' +
+                        '<span class="dot"></span>' +
+                        '<span>已保存</span>' +
+                    '</span>' +
+                '</div>' +
+                '<div class="np-content-wrap">' +
+                    '<textarea id="noteContent" class="np-content" placeholder="在此输入笔记内容...内容会自动保存">' +
+                    escapeHtml(note.content) +
+                    '</textarea>' +
+                '</div>';
+
+            if (window.lucide) lucide.createIcons();
+
+            bindEditorEvents();
+        }
+
+        // 绑定编辑器事件
+        function bindEditorEvents() {
+            var titleInput = document.getElementById('noteTitleInput');
+            var contentArea = document.getElementById('noteContent');
+            var colorPicker = document.getElementById('colorPicker');
+            var pinBtn = document.getElementById('pinBtn');
+            var deleteBtn = document.getElementById('deleteBtn');
+
+            if (titleInput) {
+                titleInput.addEventListener('input', function () {
+                    updateCurrent('title', titleInput.value);
+                });
+            }
+            if (contentArea) {
+                contentArea.addEventListener('input', function () {
+                    updateCurrent('content', contentArea.value);
+                });
+            }
+            if (colorPicker) {
+                var dots = colorPicker.querySelectorAll('.np-color-dot');
+                for (var i = 0; i < dots.length; i++) {
+                    (function (dot) {
+                        dot.addEventListener('click', function () {
+                            var color = dot.getAttribute('data-color');
+                            updateCurrent('color', color);
+                            // 更新选中态
+                            for (var j = 0; j < dots.length; j++) dots[j].classList.remove('active');
+                            dot.classList.add('active');
+                            // 同步列表颜色条
+                            renderList();
+                        });
+                    })(dots[i]);
+                }
+            }
+            if (pinBtn) {
+                pinBtn.addEventListener('click', function () {
+                    togglePin(currentId);
+                });
+            }
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', deleteCurrentNote);
+            }
+        }
+
+        // ===== 事件绑定 =====
+
+        els.newBtn.addEventListener('click', createNote);
+
+        els.searchInput.addEventListener('input', function () {
+            searchQuery = els.searchInput.value.trim();
+            renderList();
+        });
+
+        // 离开页面前保存
+        window.addEventListener('beforeunload', function () {
+            if (saveTimer) {
+                clearTimeout(saveTimer);
+                persistNotes();
+            }
+        });
+
+        // 认证状态变化时重新加载
+        if (window.Auth) {
+            var origOnAuthChange = window.Auth.onAuthChange;
+            window.Auth.onAuthChange = function () {
+                if (typeof origOnAuthChange === 'function') {
+                    try { origOnAuthChange(); } catch (e) {}
+                }
+                loadNotes();
+                currentId = notes.length > 0 ? notes[0].id : null;
+                sortNotes();
+                renderList();
+                renderEditor();
+            };
+        }
+
+        // ===== 初始化 =====
+        function init() {
+            loadNotes();
+            sortNotes();
+            if (notes.length > 0) {
+                currentId = notes[0].id;
+            }
+            renderList();
+            renderEditor();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

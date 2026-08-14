@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络测速 - 测试你的网络连接速度</title>
+    <meta name="description" content="免费在线网络测速工具，测试延迟、下载速度和上传速度，实时显示测试结果并保存历史记录">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .speedtest-section { padding: 2rem 0 4rem; }
+        .speedtest-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow: var(--shadow-xl);
+            padding: 3rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid rgba(226, 232, 240, 0.5);
+            text-align: center;
+        }
+        .gauge-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 0 auto 2rem;
+        }
+        .gauge-svg { transform: rotate(-90deg); }
+        .gauge-bg { fill: none; stroke: #E2E8F0; stroke-width: 14; }
+        .gauge-progress {
+            fill: none;
+            stroke: url(#gaugeGradient);
+            stroke-width: 14;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+        .gauge-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 80%;
+        }
+        .gauge-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+        }
+        .gauge-unit {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        .gauge-status {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+            min-height: 1.2em;
+        }
+        .start-btn {
+            background: linear-gradient(135deg, #06B6D4, #0EA5E9);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(6, 182, 212, 0.3);
+        }
+        .start-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(6, 182, 212, 0.4);
+        }
+        .start-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .start-btn i { animation: spin 1.2s linear infinite; }
+        .start-btn:not(:disabled) i { animation: none; }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .metric-card {
+            background: linear-gradient(180deg, #FAFBFC 0%, #F1F5F9 100%);
+            border-radius: 16px;
+            padding: 1.5rem 1rem;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+        .metric-icon {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 0.75rem;
+        }
+        .metric-label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .metric-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .metric-unit { font-size: 0.875rem; color: var(--text-secondary); }
+        .progress-bar-wrap {
+            margin-top: 1.5rem;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #06B6D4, #0EA5E9);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+        .history-section { max-width: 800px; margin: 2rem auto 0; }
+        .history-title {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .history-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .history-time { font-size: 0.8rem; color: var(--text-light); }
+        .history-stats { display: flex; gap: 1.25rem; font-size: 0.9rem; flex-wrap: wrap; }
+        .history-stat { color: var(--text-secondary); }
+        .history-stat strong { color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+        .empty-state { text-align: center; padding: 2rem; color: var(--text-light); }
+        .error-banner {
+            background: rgba(239, 68, 68, 0.06);
+            color: var(--error);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @media (max-width: 640px) {
+            .metric-grid { grid-template-columns: 1fr; }
+            .gauge-container { width: 220px; height: 220px; }
+            .gauge-value { font-size: 2.25rem; }
+            .speedtest-card { padding: 2rem 1.25rem; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #06B6D4, #0EA5E9);">
+                    <i data-lucide="gauge"></i>
+                </div>
+                <span class="logo-text">网络测速</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="wifi"></i>
+                    <span>延迟测试 · 下载测速 · 实时结果</span>
+                </div>
+                <h1 class="hero-title">
+                    网络<span class="gradient-text" style="background:linear-gradient(135deg,#06B6D4,#0EA5E9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">测速</span>
+                </h1>
+                <p class="hero-description">
+                    免费在线网络测速工具，测试网络延迟、下载速度和上传速度，实时显示测试结果并保存历史记录，所有测试在浏览器本地完成。
+                </p>
+            </div>
+        </section>
+
+        <section class="speedtest-section">
+            <div class="speedtest-card">
+                <div class="gauge-container">
+                    <svg class="gauge-svg" width="280" height="280" viewBox="0 0 280 280">
+                        <defs>
+                            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#06B6D4"/>
+                                <stop offset="100%" stop-color="#0EA5E9"/>
+                            </linearGradient>
+                        </defs>
+                        <circle class="gauge-bg" cx="140" cy="140" r="120"/>
+                        <circle class="gauge-progress" id="gaugeProgress" cx="140" cy="140" r="120" stroke-dasharray="753.98" stroke-dashoffset="753.98"/>
+                    </svg>
+                    <div class="gauge-center">
+                        <div class="gauge-value" id="gaugeValue">0</div>
+                        <div class="gauge-unit" id="gaugeUnit">Mbps</div>
+                        <div class="gauge-status" id="gaugeStatus">准备就绪</div>
+                    </div>
+                </div>
+
+                <button class="start-btn" id="startBtn">
+                    <i data-lucide="play" style="width:20px;height:20px;"></i>
+                    <span id="startBtnText">开始测速</span>
+                </button>
+
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+
+                <div class="error-banner" id="errorBanner"></div>
+
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon" style="background:linear-gradient(135deg,#10B981,#059669);">
+                            <i data-lucide="timer" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div class="metric-label">延迟</div>
+                        <div><span class="metric-value" id="latencyValue">0</span> <span class="metric-unit">ms</span></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon" style="background:linear-gradient(135deg,#06B6D4,#0EA5E9);">
+                            <i data-lucide="download" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div class="metric-label">下载速度</div>
+                        <div><span class="metric-value" id="downloadValue">0</span> <span class="metric-unit">Mbps</span></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon" style="background:linear-gradient(135deg,#8B5CF6,#6366F1);">
+                            <i data-lucide="upload" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div class="metric-label">上传速度</div>
+                        <div><span class="metric-value" id="uploadValue">0</span> <span class="metric-unit">Mbps</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history-section">
+                <h3 class="history-title">
+                    <i data-lucide="history" style="width:20px;height:20px;"></i>
+                    历史记录（最近5次）
+                </h3>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">暂无测速记录</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var GAUGE_RADIUS = 120;
+        var GAUGE_CIRCUMFERENCE = 2 * Math.PI * GAUGE_RADIUS; // ≈ 753.98
+        var MAX_SPEED = 100; // 仪表盘满量程 Mbps
+        var HISTORY_KEY_PREFIX = 'toolbox_speedtest_';
+        var MAX_HISTORY = 5;
+
+        var startBtn = document.getElementById('startBtn');
+        var startBtnText = document.getElementById('startBtnText');
+        var gaugeProgress = document.getElementById('gaugeProgress');
+        var gaugeValue = document.getElementById('gaugeValue');
+        var gaugeUnit = document.getElementById('gaugeUnit');
+        var gaugeStatus = document.getElementById('gaugeStatus');
+        var progressBar = document.getElementById('progressBar');
+        var latencyValue = document.getElementById('latencyValue');
+        var downloadValue = document.getElementById('downloadValue');
+        var uploadValue = document.getElementById('uploadValue');
+        var historyList = document.getElementById('historyList');
+        var errorBanner = document.getElementById('errorBanner');
+
+        var isTesting = false;
+
+        function getStorageKey() {
+            var username = (window.Auth && typeof Auth.getCurrentUser === 'function' && Auth.getCurrentUser()) || 'guest';
+            return HISTORY_KEY_PREFIX + username;
+        }
+
+        function setGaugeProgress(ratio) {
+            if (ratio < 0) ratio = 0;
+            if (ratio > 1) ratio = 1;
+            gaugeProgress.style.strokeDashoffset = GAUGE_CIRCUMFERENCE * (1 - ratio);
+        }
+
+        function setGaugeDisplay(value, unit, status) {
+            gaugeValue.textContent = value;
+            if (unit !== undefined) gaugeUnit.textContent = unit;
+            if (status !== undefined) gaugeStatus.textContent = status;
+        }
+
+        function setProgressBar(ratio) {
+            if (ratio < 0) ratio = 0;
+            if (ratio > 1) ratio = 1;
+            progressBar.style.width = (ratio * 100) + '%';
+        }
+
+        function showError(msg) {
+            if (!msg) { errorBanner.style.display = 'none'; errorBanner.textContent = ''; return; }
+            errorBanner.textContent = msg;
+            errorBanner.style.display = 'block';
+        }
+
+        function sleep(ms) {
+            return new Promise(function(resolve) { setTimeout(resolve, ms); });
+        }
+
+        function round2(n) {
+            return Math.round(n * 100) / 100;
+        }
+
+        // 延迟测试：通过 Image 对象加载小图片测量 RTT（不受 CORS 限制）
+        function testLatency() {
+            setGaugeDisplay('...', 'ms', '测试延迟中...');
+            var targets = [
+                'https://www.baidu.com/favicon.ico',
+                'https://www.bing.com/favicon.ico',
+                'https://cdn.jsdelivr.net/favicon.ico'
+            ];
+
+            function measureOnce(url) {
+                return new Promise(function(resolve, reject) {
+                    var img = new Image();
+                    var start = performance.now();
+                    var done = false;
+                    img.onload = function() {
+                        if (done) return;
+                        done = true;
+                        resolve(performance.now() - start);
+                    };
+                    img.onerror = function() {
+                        if (done) return;
+                        done = true;
+                        reject(new Error('load failed'));
+                    };
+                    setTimeout(function() {
+                        if (done) return;
+                        done = true;
+                        reject(new Error('timeout'));
+                    }, 5000);
+                    img.src = url + '?t=' + Date.now();
+                });
+            }
+
+            return measureOnce(targets[0])
+                .catch(function() { return measureOnce(targets[1]); })
+                .catch(function() { return measureOnce(targets[2]); })
+                .then(function(ms) { return Math.round(ms); })
+                .catch(function() { throw new Error('延迟测试失败：无法连接到网络'); });
+        }
+
+        // 下载测速：通过 XMLHttpRequest 下载文件并实时计算速度
+        function testDownload(onProgress) {
+            setGaugeDisplay('...', 'Mbps', '下载测速中...');
+            // 使用支持 CORS 的 CDN，文件大小已知
+            var targets = [
+                'https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js',
+                'https://unpkg.com/lucide@latest/dist/umd/lucide.min.js',
+                'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js'
+            ];
+
+            function downloadFile(url) {
+                return new Promise(function(resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    var start = performance.now();
+                    var lastUpdate = start;
+                    var done = false;
+
+                    xhr.onprogress = function(e) {
+                        if (done) return;
+                        var now = performance.now();
+                        if (now - lastUpdate > 100 && e.loaded > 0) {
+                            var elapsed = (now - start) / 1000;
+                            var speed = (e.loaded * 8) / (elapsed * 1000000); // bytes → bits → Mbps
+                            onProgress(round2(speed));
+                            lastUpdate = now;
+                        }
+                    };
+
+                    xhr.onload = function() {
+                        if (done) return;
+                        done = true;
+                        var totalTime = (performance.now() - start) / 1000;
+                        var totalBytes = 0;
+                        if (xhr.responseType === 'blob' && xhr.response) {
+                            totalBytes = xhr.response.size;
+                        } else if (xhr.responseText) {
+                            totalBytes = xhr.responseText.length;
+                        }
+                        if (totalBytes > 0 && totalTime > 0) {
+                            var speed = (totalBytes * 8) / (totalTime * 1000000);
+                            resolve(round2(speed));
+                        } else {
+                            reject(new Error('empty response'));
+                        }
+                    };
+
+                    xhr.onerror = function() {
+                        if (done) return;
+                        done = true;
+                        reject(new Error('network error'));
+                    };
+
+                    xhr.ontimeout = function() {
+                        if (done) return;
+                        done = true;
+                        reject(new Error('timeout'));
+                    };
+
+                    try {
+                        xhr.open('GET', url + '?t=' + Date.now(), true);
+                        xhr.responseType = 'blob';
+                        xhr.timeout = 15000;
+                        xhr.send();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            }
+
+            // 依次尝试多个 CDN
+            var chain = Promise.reject(new Error('init'));
+            for (var i = 0; i < targets.length; i++) {
+                (function(target) {
+                    chain = chain.catch(function() {
+                        return downloadFile(target);
+                    });
+                })(targets[i]);
+            }
+            return chain.catch(function() {
+                throw new Error('下载测速失败：无法连接到测试服务器');
+            });
+        }
+
+        // 上传测速：通过 fetch 向 httpbin.org 发送 POST 数据
+        async function testUpload(onProgress) {
+            setGaugeDisplay('...', 'Mbps', '上传测速中...');
+            var payloadSize = 512 * 1024; // 512KB
+            var data = new Array(payloadSize).join('a');
+            var blob = new Blob([data], { type: 'application/octet-stream' });
+            try {
+                var start = performance.now();
+                var response = await fetch('https://httpbin.org/post', {
+                    method: 'POST',
+                    body: blob,
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                    mode: 'cors'
+                });
+                if (!response.ok) throw new Error('上传响应失败: ' + response.status);
+                await response.text();
+                var totalTime = (performance.now() - start) / 1000;
+                var speed = (blob.size * 8) / (totalTime * 1000000);
+                onProgress(round2(speed));
+                return round2(speed);
+            } catch (e) {
+                throw new Error('上传测速失败（可能被浏览器跨域策略阻止）');
+            }
+        }
+
+        async function runTest() {
+            if (isTesting) return;
+            isTesting = true;
+            startBtn.disabled = true;
+            startBtnText.textContent = '测试中...';
+            startBtn.querySelector('i').setAttribute('data-lucide', 'loader');
+            if (window.lucide) lucide.createIcons();
+            showError('');
+
+            // 重置数值
+            latencyValue.textContent = '0';
+            downloadValue.textContent = '0';
+            uploadValue.textContent = '0';
+            setGaugeProgress(0);
+            setProgressBar(0);
+            setGaugeDisplay('0', 'Mbps', '正在启动...');
+
+            var result = { latency: 0, download: 0, upload: 0, time: Date.now() };
+            var errors = [];
+
+            // 1. 延迟测试
+            setProgressBar(0.05);
+            try {
+                var latency = await testLatency();
+                result.latency = latency;
+                latencyValue.textContent = latency;
+                setGaugeDisplay(latency, 'ms', '延迟: ' + latency + ' ms');
+                setGaugeProgress(Math.min(latency / 200, 1));
+            } catch (e) {
+                errors.push(e.message);
+                latencyValue.textContent = '-';
+            }
+            setProgressBar(0.2);
+
+            // 2. 下载测速
+            try {
+                var download = await testDownload(function(speed) {
+                    downloadValue.textContent = speed;
+                    setGaugeDisplay(speed, 'Mbps', '下载中... ' + speed + ' Mbps');
+                    setGaugeProgress(Math.min(speed / MAX_SPEED, 1));
+                });
+                result.download = download;
+                downloadValue.textContent = download;
+                setGaugeDisplay(download, 'Mbps', '下载完成: ' + download + ' Mbps');
+                setGaugeProgress(Math.min(download / MAX_SPEED, 1));
+            } catch (e) {
+                errors.push(e.message);
+                downloadValue.textContent = '-';
+            }
+            setProgressBar(0.7);
+
+            // 3. 上传测速
+            try {
+                var upload = await testUpload(function(speed) {
+                    uploadValue.textContent = speed;
+                    setGaugeDisplay(speed, 'Mbps', '上传中... ' + speed + ' Mbps');
+                    setGaugeProgress(Math.min(speed / MAX_SPEED, 1));
+                });
+                result.upload = upload;
+                uploadValue.textContent = upload;
+                setGaugeDisplay(upload, 'Mbps', '上传完成: ' + upload + ' Mbps');
+                setGaugeProgress(Math.min(upload / MAX_SPEED, 1));
+            } catch (e) {
+                errors.push(e.message);
+                uploadValue.textContent = '-';
+            }
+
+            setProgressBar(1);
+
+            // 最终状态
+            var finalSpeed = result.download || result.upload || 0;
+            setGaugeDisplay(finalSpeed, 'Mbps', errors.length ? '测试完成（部分失败）' : '测试完成');
+            setGaugeProgress(Math.min(finalSpeed / MAX_SPEED, 1));
+
+            if (errors.length) {
+                showError(errors.join('；'));
+            }
+
+            // 保存历史
+            saveHistory(result);
+
+            isTesting = false;
+            startBtn.disabled = false;
+            startBtnText.textContent = '重新测速';
+            startBtn.querySelector('i').setAttribute('data-lucide', 'play');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function saveHistory(result) {
+            try {
+                var key = getStorageKey();
+                var list = JSON.parse(localStorage.getItem(key) || '[]');
+                list.unshift(result);
+                if (list.length > MAX_HISTORY) list = list.slice(0, MAX_HISTORY);
+                localStorage.setItem(key, JSON.stringify(list));
+                renderHistory();
+            } catch (e) {}
+        }
+
+        function renderHistory() {
+            try {
+                var key = getStorageKey();
+                var list = JSON.parse(localStorage.getItem(key) || '[]');
+                if (!list || list.length === 0) {
+                    historyList.innerHTML = '<div class="empty-state">暂无测速记录</div>';
+                    return;
+                }
+                var html = '';
+                for (var i = 0; i < list.length; i++) {
+                    var item = list[i];
+                    var date = new Date(item.time);
+                    var timeStr = date.toLocaleString('zh-CN');
+                    html += '<div class="history-item">' +
+                        '<div class="history-time">' + timeStr + '</div>' +
+                        '<div class="history-stats">' +
+                            '<span class="history-stat">延迟 <strong>' + (item.latency || '-') + '</strong> ms</span>' +
+                            '<span class="history-stat">↓ <strong>' + (item.download || '-') + '</strong> Mbps</span>' +
+                            '<span class="history-stat">↑ <strong>' + (item.upload || '-') + '</strong> Mbps</span>' +
+                        '</div>' +
+                    '</div>';
+                }
+                historyList.innerHTML = html;
+            } catch (e) {
+                historyList.innerHTML = '<div class="empty-state">暂无测速记录</div>';
+            }
+        }
+
+        startBtn.addEventListener('click', runTest);
+        renderHistory();
+        if (window.lucide) lucide.createIcons();
+
+        // 认证状态变化时刷新历史（登录/登出后历史记录切换）
+        if (window.Auth) {
+            Auth.onAuthChange = function() {
+                try { renderHistory(); } catch (e) {}
+            };
+        }
+    })();
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #1D4ED8, #0284C7);">
+                    <i data-lucide="gauge"></i>
+                </div>
+                <span>网络测速</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

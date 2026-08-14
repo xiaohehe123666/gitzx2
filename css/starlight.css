@@ -1,0 +1,505 @@
+/* ============================================
+   星空主题彩蛋 · 全站共享样式
+   触发：首页搜索框输入「作者大大最帅」
+   关闭：用户中心「星空主题」开关 / 悬浮菜单
+   ============================================ */
+
+/* ---------- 基础主题 ---------- */
+body.starlight-mode {
+    background: #050818 !important;
+    color: #E2E8F0 !important;
+    transition: background 1.2s ease, color 1.2s ease;
+}
+body.starlight-mode .bg-decoration { display: none; }
+body.starlight-mode .gradient-text {
+    background: linear-gradient(135deg, #A78BFA, #F0ABFC) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* ---------- 导航栏 ---------- */
+body.starlight-mode .navbar {
+    background: rgba(10, 14, 35, 0.75) !important;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.18) !important;
+    backdrop-filter: blur(16px);
+}
+body.starlight-mode .nav-link { color: #94A3B8 !important; }
+body.starlight-mode .nav-link:hover,
+body.starlight-mode .nav-link.active { color: #A78BFA !important; }
+body.starlight-mode .logo-text { color: #F1F5F9 !important; }
+
+/* ---------- 首页 Hero ---------- */
+body.starlight-mode .hero-badge {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.3);
+    color: #A78BFA;
+}
+body.starlight-mode .hero-badge i { color: #A78BFA; }
+body.starlight-mode .hero-title { color: #F1F5F9 !important; }
+body.starlight-mode .hero-description { color: #94A3B8 !important; }
+body.starlight-mode .hero-search {
+    background: rgba(15, 20, 45, 0.8) !important;
+    border-color: rgba(99, 102, 241, 0.25) !important;
+}
+body.starlight-mode .hero-search > i { color: #A78BFA !important; }
+body.starlight-mode .hero-search input { color: #E2E8F0 !important; }
+body.starlight-mode .hero-search input::placeholder { color: #64748B !important; }
+body.starlight-mode .hero-search-clear,
+body.starlight-mode .hero-search-shuffle {
+    color: #94A3B8 !important;
+    background: rgba(99, 102, 241, 0.12) !important;
+}
+body.starlight-mode .hero-search-clear:hover,
+body.starlight-mode .hero-search-shuffle:hover {
+    color: #E2E8F0 !important;
+    background: rgba(99, 102, 241, 0.22) !important;
+}
+
+/* ---------- 工具筛选与搜索 ---------- */
+body.starlight-mode .tools-filter-bar {
+    background: rgba(15, 20, 45, 0.7) !important;
+    border-color: rgba(99, 102, 241, 0.2) !important;
+}
+body.starlight-mode .filter-chip {
+    color: #94A3B8 !important;
+    border-color: rgba(99, 102, 241, 0.2) !important;
+    background: transparent !important;
+}
+body.starlight-mode .filter-chip:hover {
+    color: #E2E8F0 !important;
+    background: rgba(99, 102, 241, 0.1) !important;
+}
+body.starlight-mode .filter-chip.active {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6) !important;
+    color: #FFFFFF !important;
+    border-color: transparent !important;
+    box-shadow: 0 6px 18px -6px rgba(124, 58, 237, 0.5);
+}
+body.starlight-mode .search-result-count { color: #64748B !important; }
+
+/* ---------- 工具卡片 ---------- */
+body.starlight-mode .tool-card {
+    background: rgba(15, 20, 45, 0.72) !important;
+    border-color: rgba(99, 102, 241, 0.18) !important;
+}
+body.starlight-mode .tool-card:hover {
+    background: rgba(20, 28, 60, 0.85) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+    box-shadow: 0 20px 45px -15px rgba(124, 58, 237, 0.4);
+}
+body.starlight-mode .tool-card h3 { color: #F1F5F9 !important; }
+body.starlight-mode .tool-card p { color: #94A3B8 !important; }
+body.starlight-mode .tool-tag {
+    background: rgba(99, 102, 241, 0.14) !important;
+    color: #A78BFA !important;
+}
+body.starlight-mode .tool-fav-btn { color: #94A3B8 !important; }
+body.starlight-mode .tool-fav-btn:hover { background: rgba(245, 158, 11, 0.15) !important; color: #FBBF24 !important; }
+body.starlight-mode .tool-fav-btn.active { color: #FBBF24 !important; background: rgba(245, 158, 11, 0.14) !important; }
+
+/* ---------- 板块标题 ---------- */
+body.starlight-mode .section-header h2 { color: #F1F5F9 !important; }
+body.starlight-mode .section-header p { color: #94A3B8 !important; }
+
+/* ---------- 快捷入口 / 最近使用 / 收藏 ---------- */
+body.starlight-mode .shortcut-chip {
+    background: rgba(15, 20, 45, 0.7) !important;
+    border-color: rgba(99, 102, 241, 0.18) !important;
+    color: #CBD5E1 !important;
+}
+body.starlight-mode .shortcut-chip:hover {
+    background: rgba(20, 28, 60, 0.85) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+    color: #E2E8F0 !important;
+}
+body.starlight-mode .shortcut-chip i { color: #A78BFA !important; }
+body.starlight-mode .guest-hint {
+    background: rgba(99, 102, 241, 0.1) !important;
+    border-color: rgba(99, 102, 241, 0.25) !important;
+    color: #CBD5E1 !important;
+}
+body.starlight-mode .guest-hint i { color: #A78BFA !important; }
+body.starlight-mode .guest-login-btn {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+}
+
+/* ---------- 页脚 ---------- */
+body.starlight-mode .footer {
+    background: linear-gradient(180deg, transparent 0%, rgba(15, 20, 45, 0.85) 100%) !important;
+    border-top-color: rgba(99, 102, 241, 0.15) !important;
+}
+body.starlight-mode .footer h3,
+body.starlight-mode .footer a,
+body.starlight-mode .footer p { color: #94A3B8 !important; }
+body.starlight-mode .footer a:hover { color: #A78BFA !important; }
+
+/* ---------- 登录 / 注册模态框 ---------- */
+body.starlight-mode .auth-modal-overlay { backdrop-filter: blur(6px); }
+body.starlight-mode .auth-modal-card,
+body.starlight-mode .auth-modal-content {
+    background: rgba(15, 20, 45, 0.94) !important;
+    border-color: rgba(99, 102, 241, 0.25) !important;
+}
+body.starlight-mode .auth-modal-card h3,
+body.starlight-mode .auth-modal-title,
+body.starlight-mode .auth-modal-header h3 { color: #F1F5F9 !important; }
+body.starlight-mode .auth-modal-card p,
+body.starlight-mode .auth-modal-subtitle { color: #94A3B8 !important; }
+body.starlight-mode .auth-form-input {
+    background: rgba(10, 14, 35, 0.85) !important;
+    border-color: rgba(99, 102, 241, 0.25) !important;
+    color: #E2E8F0 !important;
+}
+body.starlight-mode .auth-form-input::placeholder { color: #475569 !important; }
+body.starlight-mode .auth-role-tab { color: #94A3B8 !important; }
+body.starlight-mode .auth-role-tab.active {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6) !important;
+    color: #FFFFFF !important;
+}
+
+/* ---------- 用户中心 ---------- */
+body.starlight-mode .profile-section,
+body.starlight-mode .profile-panel,
+body.starlight-mode .profile-card {
+    background: rgba(15, 20, 45, 0.7) !important;
+    border: 1px solid rgba(99, 102, 241, 0.18) !important;
+    backdrop-filter: blur(10px);
+}
+body.starlight-mode .profile-panel-header h3,
+body.starlight-mode .profile-section h2 { color: #F1F5F9 !important; }
+body.starlight-mode .profile-panel-header p,
+body.starlight-mode .profile-form-label,
+body.starlight-mode .profile-stat-label { color: #94A3B8 !important; }
+body.starlight-mode .profile-input,
+body.starlight-mode .profile-form-input {
+    background: rgba(10, 14, 35, 0.85) !important;
+    border-color: rgba(99, 102, 241, 0.25) !important;
+    color: #E2E8F0 !important;
+}
+body.starlight-mode .profile-input::placeholder { color: #475569 !important; }
+body.starlight-mode .profile-stat-num { color: #C4B5FD !important; }
+body.starlight-mode .profile-save-btn,
+body.starlight-mode .profile-btn-primary {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6) !important;
+}
+
+/* ---------- 星空背景画布 ---------- */
+#starlightCanvas {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+}
+#starlightCanvas.show { opacity: 1; }
+
+/* ---------- 彩蛋启动横幅 ---------- */
+.starlight-banner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.6);
+    background: rgba(15, 20, 45, 0.92);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    border-radius: 24px;
+    padding: 2.25rem 2.75rem;
+    text-align: center;
+    z-index: 9997;
+    opacity: 0;
+    transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    box-shadow: 0 25px 80px rgba(124, 58, 237, 0.4);
+    backdrop-filter: blur(12px);
+    max-width: 92vw;
+}
+.starlight-banner.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+.starlight-banner-icon {
+    width: 64px; height: 64px;
+    margin: 0 auto 1rem;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #6366F1, #A855F7);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 2rem;
+    animation: starSpin 4s linear infinite;
+    box-shadow: 0 12px 30px -8px rgba(124, 58, 237, 0.6);
+}
+@keyframes starSpin { to { transform: rotate(360deg); } }
+.starlight-banner-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #C4B5FD, #F0ABFC);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0.5rem;
+}
+.starlight-banner-sub {
+    color: #CBD5E1;
+    font-size: 0.9375rem;
+}
+.starlight-banner-hint {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: #64748B;
+    line-height: 1.8;
+}
+.starlight-banner-hint a {
+    color: #A78BFA;
+    text-decoration: none;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    padding: 0.375rem 0.875rem;
+    border-radius: 8px;
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+.starlight-banner-hint a:hover { background: rgba(167, 139, 250, 0.1); }
+
+/* ---------- 悬浮星形按钮 ---------- */
+.starlight-fab {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #6366F1, #A855F7);
+    color: white;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9995;
+    box-shadow: 0 10px 30px -6px rgba(124, 58, 237, 0.55);
+    animation: starFloat 3.5s ease-in-out infinite;
+    transition: transform 0.2s;
+}
+.starlight-fab:hover { transform: scale(1.1); }
+@keyframes starFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+/* ---------- 星空主题菜单 ---------- */
+.starlight-menu {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 5.5rem;
+    width: 300px;
+    max-width: calc(100vw - 2.5rem);
+    background: rgba(15, 20, 45, 0.96);
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    border-radius: 18px;
+    padding: 1.25rem;
+    z-index: 9996;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(14px);
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+    transform-origin: bottom right;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.starlight-menu.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+.starlight-menu-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+    margin-bottom: 0.875rem;
+}
+.starlight-menu-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366F1, #A855F7);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    box-shadow: 0 8px 20px -6px rgba(124, 58, 237, 0.5);
+}
+.starlight-menu-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    color: #F1F5F9;
+    font-size: 1rem;
+}
+.starlight-menu-sub {
+    color: #94A3B8;
+    font-size: 0.75rem;
+    margin-top: 0.125rem;
+}
+.starlight-menu-desc {
+    color: #94A3B8;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    padding: 0.625rem 0.75rem;
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 10px;
+}
+.starlight-menu-desc code {
+    color: #C4B5FD;
+    font-weight: 600;
+}
+.starlight-menu-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.starlight-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(148, 163, 184, 0.08);
+    color: #E2E8F0;
+    transition: all 0.2s;
+}
+.starlight-menu-btn:hover { background: rgba(148, 163, 184, 0.16); }
+.starlight-menu-btn.primary {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    border-color: transparent;
+    color: #FFFFFF;
+    box-shadow: 0 8px 22px -8px rgba(124, 58, 237, 0.6);
+}
+.starlight-menu-btn.primary:hover {
+    background: linear-gradient(135deg, #818CF8, #A78BFA);
+    box-shadow: 0 10px 26px -8px rgba(124, 58, 237, 0.7);
+}
+
+/* ---------- 用户中心开关 ---------- */
+.starlight-setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.875rem 0;
+}
+.starlight-setting-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.starlight-setting-info strong { color: #E2E8F0; font-size: 0.875rem; }
+.starlight-setting-info span { color: #94A3B8; font-size: 0.75rem; }
+.starlight-setting-hint {
+    color: #A78BFA;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 8px;
+    line-height: 1.6;
+}
+.starlight-setting-hint code { color: #C4B5FD; font-weight: 600; }
+.starlight-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 26px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+.starlight-switch input { opacity: 0; width: 0; height: 0; }
+.starlight-switch-slider {
+    position: absolute;
+    inset: 0;
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 999px;
+    transition: background 0.3s;
+}
+.starlight-switch-slider::before {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.starlight-switch input:checked + .starlight-switch-slider {
+    background: linear-gradient(135deg, #6366F1, #A855F7);
+}
+.starlight-switch input:checked + .starlight-switch-slider::before {
+    transform: translateX(20px);
+}
+
+/* ---------- 猫耳朵装饰（用户中心彩蛋） ---------- */
+.cat-ears-wrap {
+    position: relative;
+    display: inline-block;
+}
+.cat-ears-wrap > .cat-ear {
+    position: absolute;
+    top: -35%;
+    width: 50%;
+    height: 70%;
+    background: linear-gradient(180deg, #F9A8D4, #C4B5FD);
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cat-ears-wrap > .cat-ear.left {
+    left: -12%;
+    transform: rotate(-25deg) translateY(20%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    border-radius: 50% 50% 0 0 / 80% 80% 0 0;
+}
+.cat-ears-wrap > .cat-ear.right {
+    right: -12%;
+    transform: rotate(25deg) translateY(20%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    border-radius: 50% 50% 0 0 / 80% 80% 0 0;
+}
+.cat-ears-wrap.active > .cat-ear { opacity: 1; }
+.cat-ears-wrap.active > .cat-ear.left { transform: rotate(-25deg) translateY(0); }
+.cat-ears-wrap.active > .cat-ear.right { transform: rotate(25deg) translateY(0); }
+.cat-ears-wrap > .cat-ear::after {
+    content: '';
+    position: absolute;
+    top: 40%;
+    left: 30%;
+    width: 40%;
+    height: 50%;
+    background: rgba(244, 114, 182, 0.55);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+.nav-user-area .cat-ears-wrap > .cat-ear {
+    top: -45%;
+    height: 80%;
+}
+
+@media (max-width: 480px) {
+    .starlight-banner { padding: 1.75rem 1.5rem; }
+    .starlight-banner-title { font-size: 1.375rem; }
+    .starlight-menu { width: calc(100vw - 2.5rem); }
+}

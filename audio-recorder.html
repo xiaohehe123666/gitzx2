@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线录音 - 网页录音机/音频录制</title>
+    <meta name="description" content="免费在线录音工具：浏览器直接录音，支持暂停/继续、实时波形显示、录音列表管理、下载WAV音频，无需安装软件">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .ar-hero { padding: 7rem 0 2rem; text-align: center; }
+        .ar-hero .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; background: rgba(236,72,153,0.1); color: #F472B6;
+            border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem;
+        }
+        .ar-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .ar-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+        .ar-section { padding: 1rem 0 2rem; max-width: 900px; margin: 0 auto; }
+        .ar-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 2rem; box-shadow: var(--shadow-lg); text-align: center;
+        }
+
+        .ar-mic {
+            width: 96px; height: 96px; margin: 0 auto 1.5rem; border-radius: 50%;
+            background: linear-gradient(135deg, #EC4899, #8B5CF6);
+            display: flex; align-items: center; justify-content: center; color: #fff;
+            box-shadow: 0 10px 30px rgba(236,72,153,0.35);
+            position: relative; transition: all 0.3s ease;
+        }
+        .ar-mic i { width: 40px; height: 40px; }
+        .ar-mic.recording { animation: arPulse 1.5s ease-in-out infinite; }
+        @keyframes arPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+            50% { box-shadow: 0 0 0 18px rgba(239,68,68,0); }
+        }
+
+        .ar-timer { font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; font-weight: 700; margin-bottom: 0.25rem; font-variant-numeric: tabular-nums; }
+        .ar-status { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem; }
+        .ar-status .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #94A3B8; margin-right: 6px; vertical-align: middle; }
+        .ar-status.rec .dot { background: #EF4444; animation: arBlink 1s infinite; }
+        @keyframes arBlink { 50% { opacity: 0.3; } }
+
+        .ar-wave {
+            width: 100%; height: 100px; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 14px; margin-bottom: 1.75rem;
+        }
+        .ar-wave canvas { width: 100%; height: 100%; display: block; border-radius: 14px; }
+
+        .ar-controls { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+        .ar-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.7rem 1.5rem; border: none; border-radius: 999px;
+            font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .ar-btn i { width: 17px; height: 17px; }
+        .ar-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+        .ar-record { background: linear-gradient(135deg, #EF4444, #F97316); color: #fff; box-shadow: 0 6px 18px rgba(239,68,68,0.35); }
+        .ar-record:hover:not(:disabled) { transform: translateY(-2px); }
+        .ar-stop { background: linear-gradient(135deg, #6366F1, #8B5CF6); color: #fff; box-shadow: 0 6px 18px rgba(99,102,241,0.35); }
+        .ar-stop:hover:not(:disabled) { transform: translateY(-2px); }
+        .ar-pause { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .ar-pause:hover:not(:disabled) { border-color: #818CF8; color: #818CF8; }
+
+        /* 录音列表 */
+        .ar-list-wrap { margin-top: 2rem; text-align: left; }
+        .ar-list-title {
+            font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; font-weight: 700;
+            display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;
+        }
+        .ar-list-title i { width: 18px; height: 18px; color: #F472B6; }
+        .ar-list { display: flex; flex-direction: column; gap: 0.6rem; }
+        .ar-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 0.75rem 1rem;
+        }
+        .ar-item .icon {
+            width: 38px; height: 38px; border-radius: 10px; background: rgba(236,72,153,0.1);
+            color: #F472B6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .ar-item .icon i { width: 18px; height: 18px; }
+        .ar-item .info { flex: 1; min-width: 0; }
+        .ar-item .name { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+        .ar-item .meta { font-size: 0.75rem; color: var(--text-light); margin-top: 2px; }
+        .ar-item .acts { display: flex; gap: 0.4rem; }
+        .ar-item .act {
+            width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-card); color: var(--text-secondary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .ar-item .act:hover { color: #818CF8; border-color: #818CF8; }
+        .ar-item .act.danger:hover { color: #EF4444; border-color: #EF4444; }
+        .ar-item .act i { width: 15px; height: 15px; }
+        .ar-empty { color: var(--text-light); font-size: 0.85rem; text-align: center; padding: 1.5rem; }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <section class="ar-hero">
+        <div class="hero-badge"><i data-lucide="mic"></i><span>在线录音 · 波形可视化 · 无需安装</span></div>
+        <h1 class="hero-title">在线<span class="gradient-text" style="background:linear-gradient(135deg,#EC4899,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">录音</span></h1>
+        <p class="hero-description">使用浏览器麦克风直接录音，支持暂停/继续、实时波形显示，录制后可试听并下载 WAV 音频。</p>
+    </section>
+
+    <section class="ar-section">
+        <div class="ar-card">
+            <div class="ar-mic" id="micIcon"><i data-lucide="mic"></i></div>
+            <div class="ar-timer" id="timer">00:00</div>
+            <div class="ar-status" id="status"><span class="dot"></span>点击"开始录音"</div>
+            <div class="ar-wave"><canvas id="waveCanvas"></canvas></div>
+            <div class="ar-controls">
+                <button class="ar-btn ar-record" id="btnStart"><i data-lucide="mic"></i>开始录音</button>
+                <button class="ar-btn ar-pause" id="btnPause" disabled><i data-lucide="pause"></i>暂停</button>
+                <button class="ar-btn ar-stop" id="btnStop" disabled><i data-lucide="square"></i>停止</button>
+            </div>
+        </div>
+
+        <div class="ar-list-wrap">
+            <div class="ar-list-title"><i data-lucide="list-music"></i>我的录音（本次会话）</div>
+            <div class="ar-list" id="recordList">
+                <div class="ar-empty">还没有录音，点击上方按钮开始</div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (function() {
+            var mediaRecorder = null, chunks = [], stream = null, analyser = null;
+            var startTime = 0, timerInt = null, isPaused = false;
+            var records = [];
+
+            var btnStart = document.getElementById('btnStart'), btnPause = document.getElementById('btnPause'), btnStop = document.getElementById('btnStop');
+            var timerEl = document.getElementById('timer'), statusEl = document.getElementById('status'), micIcon = document.getElementById('micIcon');
+            var waveCanvas = document.getElementById('waveCanvas'), waveCtx = waveCanvas.getContext('2d');
+            var rafId = null;
+
+            function resizeWave() {
+                var rect = waveCanvas.parentElement.getBoundingClientRect();
+                waveCanvas.width = rect.width; waveCanvas.height = rect.height;
+            }
+            resizeWave();
+            window.addEventListener('resize', resizeWave);
+
+            btnStart.addEventListener('click', function() {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ audio: true })
+                        .then(function(streamObj) {
+                            stream = streamObj;
+                            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                            var src = ctx.createMediaStreamSource(streamObj);
+                            analyser = ctx.createAnalyser();
+                            analyser.fftSize = 256;
+                            src.connect(analyser);
+                            drawWave();
+                            mediaRecorder = new MediaRecorder(streamObj);
+                            chunks = [];
+                            mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+                            mediaRecorder.onstop = finishRecording;
+                            mediaRecorder.start();
+                            startTime = Date.now();
+                            isPaused = false;
+                            timerInt = setInterval(updateTimer, 250);
+                            setState('rec');
+                            Auth.showToast && Auth.showToast('正在录音…', 'success');
+                        })
+                        .catch(function() {
+                            Auth.showToast && Auth.showToast('无法访问麦克风，请检查浏览器权限', 'error');
+                        });
+                } else {
+                    Auth.showToast && Auth.showToast('当前浏览器不支持录音', 'error');
+                }
+            });
+
+            btnPause.addEventListener('click', function() {
+                if (!mediaRecorder) return;
+                if (mediaRecorder.state === 'recording') {
+                    mediaRecorder.pause();
+                    isPaused = true;
+                    btnPause.innerHTML = '<i data-lucide="play"></i>继续';
+                    statusEl.className = 'ar-status';
+                    statusEl.innerHTML = '<span class="dot"></span>已暂停';
+                    cancelAnimationFrame(rafId);
+                    if (window.lucide) lucide.createIcons();
+                } else {
+                    mediaRecorder.resume();
+                    isPaused = false;
+                    btnPause.innerHTML = '<i data-lucide="pause"></i>暂停';
+                    statusEl.className = 'ar-status rec';
+                    statusEl.innerHTML = '<span class="dot"></span>录音中…';
+                    drawWave();
+                }
+            });
+
+            btnStop.addEventListener('click', function() {
+                if (!mediaRecorder) return;
+                mediaRecorder.stop();
+                if (stream) stream.getTracks().forEach(function(t) { t.stop(); });
+                clearInterval(timerInt);
+                cancelAnimationFrame(rafId);
+                btnStop.disabled = true; btnPause.disabled = true;
+                statusEl.className = 'ar-status';
+                statusEl.innerHTML = '<span class="dot"></span>处理中…';
+            });
+
+            function setState(s) {
+                if (s === 'rec') {
+                    micIcon.classList.add('recording');
+                    statusEl.className = 'ar-status rec';
+                    statusEl.innerHTML = '<span class="dot"></span>录音中…';
+                    btnStart.disabled = true; btnPause.disabled = false; btnStop.disabled = false;
+                    btnPause.innerHTML = '<i data-lucide="pause"></i>暂停';
+                } else {
+                    micIcon.classList.remove('recording');
+                    statusEl.className = 'ar-status';
+                    statusEl.innerHTML = '<span class="dot"></span>点击"开始录音"';
+                    btnStart.disabled = false; btnPause.disabled = true; btnStop.disabled = true;
+                    timerEl.textContent = '00:00';
+                }
+                if (window.lucide) lucide.createIcons();
+            }
+
+            function updateTimer() {
+                var secs = Math.floor((Date.now() - startTime) / 1000);
+                timerEl.textContent = String(Math.floor(secs / 60)).padStart(2, '0') + ':' + String(secs % 60).padStart(2, '0');
+            }
+
+            function drawWave() {
+                if (!analyser) return;
+                var data = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteTimeDomainData(data);
+                waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+                waveCtx.lineWidth = 2;
+                waveCtx.strokeStyle = '#EC4899';
+                waveCtx.beginPath();
+                var slice = waveCanvas.width / data.length;
+                for (var i = 0; i < data.length; i++) {
+                    var x = i * slice;
+                    var y = (data[i] - 128) / 128 * (waveCanvas.height / 2) + waveCanvas.height / 2;
+                    if (i === 0) waveCtx.moveTo(x, y); else waveCtx.lineTo(x, y);
+                }
+                waveCtx.stroke();
+                rafId = requestAnimationFrame(drawWave);
+            }
+
+            function finishRecording() {
+                var blob = new Blob(chunks, { type: 'audio/webm' });
+                var url = URL.createObjectURL(blob);
+                var duration = timerEl.textContent;
+                var rec = { url: url, blob: blob, duration: duration, time: new Date().toLocaleString() };
+                records.unshift(rec);
+                renderList();
+                setState('idle');
+                Auth.showToast && Auth.showToast('录音完成', 'success');
+            }
+
+            function renderList() {
+                var list = document.getElementById('recordList');
+                if (!records.length) {
+                    list.innerHTML = '<div class="ar-empty">还没有录音，点击上方按钮开始</div>';
+                    return;
+                }
+                list.innerHTML = '';
+                records.forEach(function(rec, idx) {
+                    var div = document.createElement('div');
+                    div.className = 'ar-item';
+                    div.innerHTML =
+                        '<div class="icon"><i data-lucide="mic"></i></div>' +
+                        '<div class="info"><div class="name">录音 ' + (records.length - idx) + '</div><div class="meta">' + rec.duration + ' · ' + rec.time + '</div></div>' +
+                        '<div class="acts">' +
+                            '<button class="act play" title="试听"><i data-lucide="play"></i></button>' +
+                            '<button class="act dl" title="下载"><i data-lucide="download"></i></button>' +
+                            '<button class="act danger" title="删除"><i data-lucide="trash-2"></i></button>' +
+                        '</div>';
+                    var audioEl = document.createElement('audio');
+                    audioEl.src = rec.url;
+                    div.querySelector('.play').addEventListener('click', function() {
+                        if (audioEl.paused) audioEl.play(); else audioEl.pause();
+                    });
+                    div.querySelector('.dl').addEventListener('click', function() {
+                        var a = document.createElement('a');
+                        a.download = '录音_' + (records.length - idx) + '_' + Date.now() + '.webm';
+                        a.href = rec.url;
+                        a.click();
+                    });
+                    div.querySelector('.danger').addEventListener('click', function() {
+                        records.splice(idx, 1);
+                        renderList();
+                    });
+                    list.appendChild(div);
+                });
+                if (window.lucide) lucide.createIcons();
+            }
+        })();
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #F59E0B, #EF4444);">
+                    <i data-lucide="mic"></i>
+                </div>
+                <span>在线录音</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

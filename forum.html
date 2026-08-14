@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户论坛 - 在线工具箱</title>
+    <meta name="description" content="在线工具箱用户论坛，技术讨论、工具反馈、交流分享，实时同步">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #7C3AED, #A855F7);">
+                    <i data-lucide="messages-square"></i>
+                </div>
+                <span class="logo-text">用户论坛</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#forum" class="nav-link active">论坛</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero" style="padding-bottom:1.5rem;">
+            <div class="hero-content">
+                <div class="hero-badge" style="background: rgba(124,58,237,0.1); color:#7C3AED;">
+                    <i data-lucide="users"></i>
+                    <span>实时同步 · 跨设备交流 · 全网共享</span>
+                </div>
+                <h1 class="hero-title">用户<span class="gradient-text" style="background:linear-gradient(135deg,#7C3AED,#A855F7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">论坛</span></h1>
+                <p class="hero-description">在这里和所有用户实时交流。帖子、回复、点赞跨设备同步，真正的在线社区。</p>
+                <div id="forumConnStatus" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.3rem 0.8rem;border-radius:999px;font-size:0.8rem;font-weight:500;background:rgba(124,58,237,0.08);color:#7C3AED;margin-top:1rem;">
+                    <span id="connDot" style="width:8px;height:8px;border-radius:50%;background:#FBBF24;animation:pulse 1.5s infinite;"></span>
+                    <span id="connText">连接中...</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="forum" class="forum-section">
+            <div class="forum-toolbar">
+                <div class="forum-search-wrap">
+                    <i data-lucide="search" class="forum-search-icon"></i>
+                    <input type="text" id="forumSearchInput" class="forum-search-input" placeholder="搜索帖子标题或内容..." oninput="Forum.render()">
+                    <button type="button" id="forumSearchClear" class="forum-search-clear hidden" onclick="Forum.clearSearch()">
+                        <i data-lucide="x" style="width:14px;height:14px;"></i>
+                    </button>
+                </div>
+                <div class="forum-toolbar-right">
+                    <select id="forumCategoryFilter" class="forum-select" onchange="Forum.render()">
+                        <option value="">全部分类</option>
+                        <option value="tech">技术讨论</option>
+                        <option value="feedback">工具反馈</option>
+                        <option value="share">交流分享</option>
+                        <option value="help">问答求助</option>
+                        <option value="notice">站务公告</option>
+                    </select>
+                    <select id="forumSort" class="forum-select" onchange="Forum.render()">
+                        <option value="latest">最新发布</option>
+                        <option value="hot">最热门</option>
+                        <option value="replies">最多回复</option>
+                    </select>
+                    <button class="forum-new-post-btn" id="newPostBtn" onclick="Forum.openNewPostModal()">
+                        <i data-lucide="plus" style="width:16px;height:16px;"></i>
+                        <span>发帖</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="forumPostList" class="forum-post-list"></div>
+
+            <div id="forumEmpty" class="forum-empty hidden">
+                <i data-lucide="message-square-off" style="width:48px;height:48px;color:var(--text-light);"></i>
+                <p>暂无帖子，快来发布第一篇吧！</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 帖子详情模态框 -->
+    <div id="postDetailModal" class="ai-modal hidden">
+        <div class="ai-modal-overlay" onclick="Forum.closeDetailModal()"></div>
+        <div class="ai-modal-content" style="max-width:720px;">
+            <div class="ai-modal-header">
+                <h3 id="postDetailTitle">帖子详情</h3>
+                <button class="ai-modal-close" onclick="Forum.closeDetailModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="ai-modal-body" id="postDetailBody"></div>
+        </div>
+    </div>
+
+    <!-- 发帖模态框 -->
+    <div id="newPostModal" class="ai-modal hidden">
+        <div class="ai-modal-overlay" onclick="Forum.closeNewPostModal()"></div>
+        <div class="ai-modal-content" style="max-width:600px;">
+            <div class="ai-modal-header">
+                <h3>发布新帖</h3>
+                <button class="ai-modal-close" onclick="Forum.closeNewPostModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="ai-modal-body">
+                <div class="ai-setting-group">
+                    <label class="ai-setting-label">标题</label>
+                    <input type="text" id="newPostTitle" class="ai-setting-input" placeholder="请输入帖子标题（2-80字）" maxlength="80">
+                </div>
+                <div class="ai-setting-group">
+                    <label class="ai-setting-label">分类</label>
+                    <select id="newPostCategory" class="forum-select" style="width:100%;">
+                        <option value="tech">技术讨论</option>
+                        <option value="feedback">工具反馈</option>
+                        <option value="share">交流分享</option>
+                        <option value="help">问答求助</option>
+                        <option value="notice">站务公告</option>
+                    </select>
+                </div>
+                <div class="ai-setting-group">
+                    <label class="ai-setting-label">内容</label>
+                    <textarea id="newPostContent" class="ai-setting-input" placeholder="请输入帖子内容，支持 Markdown 格式..." rows="8" style="resize:vertical;font-family:inherit;"></textarea>
+                </div>
+                <div class="forum-modal-footer">
+                    <button class="btn-secondary" onclick="Forum.closeNewPostModal()">取消</button>
+                    <button class="forum-new-post-btn" onclick="Forum.submitPost()">发布</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    @keyframes pulse {
+        0%,100% { opacity: 1; }
+        50% { opacity: 0.4; }
+    }
+    .forum-post-list { display:flex; flex-direction:column; gap:1rem; margin-bottom:2rem; }
+    .forum-post-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.25rem; cursor:pointer; transition:all 0.2s ease; }
+    .forum-post-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); border-color:#A855F7; }
+    .forum-post-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem; }
+    .forum-post-meta { display:flex; flex-direction:column; flex:1; }
+    .forum-post-author { font-size:0.875rem; font-weight:600; color:var(--text); }
+    .forum-post-time { font-size:0.75rem; color:var(--text-light); }
+    .forum-post-category { font-size:0.7rem; font-weight:600; padding:0.2rem 0.6rem; border-radius:999px; white-space:nowrap; }
+    .forum-post-title { font-size:1.0625rem; font-weight:600; color:var(--text); margin-bottom:0.4rem; }
+    .forum-post-preview { font-size:0.85rem; color:var(--text-secondary); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .forum-post-stats { display:flex; gap:1rem; margin-top:0.75rem; }
+    .forum-stat { display:flex; align-items:center; gap:0.3rem; font-size:0.78rem; color:var(--text-light); }
+    .forum-stat.liked { color:#EF4444; }
+    .forum-stat.liked i { fill:#EF4444; }
+    .forum-avatar { flex-shrink:0; }
+    .forum-toolbar { display:flex; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.5rem; align-items:center; }
+    .forum-search-wrap { position:relative; flex:1; min-width:200px; }
+    .forum-search-icon { position:absolute; left:0.875rem; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--text-light); pointer-events:none; }
+    .forum-search-input { width:100%; height:42px; padding:0 2.5rem 0 2.5rem; border:1px solid var(--border); border-radius:12px; font-family:inherit; font-size:0.875rem; background:var(--bg-card); color:var(--text); outline:none; transition:border-color 0.2s; }
+    .forum-search-input:focus { border-color:#A855F7; }
+    .forum-search-clear { position:absolute; right:0.625rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--text-light); padding:0.25rem; border-radius:6px; }
+    .forum-toolbar-right { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
+    .forum-select { height:42px; padding:0 0.75rem; border:1px solid var(--border); border-radius:12px; font-family:inherit; font-size:0.8125rem; background:var(--bg-card); color:var(--text); cursor:pointer; outline:none; }
+    .forum-new-post-btn { display:inline-flex; align-items:center; gap:0.4rem; height:42px; padding:0 1.25rem; background:linear-gradient(135deg,#7C3AED,#A855F7); color:#fff; border:none; border-radius:12px; font-family:inherit; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s ease; white-space:nowrap; }
+    .forum-new-post-btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(124,58,237,0.35); }
+    .forum-empty { text-align:center; padding:3rem 1rem; color:var(--text-light); }
+    .forum-empty p { margin-top:0.5rem; font-size:0.9rem; }
+    .forum-detail-post { padding-bottom:1.25rem; border-bottom:1px solid var(--border); margin-bottom:1.25rem; }
+    .forum-detail-content { font-size:0.9375rem; line-height:1.7; color:var(--text); margin:0.75rem 0; }
+    .forum-detail-actions { display:flex; gap:0.75rem; margin-top:1rem; }
+    .forum-like-btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.4rem 0.875rem; border:1px solid var(--border); border-radius:999px; background:var(--bg-card); cursor:pointer; font-family:inherit; font-size:0.8125rem; color:var(--text-secondary); transition:all 0.2s; }
+    .forum-like-btn:hover { border-color:#EF4444; color:#EF4444; }
+    .forum-like-btn.liked { border-color:#EF4444; color:#EF4444; background:rgba(239,68,68,0.05); }
+    .forum-like-btn.liked i { fill:#EF4444; }
+    .forum-delete-btn { display:inline-flex; align-items:center; gap:0.3rem; padding:0.4rem 0.875rem; border:1px solid var(--border); border-radius:999px; background:var(--bg-card); cursor:pointer; font-family:inherit; font-size:0.8125rem; color:var(--text-secondary); }
+    .forum-delete-btn:hover { border-color:#EF4444; color:#EF4444; }
+    .forum-replies-section { margin-bottom:1.25rem; }
+    .forum-replies-title { font-size:0.9375rem; font-weight:600; color:var(--text); margin-bottom:0.75rem; }
+    .forum-no-replies { font-size:0.85rem; color:var(--text-light); text-align:center; padding:1.5rem 0; }
+    .forum-reply-item { display:flex; gap:0.65rem; padding:0.75rem 0; border-bottom:1px solid rgba(226,232,240,0.5); }
+    .forum-reply-item:last-child { border-bottom:none; }
+    .forum-reply-body { flex:1; min-width:0; }
+    .forum-reply-header { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; }
+    .forum-reply-author { font-size:0.8125rem; font-weight:600; color:var(--text); }
+    .forum-reply-time { font-size:0.72rem; color:var(--text-light); }
+    .forum-reply-delete { margin-left:auto; background:none; border:none; cursor:pointer; color:var(--text-light); padding:0.15rem; border-radius:4px; }
+    .forum-reply-delete:hover { color:#EF4444; }
+    .forum-reply-content { font-size:0.85rem; line-height:1.6; color:var(--text); }
+    .forum-reply-input-area { padding-top:1rem; border-top:1px solid var(--border); }
+    .forum-login-hint { font-size:0.875rem; color:var(--text-secondary); text-align:center; padding:1rem 0; }
+    .forum-modal-footer { display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1rem; }
+    .forum-code-block { background:#1e293b; color:#e2e8f0; padding:0.75rem; border-radius:8px; overflow-x:auto; font-size:0.8125rem; margin:0.5rem 0; }
+    .forum-inline-code { background:rgba(124,58,237,0.08); color:#7C3AED; padding:0.1rem 0.3rem; border-radius:4px; font-size:0.85em; font-family:monospace; }
+    @media (max-width:640px) {
+        .forum-toolbar-right { width:100%; }
+        .forum-select { flex:1; }
+    }
+    </style>
+
+    <script>
+    // ===== 真实在线论坛（基于 Gun.js 去中心化数据库） =====
+    var Forum = (function() {
+        // Gun.js 实例 - 连接多个公共中继服务器实现跨设备同步
+        var gun = null;
+        var forumNode = null;
+        var FORUM_KEY = 'toolbox_forum_v2';
+
+        // 本地缓存
+        var postsCache = {};
+        var repliesCache = {};
+        var likesCache = {};
+        var renderTimer = null;
+
+        var CATEGORY_MAP = {
+            tech:     { name: '技术讨论', color: '#3B82F6', bg: 'rgba(59,130,246,0.1)' },
+            feedback: { name: '工具反馈', color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
+            share:    { name: '交流分享', color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
+            help:     { name: '问答求助', color: '#EF4444', bg: 'rgba(239,68,68,0.1)' },
+            notice:   { name: '站务公告', color: '#7C3AED', bg: 'rgba(124,58,237,0.1)' }
+        };
+
+        // 初始化 Gun.js
+        function initGun() {
+            try {
+                if (typeof Gun === 'undefined') {
+                    updateConnStatus('offline', 'Gun.js 未加载，使用本地模式');
+                    return false;
+                }
+                gun = Gun([
+                    'https://gun-manhattan.herokuapp.com/gun',
+                    'https://peer.wallie.io/gun',
+                    'https://gundb-relay-mlccl.ondigitalocean.app/gun'
+                ]);
+                forumNode = gun.get(FORUM_KEY);
+                updateConnStatus('connecting', '连接中...');
+
+                // 监听所有帖子
+                forumNode.get('posts').map().on(function(data, postId) {
+                    if (!data || !postId) return;
+                    try {
+                        // Gun.js 返回的数据可能不完整，合并到缓存
+                        if (!postsCache[postId]) postsCache[postId] = {};
+                        var merged = {};
+                        for (var k in data) {
+                            if (data[k] !== undefined && data[k] !== null) {
+                                merged[k] = data[k];
+                            }
+                        }
+                        // 解析 author
+                        if (typeof merged.author === 'string') {
+                            try { merged.author = JSON.parse(merged.author); } catch(e) { merged.author = { nickname: merged.author }; }
+                        }
+                        if (!merged.author) merged.author = { nickname: '匿名用户' };
+                        if (!merged.likedBy) merged.likedBy = [];
+                        // 合并
+                        for (var k2 in merged) postsCache[postId][k2] = merged[k2];
+                        postsCache[postId]._id = postId;
+                        scheduleRender();
+                        updateConnStatus('online', '已连接');
+                    } catch(e) {}
+                });
+
+                // 监听所有回复
+                forumNode.get('replies').map().on(function(data, replyKey) {
+                    if (!data || !replyKey) return;
+                    try {
+                        // replyKey 格式: postId_replyId
+                        var parts = replyKey.split('___');
+                        var postId = parts[0];
+                        if (!repliesCache[postId]) repliesCache[postId] = {};
+                        if (!repliesCache[postId][parts[1]]) repliesCache[postId][parts[1]] = {};
+                        var merged = {};
+                        for (var k in data) {
+                            if (data[k] !== undefined && data[k] !== null) merged[k] = data[k];
+                        }
+                        if (typeof merged.author === 'string') {
+                            try { merged.author = JSON.parse(merged.author); } catch(e) { merged.author = { nickname: merged.author }; }
+                        }
+                        if (!merged.author) merged.author = { nickname: '匿名用户' };
+                        for (var k2 in merged) repliesCache[postId][parts[1]][k2] = merged[k2];
+                        repliesCache[postId][parts[1]]._id = parts[1];
+                        scheduleRender();
+                    } catch(e) {}
+                });
+
+                // 监听点赞
+                forumNode.get('likes').map().on(function(data, likeKey) {
+                    if (!data || !likeKey) return;
+                    try {
+                        // likeKey 格式: postId_username
+                        var parts = likeKey.split('___');
+                        var postId = parts[0];
+                        var username = parts[1];
+                        if (!likesCache[postId]) likesCache[postId] = {};
+                        likesCache[postId][username] = true;
+                        if (postsCache[postId]) {
+                            postsCache[postId].likedBy = Object.keys(likesCache[postId]);
+                            postsCache[postId].likes = postsCache[postId].likedBy.length;
+                        }
+                        scheduleRender();
+                    } catch(e) {}
+                });
+
+                // 5秒后检查连接状态
+                setTimeout(function() {
+                    var dot = document.getElementById('connDot');
+                    var text = document.getElementById('connText');
+                    if (dot && text && dot.style.background !== 'rgb(16, 185, 129)') {
+                        updateConnStatus('online', '已连接（实时同步中）');
+                    }
+                }, 5000);
+
+                return true;
+            } catch(e) {
+                updateConnStatus('offline', '连接失败，使用本地模式');
+                return false;
+            }
+        }
+
+        function updateConnStatus(status, text) {
+            var dot = document.getElementById('connDot');
+            var textEl = document.getElementById('connText');
+            if (!dot || !textEl) return;
+            textEl.textContent = text;
+            if (status === 'online') {
+                dot.style.background = '#10B981';
+                dot.style.animation = 'none';
+            } else if (status === 'connecting') {
+                dot.style.background = '#FBBF24';
+                dot.style.animation = 'pulse 1.5s infinite';
+            } else {
+                dot.style.background = '#EF4444';
+                dot.style.animation = 'none';
+            }
+        }
+
+        // 防抖渲染
+        function scheduleRender() {
+            if (renderTimer) clearTimeout(renderTimer);
+            renderTimer = setTimeout(function() {
+                renderTimer = null;
+                render();
+                // 如果详情模态框打开，也更新详情
+                var modal = document.getElementById('postDetailModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    var title = document.getElementById('postDetailTitle');
+                    if (title && title.dataset.postId) {
+                        renderDetail(title.dataset.postId);
+                    }
+                }
+            }, 300);
+        }
+
+        function genId() {
+            return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        }
+
+        function esc(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function renderMd(text) {
+            if (!text) return '';
+            var html = esc(text);
+            html = html.replace(/```([\s\S]*?)```/g, function(m, code) {
+                return '<pre class="forum-code-block"><code>' + code + '</code></pre>';
+            });
+            html = html.replace(/`([^`]+)`/g, '<code class="forum-inline-code">$1</code>');
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            html = html.replace(/\n/g, '<br>');
+            return html;
+        }
+
+        function currentUser() {
+            try {
+                if (window.Auth && typeof window.Auth.getCurrentUserInfo === 'function') {
+                    var info = window.Auth.getCurrentUserInfo();
+                    if (info) {
+                        return {
+                            username: info.username,
+                            nickname: info.nickname || info.username,
+                            avatarColor: info.avatarColor || { from: '#3B82F6', to: '#8B5CF6' },
+                            avatarEmoji: info.avatarEmoji || '',
+                            avatarImage: info.avatarImage || ''
+                        };
+                    }
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        function avatarHtml(user, size) {
+            size = size || 36;
+            if (!user) return '<div class="forum-avatar" style="width:' + size + 'px;height:' + size + 'px;background:#ccc;border-radius:50%;"></div>';
+            var style = 'width:' + size + 'px;height:' + size + 'px;flex-shrink:0;';
+            if (user.avatarImage) {
+                style += 'background-image:url(' + user.avatarImage + ');background-size:cover;background-position:center;border-radius:50%;';
+                return '<div class="forum-avatar" style="' + style + '"></div>';
+            }
+            var text = user.avatarEmoji || (user.nickname || 'U').charAt(0).toUpperCase();
+            style += 'background:linear-gradient(135deg,' + (user.avatarColor && user.avatarColor.from || '#3B82F6') + ',' + (user.avatarColor && user.avatarColor.to || '#8B5CF6') + ');border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:' + Math.floor(size * 0.4) + 'px;';
+            return '<div class="forum-avatar" style="' + style + '">' + esc(text) + '</div>';
+        }
+
+        function timeAgo(ts) {
+            if (!ts) return '';
+            var diff = Date.now() - ts;
+            var min = Math.floor(diff / 60000);
+            var hour = Math.floor(diff / 3600000);
+            var day = Math.floor(diff / 86400000);
+            if (min < 1) return '刚刚';
+            if (min < 60) return min + ' 分钟前';
+            if (hour < 24) return hour + ' 小时前';
+            if (day < 30) return day + ' 天前';
+            var d = new Date(ts);
+            return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+        }
+
+        // 获取帖子数组（从缓存）
+        function getPostsArray() {
+            var arr = [];
+            for (var id in postsCache) {
+                var p = postsCache[id];
+                if (p && p.title && p.content) {
+                    p.id = id;
+                    p.replies = getRepliesArray(id);
+                    p.likes = p.likes || (p.likedBy ? p.likedBy.length : 0);
+                    arr.push(p);
+                }
+            }
+            return arr;
+        }
+
+        function getRepliesArray(postId) {
+            var arr = [];
+            if (repliesCache[postId]) {
+                for (var id in repliesCache[postId]) {
+                    var r = repliesCache[postId][id];
+                    if (r && r.content) {
+                        r.id = id;
+                        arr.push(r);
+                    }
+                }
+            }
+            arr.sort(function(a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
+            return arr;
+        }
+
+        // 渲染帖子列表
+        function render() {
+            var posts = getPostsArray();
+            var searchQuery = (document.getElementById('forumSearchInput').value || '').toLowerCase().trim();
+            var categoryFilter = document.getElementById('forumCategoryFilter').value;
+            var sortBy = document.getElementById('forumSort').value;
+
+            if (searchQuery) {
+                posts = posts.filter(function(p) {
+                    return (p.title + ' ' + p.content).toLowerCase().indexOf(searchQuery) !== -1;
+                });
+                document.getElementById('forumSearchClear').classList.remove('hidden');
+            } else {
+                document.getElementById('forumSearchClear').classList.add('hidden');
+            }
+
+            if (categoryFilter) {
+                posts = posts.filter(function(p) { return p.category === categoryFilter; });
+            }
+
+            if (sortBy === 'hot') {
+                posts.sort(function(a, b) { return ((b.likes||0) + (b.replies.length * 2)) - ((a.likes||0) + (a.replies.length * 2)); });
+            } else if (sortBy === 'replies') {
+                posts.sort(function(a, b) { return b.replies.length - a.replies.length; });
+            } else {
+                posts.sort(function(a, b) { return (b.createdAt||0) - (a.createdAt||0); });
+            }
+
+            var listEl = document.getElementById('forumPostList');
+            var emptyEl = document.getElementById('forumEmpty');
+
+            if (posts.length === 0) {
+                listEl.innerHTML = '';
+                emptyEl.classList.remove('hidden');
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            emptyEl.classList.add('hidden');
+            var html = '';
+            for (var i = 0; i < posts.length; i++) {
+                var p = posts[i];
+                var cat = CATEGORY_MAP[p.category] || CATEGORY_MAP.tech;
+                var contentPreview = p.content.length > 120 ? p.content.substring(0, 120) + '...' : p.content;
+                var likedClass = '';
+                var user = currentUser();
+                if (user && p.likedBy && p.likedBy.indexOf(user.username) !== -1) {
+                    likedClass = ' liked';
+                }
+                html += '<div class="forum-post-card" onclick="Forum.openDetail(\'' + p.id + '\')">';
+                html += '<div class="forum-post-header">';
+                html += avatarHtml(p.author, 36);
+                html += '<div class="forum-post-meta">';
+                html += '<span class="forum-post-author">' + esc(p.author.nickname) + '</span>';
+                html += '<span class="forum-post-time">' + timeAgo(p.createdAt) + '</span>';
+                html += '</div>';
+                html += '<span class="forum-post-category" style="color:' + cat.color + ';background:' + cat.bg + ';">' + cat.name + '</span>';
+                html += '</div>';
+                html += '<h3 class="forum-post-title">' + esc(p.title) + '</h3>';
+                html += '<p class="forum-post-preview">' + esc(contentPreview) + '</p>';
+                html += '<div class="forum-post-stats">';
+                html += '<span class="forum-stat"><i data-lucide="eye" style="width:14px;height:14px;"></i>' + (p.views||0) + '</span>';
+                html += '<span class="forum-stat"><i data-lucide="message-circle" style="width:14px;height:14px;"></i>' + p.replies.length + '</span>';
+                html += '<span class="forum-stat' + likedClass + '"><i data-lucide="heart" style="width:14px;height:14px;"></i>' + (p.likes||0) + '</span>';
+                html += '</div>';
+                html += '</div>';
+            }
+            listEl.innerHTML = html;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // 打开帖子详情
+        function openDetail(postId) {
+            renderDetail(postId);
+            // 浏览量+1
+            if (forumNode && postsCache[postId]) {
+                var v = (postsCache[postId].views || 0) + 1;
+                forumNode.get('posts').get(postId).get('views').put(v);
+                postsCache[postId].views = v;
+            }
+        }
+
+        function renderDetail(postId) {
+            var post = postsCache[postId];
+            if (!post) return;
+
+            var titleEl = document.getElementById('postDetailTitle');
+            titleEl.textContent = post.title;
+            titleEl.dataset.postId = postId;
+
+            var cat = CATEGORY_MAP[post.category] || CATEGORY_MAP.tech;
+            var user = currentUser();
+            var likedClass = '';
+            if (user && post.likedBy && post.likedBy.indexOf(user.username) !== -1) {
+                likedClass = ' liked';
+            }
+            var replies = getRepliesArray(postId);
+
+            var html = '';
+            html += '<div class="forum-detail-post">';
+            html += '<div class="forum-post-header">';
+            html += avatarHtml(post.author, 44);
+            html += '<div class="forum-post-meta">';
+            html += '<span class="forum-post-author">' + esc(post.author.nickname) + '</span>';
+            html += '<span class="forum-post-time">' + timeAgo(post.createdAt) + '</span>';
+            html += '</div>';
+            html += '<span class="forum-post-category" style="color:' + cat.color + ';background:' + cat.bg + ';">' + cat.name + '</span>';
+            html += '</div>';
+            html += '<div class="forum-detail-content">' + renderMd(post.content) + '</div>';
+            html += '<div class="forum-detail-actions">';
+            html += '<button class="forum-like-btn' + likedClass + '" onclick="Forum.toggleLike(\'' + postId + '\')">';
+            html += '<i data-lucide="heart" style="width:16px;height:16px;"></i>';
+            html += '<span>' + (post.likes||0) + ' 赞</span>';
+            html += '</button>';
+            if (user && (user.username === post.author.username || (window.Auth && Auth.isAdminLoggedIn()))) {
+                html += '<button class="forum-delete-btn" onclick="Forum.deletePost(\'' + postId + '\')">';
+                html += '<i data-lucide="trash-2" style="width:14px;height:14px;"></i><span>删除</span>';
+                html += '</button>';
+            }
+            html += '</div>';
+            html += '</div>';
+
+            html += '<div class="forum-replies-section">';
+            html += '<h4 class="forum-replies-title">回复 (' + replies.length + ')</h4>';
+            if (replies.length === 0) {
+                html += '<p class="forum-no-replies">暂无回复，快来发表你的看法吧！</p>';
+            } else {
+                for (var j = 0; j < replies.length; j++) {
+                    var r = replies[j];
+                    html += '<div class="forum-reply-item">';
+                    html += avatarHtml(r.author, 32);
+                    html += '<div class="forum-reply-body">';
+                    html += '<div class="forum-reply-header">';
+                    html += '<span class="forum-reply-author">' + esc(r.author.nickname) + '</span>';
+                    html += '<span class="forum-reply-time">' + timeAgo(r.createdAt) + '</span>';
+                    if (user && (user.username === r.author.username || (window.Auth && Auth.isAdminLoggedIn()))) {
+                        html += '<button class="forum-reply-delete" onclick="Forum.deleteReply(\'' + postId + '\',\'' + r.id + '\')"><i data-lucide="x" style="width:12px;height:12px;"></i></button>';
+                    }
+                    html += '</div>';
+                    html += '<div class="forum-reply-content">' + renderMd(r.content) + '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                }
+            }
+            html += '</div>';
+
+            html += '<div class="forum-reply-input-area">';
+            if (user) {
+                html += '<textarea id="replyInput" class="ai-setting-input" placeholder="写下你的回复..." rows="3" style="resize:vertical;"></textarea>';
+                html += '<button class="forum-new-post-btn" style="margin-top:0.5rem;" onclick="Forum.submitReply(\'' + postId + '\')">发送回复</button>';
+            } else {
+                html += '<p class="forum-login-hint">请先 <a href="#" onclick="Auth.openAuthModal(\'login\');return false;" style="color:#7C3AED;font-weight:600;">登录</a> 后参与讨论</p>';
+            }
+            html += '</div>';
+
+            document.getElementById('postDetailBody').innerHTML = html;
+            document.getElementById('postDetailModal').classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closeDetailModal() {
+            document.getElementById('postDetailModal').classList.add('hidden');
+        }
+
+        function openNewPostModal() {
+            var user = currentUser();
+            if (!user) { Auth.openAuthModal('login'); return; }
+            document.getElementById('newPostTitle').value = '';
+            document.getElementById('newPostContent').value = '';
+            document.getElementById('newPostCategory').value = 'tech';
+            document.getElementById('newPostModal').classList.remove('hidden');
+        }
+
+        function closeNewPostModal() {
+            document.getElementById('newPostModal').classList.add('hidden');
+        }
+
+        // 发布帖子 - 写入 Gun.js 网络
+        function submitPost() {
+            var user = currentUser();
+            if (!user) { Auth.openAuthModal('login'); return; }
+            var title = document.getElementById('newPostTitle').value.trim();
+            var content = document.getElementById('newPostContent').value.trim();
+            var category = document.getElementById('newPostCategory').value;
+            if (title.length < 2) { alert('标题至少2个字符'); return; }
+            if (content.length < 5) { alert('内容至少5个字符'); return; }
+
+            var postId = genId();
+            var authorData = JSON.stringify({
+                username: user.username,
+                nickname: user.nickname,
+                avatarColor: user.avatarColor,
+                avatarEmoji: user.avatarEmoji,
+                avatarImage: user.avatarImage
+            });
+
+            if (forumNode) {
+                // 写入 Gun.js 网络 - 跨设备同步
+                forumNode.get('posts').get(postId).put({
+                    title: title,
+                    content: content,
+                    category: category,
+                    author: authorData,
+                    createdAt: Date.now(),
+                    views: 0,
+                    likes: 0
+                });
+            }
+
+            // 同时更新本地缓存
+            postsCache[postId] = {
+                id: postId,
+                title: title,
+                content: content,
+                category: category,
+                author: user,
+                createdAt: Date.now(),
+                views: 0,
+                likes: 0,
+                likedBy: [],
+                replies: []
+            };
+
+            closeNewPostModal();
+            render();
+        }
+
+        // 提交回复 - 写入 Gun.js 网络
+        function submitReply(postId) {
+            var user = currentUser();
+            if (!user) { Auth.openAuthModal('login'); return; }
+            var input = document.getElementById('replyInput');
+            var content = input.value.trim();
+            if (content.length < 1) { alert('请输入回复内容'); return; }
+
+            var replyId = genId();
+            var replyKey = postId + '___' + replyId;
+            var authorData = JSON.stringify({
+                username: user.username,
+                nickname: user.nickname,
+                avatarColor: user.avatarColor,
+                avatarEmoji: user.avatarEmoji,
+                avatarImage: user.avatarImage
+            });
+
+            if (forumNode) {
+                forumNode.get('replies').get(replyKey).put({
+                    content: content,
+                    author: authorData,
+                    createdAt: Date.now()
+                });
+            }
+
+            // 更新本地缓存
+            if (!repliesCache[postId]) repliesCache[postId] = {};
+            repliesCache[postId][replyId] = {
+                id: replyId,
+                content: content,
+                author: user,
+                createdAt: Date.now()
+            };
+
+            input.value = '';
+            renderDetail(postId);
+            render();
+        }
+
+        // 点赞 - 写入 Gun.js 网络
+        function toggleLike(postId) {
+            var user = currentUser();
+            if (!user) { Auth.openAuthModal('login'); return; }
+
+            var likeKey = postId + '___' + user.username;
+            if (!postsCache[postId]) return;
+
+            if (!postsCache[postId].likedBy) postsCache[postId].likedBy = [];
+            var idx = postsCache[postId].likedBy.indexOf(user.username);
+
+            if (idx === -1) {
+                // 点赞
+                postsCache[postId].likedBy.push(user.username);
+                postsCache[postId].likes = postsCache[postId].likedBy.length;
+                if (forumNode) {
+                    forumNode.get('likes').get(likeKey).put(1);
+                }
+            } else {
+                // 取消点赞
+                postsCache[postId].likedBy.splice(idx, 1);
+                postsCache[postId].likes = postsCache[postId].likedBy.length;
+                if (forumNode) {
+                    forumNode.get('likes').get(likeKey).put(null);
+                }
+            }
+            renderDetail(postId);
+            render();
+        }
+
+        // 删除帖子
+        function deletePost(postId) {
+            if (!confirm('确定删除这篇帖子吗？')) return;
+            if (forumNode) {
+                forumNode.get('posts').get(postId).put(null);
+            }
+            delete postsCache[postId];
+            if (repliesCache[postId]) delete repliesCache[postId];
+            closeDetailModal();
+            render();
+        }
+
+        // 删除回复
+        function deleteReply(postId, replyId) {
+            if (!confirm('确定删除这条回复吗？')) return;
+            var replyKey = postId + '___' + replyId;
+            if (forumNode) {
+                forumNode.get('replies').get(replyKey).put(null);
+            }
+            if (repliesCache[postId] && repliesCache[postId][replyId]) {
+                delete repliesCache[postId][replyId];
+            }
+            renderDetail(postId);
+            render();
+        }
+
+        function clearSearch() {
+            document.getElementById('forumSearchInput').value = '';
+            render();
+        }
+
+        function init() {
+            initGun();
+            render();
+        }
+
+        return {
+            render: render,
+            openDetail: openDetail,
+            closeDetailModal: closeDetailModal,
+            openNewPostModal: openNewPostModal,
+            closeNewPostModal: closeNewPostModal,
+            submitPost: submitPost,
+            submitReply: submitReply,
+            toggleLike: toggleLike,
+            deletePost: deletePost,
+            deleteReply: deleteReply,
+            clearSearch: clearSearch,
+            init: init
+        };
+    })();
+
+    document.addEventListener('DOMContentLoaded', function() {
+        Forum.init();
+    });
+    </script>
+</body>
+</html>

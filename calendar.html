@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日历与节假日 - 中国法定节假日查询</title>
+    <meta name="description" content="免费在线日历与节假日查询工具：查看任意年月日历、中国法定节假日与调休安排、节气标注，浏览器本地运行">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .cal-hero { padding: 7rem 0 2rem; text-align: center; }
+    .cal-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(217, 119, 6, 0.1); color: #D97706; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .cal-hero .hero-badge i { width: 16px; height: 16px; }
+    .cal-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .cal-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .cal-section { padding: 1rem 0 2rem; }
+    .cal-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-lg); max-width: 900px; margin: 0 auto; }
+    .cal-toolbar { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.1rem; justify-content: center; flex-wrap: wrap; }
+    .cal-nav { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+    .cal-nav:hover { color: var(--primary-light); border-color: var(--primary-light); }
+    .cal-nav i { width: 17px; height: 17px; }
+    .cal-title { font-size: 1.25rem; font-weight: 700; min-width: 130px; text-align: center; font-family: 'Space Grotesk', sans-serif; }
+    .cal-today { padding: 0.5rem 1.1rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); font-size: 0.85rem; cursor: pointer; color: var(--text); }
+
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; }
+    .cal-head { text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); padding: 0.4rem 0; }
+    .cal-head.weekend { color: #EF4444; }
+    .cal-cell { min-height: 74px; border: 1px solid var(--border); border-radius: 12px; padding: 0.45rem 0.55rem; cursor: pointer; transition: all .2s; position: relative; }
+    .cal-cell:hover { border-color: var(--primary-light); transform: translateY(-2px); }
+    .cal-cell.empty { border-color: transparent; cursor: default; }
+    .cal-cell.empty:hover { transform: none; }
+    .cal-cell.today { border-color: var(--primary-light); background: rgba(59, 130, 246, 0.06); }
+    .cal-day { font-size: 0.95rem; font-weight: 600; }
+    .cal-cell.weekend .cal-day { color: #EF4444; }
+    .cal-tag { font-size: 0.62rem; line-height: 1.3; margin-top: 0.2rem; }
+    .cal-tag .hol { display: inline-block; padding: 0.05rem 0.3rem; border-radius: 4px; background: rgba(239, 68, 68, 0.12); color: #EF4444; }
+    .cal-tag .work { display: inline-block; padding: 0.05rem 0.3rem; border-radius: 4px; background: rgba(16, 185, 129, 0.12); color: #059669; }
+    .cal-tag .jie { display: inline-block; padding: 0.05rem 0.3rem; border-radius: 4px; background: rgba(217, 119, 6, 0.12); color: #D97706; }
+
+    .cal-legend { display: flex; gap: 1rem; margin-top: 0.9rem; font-size: 0.78rem; color: var(--text-secondary); flex-wrap: wrap; justify-content: center; }
+    .cal-legend span { display: inline-flex; align-items: center; gap: 0.3rem; }
+    .cal-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+    .cal-holidays { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+    .cal-holidays h3 { font-size: 1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem; }
+    .cal-holidays h3 i { width: 18px; height: 18px; color: var(--primary-light); }
+    .cal-hol-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
+    .cal-hol-item { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 0.7rem 0.9rem; }
+    .cal-hol-item b { display: block; font-size: 0.88rem; }
+    .cal-hol-item span { font-size: 0.75rem; color: var(--text-secondary); }
+
+    @media (max-width: 768px) {
+        .cal-hero { padding: 6rem 0 1.5rem; }
+        .cal-hero h1 { font-size: 1.85rem; }
+        .cal-card { padding: 0.85rem; }
+        .cal-cell { min-height: 56px; padding: 0.3rem 0.35rem; }
+        .cal-tag { font-size: 0.55rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="calendar-days"></i>
+                </div>
+                <span class="logo-text">日历节假日</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#calendar" class="nav-link active">日历节假日</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="cal-hero">
+            <div class="hero-badge"><i data-lucide="calendar-days"></i><span>法定节假日 · 调休安排</span></div>
+            <h1 class="hero-title">日历与<span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">节假日</span></h1>
+            <p class="hero-description">查看任意年月日历，标注中国法定节假日、调休补班与节气。</p>
+        </section>
+
+        <section id="calendar" class="cal-section">
+            <div class="container">
+                <div class="cal-card">
+                    <div class="cal-toolbar">
+                        <button type="button" class="cal-nav" id="prevMonth"><i data-lucide="chevron-left"></i></button>
+                        <span class="cal-title" id="calTitle"></span>
+                        <button type="button" class="cal-nav" id="nextMonth"><i data-lucide="chevron-right"></i></button>
+                        <button type="button" class="cal-today" id="btnToday">回到今天</button>
+                    </div>
+
+                    <div class="cal-grid" id="calHead"></div>
+                    <div class="cal-grid" id="calBody"></div>
+
+                    <div class="cal-legend">
+                        <span><i style="background:#EF4444;"></i> 法定节假日</span>
+                        <span><i style="background:#059669;"></i> 调休补班</span>
+                        <span><i style="background:#D97706;"></i> 节气</span>
+                        <span><i style="background:#3B82F6;"></i> 今天</span>
+                    </div>
+
+                    <div class="cal-holidays" id="holidaysBox">
+                        <h3><i data-lucide="party-popper"></i>本年度法定节假日</h3>
+                        <div class="cal-hol-list" id="holidaysList"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="calendar-days"></i>
+                </div>
+                <span>日历节假日</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        /* ===== 2024-2027 法定节假日与调休（含上下半年） ===== */
+        var HOLIDAYS = {
+            '2026': {
+                name: '2026年节假日安排',
+                items: [
+                    { name: '元旦', days: '1月1日（周四）', desc: '放假1天，不调休' },
+                    { name: '春节', days: '2月15日-21日', desc: '放假7天，2月22日补班' },
+                    { name: '清明节', days: '4月5日', desc: '放假1天' },
+                    { name: '劳动节', days: '5月1日-5日', desc: '放假5天，4月26日、5月9日补班' },
+                    { name: '端午节', days: '6月19日', desc: '放假1天' },
+                    { name: '中秋节', days: '9月25日', desc: '放假1天' },
+                    { name: '国庆节', days: '10月1日-7日', desc: '放假7天，10月10日补班' }
+                ],
+                // 具体日期：hol=放假, work=补班
+                dates: {
+                    '1-1': 'hol', '2-15': 'hol', '2-16': 'hol', '2-17': 'hol', '2-18': 'hol', '2-19': 'hol', '2-20': 'hol', '2-21': 'hol', '2-22': 'work',
+                    '4-5': 'hol',
+                    '5-1': 'hol', '5-2': 'hol', '5-3': 'hol', '5-4': 'hol', '5-5': 'hol', '4-26': 'work', '5-9': 'work',
+                    '6-19': 'hol',
+                    '9-25': 'hol',
+                    '10-1': 'hol', '10-2': 'hol', '10-3': 'hol', '10-4': 'hol', '10-5': 'hol', '10-6': 'hol', '10-7': 'hol', '10-10': 'work'
+                }
+            },
+            '2025': {
+                name: '2025年节假日安排',
+                items: [
+                    { name: '元旦', days: '1月1日', desc: '放假1天' },
+                    { name: '春节', days: '1月28日-2月4日', desc: '放假8天，1月26日、2月8日补班' },
+                    { name: '清明节', days: '4月4日-6日', desc: '放假3天' },
+                    { name: '劳动节', days: '5月1日-5日', desc: '放假5天，4月27日补班' },
+                    { name: '端午节', days: '5月31日-6月2日', desc: '放假3天' },
+                    { name: '国庆中秋', days: '10月1日-8日', desc: '放假8天，9月28日、10月11日补班' }
+                ],
+                dates: {
+                    '1-1': 'hol', '1-28': 'hol', '1-29': 'hol', '1-30': 'hol', '1-31': 'hol', '2-1': 'hol', '2-2': 'hol', '2-3': 'hol', '2-4': 'hol', '1-26': 'work', '2-8': 'work',
+                    '4-4': 'hol', '4-5': 'hol', '4-6': 'hol',
+                    '5-1': 'hol', '5-2': 'hol', '5-3': 'hol', '5-4': 'hol', '5-5': 'hol', '4-27': 'work',
+                    '5-31': 'hol', '6-1': 'hol', '6-2': 'hol',
+                    '10-1': 'hol', '10-2': 'hol', '10-3': 'hol', '10-4': 'hol', '10-5': 'hol', '10-6': 'hol', '10-7': 'hol', '10-8': 'hol', '9-28': 'work', '10-11': 'work'
+                }
+            },
+            '2024': {
+                name: '2024年节假日安排',
+                items: [
+                    { name: '元旦', days: '1月1日', desc: '放假1天' },
+                    { name: '春节', days: '2月10日-17日', desc: '放假8天，2月4日、18日补班' },
+                    { name: '清明节', days: '4月4日-6日', desc: '放假3天，4月7日补班' },
+                    { name: '劳动节', days: '5月1日-5日', desc: '放假5天，4月28日、5月11日补班' },
+                    { name: '端午节', days: '6月10日', desc: '放假1天' },
+                    { name: '中秋节', days: '9月15日-17日', desc: '放假3天，9月14日补班' },
+                    { name: '国庆节', days: '10月1日-7日', desc: '放假7天，9月29日、10月12日补班' }
+                ],
+                dates: {
+                    '1-1': 'hol', '2-10': 'hol', '2-11': 'hol', '2-12': 'hol', '2-13': 'hol', '2-14': 'hol', '2-15': 'hol', '2-16': 'hol', '2-17': 'hol', '2-4': 'work', '2-18': 'work',
+                    '4-4': 'hol', '4-5': 'hol', '4-6': 'hol', '4-7': 'work',
+                    '5-1': 'hol', '5-2': 'hol', '5-3': 'hol', '5-4': 'hol', '5-5': 'hol', '4-28': 'work', '5-11': 'work',
+                    '6-10': 'hol',
+                    '9-15': 'hol', '9-16': 'hol', '9-17': 'hol', '9-14': 'work',
+                    '10-1': 'hol', '10-2': 'hol', '10-3': 'hol', '10-4': 'hol', '10-5': 'hol', '10-6': 'hol', '10-7': 'hol', '9-29': 'work', '10-12': 'work'
+                }
+            }
+        };
+
+        /* 常见节气（按公历近似日期，仅用于标注） */
+        var SOLAR_TERMS = {
+            1: { 5: '小寒', 20: '大寒' }, 2: { 4: '立春', 19: '雨水' }, 3: { 5: '惊蛰', 20: '春分' },
+            4: { 4: '清明', 20: '谷雨' }, 5: { 5: '立夏', 21: '小满' }, 6: { 5: '芒种', 21: '夏至' },
+            7: { 7: '小暑', 22: '大暑' }, 8: { 7: '立秋', 23: '处暑' }, 9: { 7: '白露', 23: '秋分' },
+            10: { 8: '寒露', 23: '霜降' }, 11: { 7: '立冬', 22: '小雪' }, 12: { 7: '大雪', 21: '冬至' }
+        };
+
+        var WEEK = ['日', '一', '二', '三', '四', '五', '六'];
+        var now = new Date();
+        var curYear = now.getFullYear();
+        var curMonth = now.getMonth() + 1;
+
+        /* 渲染表头 */
+        var head = document.getElementById('calHead');
+        WEEK.forEach(function(w, i) {
+            var d = document.createElement('div');
+            d.className = 'cal-head' + (i === 0 || i === 6 ? ' weekend' : '');
+            d.textContent = '周' + w;
+            head.appendChild(d);
+        });
+
+        function renderCalendar() {
+            document.getElementById('calTitle').textContent = curYear + ' 年 ' + curMonth + ' 月';
+            var body = document.getElementById('calBody');
+            body.innerHTML = '';
+
+            var firstDay = new Date(curYear, curMonth - 1, 1);
+            var startDow = firstDay.getDay();
+            var daysInMonth = new Date(curYear, curMonth, 0).getDate();
+
+            var holidayData = HOLIDAYS[String(curYear)] || { dates: {} };
+            var dates = holidayData.dates || {};
+
+            // 前导空格
+            for (var i = 0; i < startDow; i++) {
+                var empty = document.createElement('div');
+                empty.className = 'cal-cell empty';
+                body.appendChild(empty);
+            }
+
+            var today = new Date();
+            for (var d = 1; d <= daysInMonth; d++) {
+                var dow = (startDow + d - 1) % 7;
+                var cell = document.createElement('div');
+                cell.className = 'cal-cell' + (dow === 0 || dow === 6 ? ' weekend' : '');
+                if (d === today.getDate() && curMonth === today.getMonth() + 1 && curYear === today.getFullYear()) {
+                    cell.classList.add('today');
+                }
+
+                var key = curMonth + '-' + d;
+                var tag = dates[key];
+                var solarTerm = (SOLAR_TERMS[curMonth] || {})[d];
+
+                var tagsHtml = '';
+                if (tag === 'hol') tagsHtml += '<span class="hol">休</span>';
+                if (tag === 'work') tagsHtml += '<span class="work">班</span>';
+                if (solarTerm) tagsHtml += '<span class="jie">' + solarTerm + '</span>';
+
+                cell.innerHTML = '<div class="cal-day">' + d + '</div>' + (tagsHtml ? '<div class="cal-tag">' + tagsHtml + '</div>' : '');
+                body.appendChild(cell);
+            }
+
+            // 渲染节假日列表
+            var listBox = document.getElementById('holidaysList');
+            var data = HOLIDAYS[String(curYear)];
+            if (data && data.items) {
+                listBox.innerHTML = '';
+                data.items.forEach(function(it) {
+                    var div = document.createElement('div');
+                    div.className = 'cal-hol-item';
+                    div.innerHTML = '<b>' + it.name + '</b><span>' + it.days + ' · ' + it.desc + '</span>';
+                    listBox.appendChild(div);
+                });
+            } else {
+                listBox.innerHTML = '<div class="cal-hol-item"><b>暂无数据</b><span>该年度节假日安排尚未公布</span></div>';
+            }
+        }
+
+        document.getElementById('prevMonth').addEventListener('click', function() {
+            curMonth--;
+            if (curMonth < 1) { curMonth = 12; curYear--; }
+            renderCalendar();
+        });
+        document.getElementById('nextMonth').addEventListener('click', function() {
+            curMonth++;
+            if (curMonth > 12) { curMonth = 1; curYear++; }
+            renderCalendar();
+        });
+        document.getElementById('btnToday').addEventListener('click', function() {
+            curYear = new Date().getFullYear();
+            curMonth = new Date().getMonth() + 1;
+            renderCalendar();
+        });
+
+        renderCalendar();
+    })();
+    </script>
+</body>
+</html>

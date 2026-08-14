@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片去背景 - 在线抠图/证件照换底色</title>
+    <meta name="description" content="免费在线抠图工具：一键去除图片背景生成透明PNG，支持证件照换底色（红底/蓝底/白底）、一寸二寸尺寸调整，纯前端处理保护隐私">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .br-hero { padding: 7rem 0 2rem; text-align: center; }
+        .br-hero .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; background: rgba(99,102,241,0.1); color: #818CF8;
+            border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem;
+        }
+        .br-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .br-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+        .br-section { padding: 1rem 0 2rem; max-width: 1080px; margin: 0 auto; }
+        .br-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 1.75rem; box-shadow: var(--shadow-lg); margin-bottom: 1.5rem;
+        }
+        .br-card-title {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700;
+            margin-bottom: 1.25rem;
+        }
+        .br-card-title i { width: 20px; height: 20px; color: #818CF8; }
+
+        /* 上传区 */
+        .br-upload {
+            border: 2px dashed var(--border); border-radius: 18px;
+            padding: 2.5rem 1.5rem; text-align: center; cursor: pointer;
+            transition: all 0.25s ease; background: var(--bg);
+        }
+        .br-upload:hover, .br-upload.dragover { border-color: #818CF8; background: rgba(99,102,241,0.06); }
+        .br-upload i { width: 40px; height: 40px; color: #818CF8; margin-bottom: 0.75rem; }
+        .br-upload p { color: var(--text-secondary); font-size: 0.9rem; }
+        .br-upload strong { color: var(--text); }
+
+        /* 工作区 */
+        .br-workspace { display: none; gap: 1.5rem; }
+        .br-workspace.visible { display: grid; grid-template-columns: 1fr 1fr; }
+        .br-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; }
+        .br-panel h3 {
+            font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.75rem;
+        }
+        .br-panel h3 i { width: 15px; height: 15px; }
+        .br-canvas-wrap {
+            width: 100%; height: 320px; border-radius: 12px; overflow: hidden;
+            background-image: linear-gradient(45deg, #ddd 25%, transparent 25%), linear-gradient(-45deg, #ddd 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ddd 75%), linear-gradient(-45deg, transparent 75%, #ddd 75%);
+            background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+            background-color: #f1f5f9;
+            display: flex; align-items: center; justify-content: center; position: relative;
+        }
+        body.dark-mode .br-canvas-wrap { background-color: #1E293B; }
+        body.dark-mode .br-canvas-wrap { background-image: linear-gradient(45deg, #334155 25%, transparent 25%), linear-gradient(-45deg, #334155 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #334155 75%), linear-gradient(-45deg, transparent 75%, #334155 75%); }
+        .br-canvas-wrap canvas { max-width: 100%; max-height: 320px; }
+        .br-hint {
+            position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+            background: rgba(15,23,42,0.75); color: #fff; font-size: 0.72rem;
+            padding: 3px 10px; border-radius: 999px; white-space: nowrap; pointer-events: none;
+        }
+        .br-empty {
+            color: var(--text-light); font-size: 0.85rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .br-empty i { width: 18px; height: 18px; }
+
+        .br-controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-top: 1.25rem; }
+        .br-ctl { flex: 1; min-width: 200px; }
+        .br-ctl label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.4rem; font-weight: 500; }
+        .br-ctl input[type="range"] { width: 100%; accent-color: #6366F1; }
+        .br-ctl .val { font-weight: 700; color: #818CF8; }
+        .br-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.25rem; }
+        .br-btn {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            padding: 0.6rem 1.2rem; border: none; border-radius: 12px;
+            font-family: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .br-btn i { width: 16px; height: 16px; }
+        .br-btn-primary { background: linear-gradient(135deg, #6366F1, #8B5CF6); color: #fff; }
+        .br-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(99,102,241,0.35); }
+        .br-btn-success { background: linear-gradient(135deg, #059669, #10B981); color: #fff; }
+        .br-btn-success:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(5,150,105,0.35); }
+        .br-btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .br-btn-ghost:hover { border-color: #818CF8; color: #818CF8; }
+        .br-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        /* 证件照区 */
+        .br-idphoto { display: none; margin-top: 1.75rem; padding-top: 1.75rem; border-top: 1px solid var(--border); }
+        .br-idphoto.visible { display: block; }
+        .br-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem; }
+        .br-opts h4 { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.6rem; }
+        .br-size-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .br-opt {
+            padding: 0.55rem 0.4rem; border: 1.5px solid var(--border); border-radius: 10px;
+            background: var(--bg); cursor: pointer; text-align: center; transition: all 0.2s;
+            font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
+        }
+        .br-opt small { display: block; font-weight: 400; font-size: 0.7rem; color: var(--text-light); margin-top: 2px; }
+        .br-opt.active { border-color: #818CF8; background: rgba(99,102,241,0.08); color: #818CF8; }
+        .br-color-grid { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .br-color {
+            width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+            border: 2.5px solid transparent; transition: all 0.2s; position: relative;
+        }
+        .br-color.active { border-color: #818CF8; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+        .br-custom-color { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 2.5px solid var(--border); cursor: pointer; padding: 0; background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red); }
+        .br-custom-color input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+        @media (max-width: 860px) {
+            .br-workspace.visible { grid-template-columns: 1fr; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <section class="br-hero">
+        <div class="hero-badge"><i data-lucide="wand-2"></i><span>抠图 · 去背景 · 证件照 · 隐私本地处理</span></div>
+        <h1 class="hero-title">图片去<span class="gradient-text" style="background:linear-gradient(135deg,#6366F1,#A855F7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">背景</span></h1>
+        <p class="hero-description">一键去除图片背景生成透明 PNG，支持证件照换底色、一寸/二寸尺寸调整。所有处理都在本地完成，图片不会上传。</p>
+    </section>
+
+    <section class="br-section">
+        <div class="br-card">
+            <div class="br-card-title"><i data-lucide="image-plus"></i>1. 上传图片</div>
+            <div class="br-upload" id="uploadZone">
+                <i data-lucide="cloud-upload"></i>
+                <p><strong>点击上传</strong> 或拖拽图片到此处</p>
+                <p>支持 PNG / JPG / WebP / BMP</p>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" hidden>
+        </div>
+
+        <div class="br-card" id="workCard">
+            <div class="br-card-title"><i data-lucide="eraser"></i>2. 去除背景</div>
+            <div class="br-workspace" id="workspace">
+                <div class="br-panel">
+                    <h3><i data-lucide="image"></i> 原图 <span class="br-hint">点击原图可手动取样背景色</span></h3>
+                    <div class="br-canvas-wrap">
+                        <canvas id="srcCanvas"></canvas>
+                    </div>
+                </div>
+                <div class="br-panel">
+                    <h3><i data-lucide="wand-2"></i> 抠图结果（透明背景）</h3>
+                    <div class="br-canvas-wrap">
+                        <canvas id="dstCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="br-controls">
+                <div class="br-ctl">
+                    <label>颜色容差：<span class="val" id="tolVal">40</span></label>
+                    <input type="range" id="tolerance" min="0" max="150" value="40">
+                </div>
+                <div class="br-ctl">
+                    <label>边缘羽化：<span class="val" id="softVal">10</span></label>
+                    <input type="range" id="softness" min="0" max="30" value="10">
+                </div>
+            </div>
+            <div class="br-btns">
+                <button class="br-btn br-btn-primary" id="btnAutoRemove"><i data-lucide="sparkles"></i>自动去除背景</button>
+                <button class="br-btn br-btn-ghost" id="btnReset"><i data-lucide="rotate-ccw"></i>重置</button>
+                <button class="br-btn br-btn-success" id="btnDownloadPng"><i data-lucide="download"></i>下载透明 PNG</button>
+            </div>
+
+            <div class="br-idphoto" id="idphotoSection">
+                <div class="br-card-title" style="margin-bottom:1rem;"><i data-lucide="id-card"></i>3. 证件照处理</div>
+                <div class="br-opts">
+                    <div>
+                        <h4>证件照尺寸</h4>
+                        <div class="br-size-grid" id="sizeGrid">
+                            <div class="br-opt active" data-w="295" data-h="413" data-name="一寸"><span>一寸</span><small>295×413 px</small></div>
+                            <div class="br-opt" data-w="413" data-h="579" data-name="二寸"><span>二寸</span><small>413×579 px</small></div>
+                            <div class="br-opt" data-w="260" data-h="378" data-name="小一寸"><span>小一寸</span><small>260×378 px</small></div>
+                            <div class="br-opt" data-w="358" data-h="441" data-name="大一寸"><span>大一寸</span><small>358×441 px</small></div>
+                            <div class="br-opt" data-w="390" data-h="567" data-name="小二寸"><span>小二寸</span><small>390×567 px</small></div>
+                            <div class="br-opt" data-w="0" data-h="0" data-name="自定义"><span>自定义</span><small>输入尺寸</small></div>
+                        </div>
+                        <div id="customSize" style="display:none; margin-top:0.6rem; display:flex; gap:0.4rem; align-items:center;">
+                            <input type="number" id="customW" min="50" max="3000" placeholder="宽 px" class="br-custom-input" style="width:90px;padding:0.45rem;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+                            <span style="color:var(--text-light);">×</span>
+                            <input type="number" id="customH" min="50" max="3000" placeholder="高 px" class="br-custom-input" style="width:90px;padding:0.45rem;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>背景颜色</h4>
+                        <div class="br-color-grid" id="colorGrid">
+                            <div class="br-color active" style="background:#C41E3A;" data-color="#C41E3A" data-name="红底" title="红底"></div>
+                            <div class="br-color" style="background:#438EDB;" data-color="#438EDB" data-name="蓝底" title="蓝底"></div>
+                            <div class="br-color" style="background:#ffffff;" data-color="#ffffff" data-name="白底" title="白底"></div>
+                            <div class="br-color" style="background:#1a1a1a;" data-color="#1a1a1a" data-name="黑底" title="黑底"></div>
+                            <div class="br-color" style="background:#F2E5C9;" data-color="#F2E5C9" data-name="浅蓝底" title="浅蓝底"></div>
+                            <label class="br-custom-color" title="自定义颜色">
+                                <input type="color" id="customColorInput" value="#6366F1">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="br-btns">
+                    <button class="br-btn br-btn-primary" id="btnGenPhoto"><i data-lucide="id-card"></i>生成证件照</button>
+                    <button class="br-btn br-btn-success" id="btnDownloadPhoto"><i data-lucide="download"></i>下载证件照 JPG</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (function() {
+            var srcCanvas = document.getElementById('srcCanvas'), srcCtx = srcCanvas.getContext('2d', { willReadFrequently: true });
+            var dstCanvas = document.getElementById('dstCanvas'), dstCtx = dstCanvas.getContext('2d');
+            var fileInput = document.getElementById('fileInput'), uploadZone = document.getElementById('uploadZone');
+            var toleranceInput = document.getElementById('tolerance'), softnessInput = document.getElementById('softness');
+            var srcImage = null, bgColor = null;
+            var MAX_W = 1600;
+
+            // ---------- 上传 ----------
+            uploadZone.addEventListener('click', function() { fileInput.click(); });
+            uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('dragover'); });
+            uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('dragover'); });
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault(); uploadZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+            });
+            fileInput.addEventListener('change', function() { if (fileInput.files.length) loadFile(fileInput.files[0]); });
+
+            function loadFile(file) {
+                if (!/^image\//.test(file.type)) { Auth.showToast && Auth.showToast('请选择图片文件', 'error'); return; }
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = new Image();
+                    img.onload = function() {
+                        srcImage = img;
+                        var scale = Math.min(1, MAX_W / img.width);
+                        srcCanvas.width = Math.round(img.width * scale);
+                        srcCanvas.height = Math.round(img.height * scale);
+                        srcCtx.drawImage(img, 0, 0, srcCanvas.width, srcCanvas.height);
+                        dstCanvas.width = srcCanvas.width; dstCanvas.height = srcCanvas.height;
+                        dstCtx.drawImage(srcCanvas, 0, 0);
+                        bgColor = null;
+                        document.getElementById('workspace').classList.add('visible');
+                        document.getElementById('idphotoSection').classList.remove('visible');
+                        bindSrcPicker();
+                        autoRemove();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // ---------- 手动取样 ----------
+            function bindSrcPicker() {
+                srcCanvas.onclick = function(e) {
+                    var rect = srcCanvas.getBoundingClientRect();
+                    var x = Math.floor((e.clientX - rect.left) * srcCanvas.width / rect.width);
+                    var y = Math.floor((e.clientY - rect.top) * srcCanvas.height / rect.height);
+                    var d = srcCtx.getImageData(x, y, 1, 1).data;
+                    bgColor = { r: d[0], g: d[1], b: d[2] };
+                    processRemove();
+                    Auth.showToast && Auth.showToast('已取样该点颜色作为背景色', 'success');
+                };
+            }
+
+            // ---------- 自动去背景 ----------
+            function autoRemove() {
+                var data = srcCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height).data;
+                var n = data.length / 4;
+                var samplePts = [
+                    [0, 0], [srcCanvas.width - 1, 0], [0, srcCanvas.height - 1],
+                    [srcCanvas.width - 1, srcCanvas.height - 1],
+                    [Math.floor(srcCanvas.width / 2), 0], [Math.floor(srcCanvas.width / 2), srcCanvas.height - 1],
+                    [0, Math.floor(srcCanvas.height / 2)], [srcCanvas.width - 1, Math.floor(srcCanvas.height / 2)]
+                ];
+                var sum = { r: 0, g: 0, b: 0 };
+                samplePts.forEach(function(p) {
+                    var idx = (p[1] * srcCanvas.width + p[0]) * 4;
+                    sum.r += data[idx]; sum.g += data[idx + 1]; sum.b += data[idx + 2];
+                });
+                bgColor = { r: Math.round(sum.r / samplePts.length), g: Math.round(sum.g / samplePts.length), b: Math.round(sum.b / samplePts.length) };
+                processRemove();
+            }
+
+            // ---------- 抠图核心 ----------
+            function processRemove() {
+                if (!srcImage || !bgColor) return;
+                var w = srcCanvas.width, h = srcCanvas.height;
+                var srcData = srcCtx.getImageData(0, 0, w, h);
+                var px = srcData.data;
+                var tol = parseInt(toleranceInput.value);
+                var soft = parseInt(softnessInput.value);
+                var to = 3 * tol * tol;       // 欧氏距离平方阈值
+                var so = 3 * soft * soft;
+
+                for (var i = 0; i < px.length; i += 4) {
+                    var dr = px[i] - bgColor.r, dg = px[i + 1] - bgColor.g, db = px[i + 2] - bgColor.b;
+                    var dist = dr * dr + dg * dg + db * db;
+                    var alpha = 255;
+                    if (dist < to) {
+                        alpha = 0;
+                    } else if (dist < to + so) {
+                        alpha = Math.round(255 * (1 - (dist - to) / so));
+                    }
+                    px[i + 3] = Math.min(px[i + 3], alpha);
+                }
+                dstCanvas.width = w; dstCanvas.height = h;
+                dstCtx.putImageData(srcData, 0, 0);
+                document.getElementById('idphotoSection').classList.add('visible');
+            }
+
+            function resetAll() {
+                if (!srcImage) return;
+                dstCtx.clearRect(0, 0, dstCanvas.width, dstCanvas.height);
+                dstCtx.drawImage(srcCanvas, 0, 0);
+                document.getElementById('idphotoSection').classList.remove('visible');
+            }
+
+            // ---------- 下载 ----------
+            function downloadCanvas(canvas, filename) {
+                var link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+
+            // ---------- 证件照生成 ----------
+            var activeSize = { w: 295, h: 413, name: '一寸' };
+            var activeColor = '#C41E3A';
+
+            document.querySelectorAll('#sizeGrid .br-opt').forEach(function(el) {
+                el.addEventListener('click', function() {
+                    document.querySelectorAll('#sizeGrid .br-opt').forEach(function(o) { o.classList.remove('active'); });
+                    el.classList.add('active');
+                    var w = parseInt(el.getAttribute('data-w')), h = parseInt(el.getAttribute('data-h'));
+                    var customWrap = document.getElementById('customSize');
+                    if (w === 0) {
+                        customWrap.style.display = 'flex';
+                        return;
+                    }
+                    customWrap.style.display = 'none';
+                    activeSize = { w: w, h: h, name: el.getAttribute('data-name') };
+                });
+            });
+            function getActiveSize() {
+                if (activeSize.w === 0) {
+                    var cw = parseInt(document.getElementById('customW').value) || 295;
+                    var ch = parseInt(document.getElementById('customH').value) || 413;
+                    return { w: cw, h: ch, name: '自定义' };
+                }
+                return activeSize;
+            }
+            document.querySelectorAll('#colorGrid .br-color').forEach(function(el) {
+                el.addEventListener('click', function() {
+                    document.querySelectorAll('#colorGrid .br-color').forEach(function(o) { o.classList.remove('active'); });
+                    el.classList.add('active');
+                    activeColor = el.getAttribute('data-color');
+                });
+            });
+            document.getElementById('customColorInput').addEventListener('input', function() {
+                document.querySelectorAll('#colorGrid .br-color').forEach(function(o) { o.classList.remove('active'); });
+                activeColor = this.value;
+            });
+
+            function generatePhoto() {
+                var size = getActiveSize();
+                var out = document.createElement('canvas');
+                out.width = size.w; out.height = size.h;
+                var ctx = out.getContext('2d');
+                // 背景填充
+                ctx.fillStyle = activeColor;
+                ctx.fillRect(0, 0, size.w, size.h);
+                // 在透明PNG上绘制抠图主体（保持比例，居中）
+                var sw = dstCanvas.width, sh = dstCanvas.height;
+                var scale = Math.min(size.w / sw, size.h / sh) * 0.9;
+                var dw = sw * scale, dh = sh * scale;
+                ctx.drawImage(dstCanvas, (size.w - dw) / 2, (size.h - dh) / 2, dw, dh);
+                var preview = document.createElement('canvas');
+                preview.width = size.w; preview.height = size.h;
+                preview.getContext('2d').drawImage(out, 0, 0);
+                showPhotoPreview(preview, size.name);
+                window._photoCanvas = out;
+            }
+
+            function showPhotoPreview(canvas, name) {
+                var panel = document.querySelector('#workCard .br-panel:last-child .br-canvas-wrap');
+                panel.innerHTML = '';
+                panel.appendChild(canvas);
+                var hint = document.createElement('span');
+                hint.className = 'br-hint';
+                hint.textContent = '证件照预览 · ' + name;
+                panel.appendChild(hint);
+            }
+
+            document.getElementById('btnAutoRemove').addEventListener('click', autoRemove);
+            document.getElementById('btnReset').addEventListener('click', resetAll);
+            document.getElementById('btnDownloadPng').addEventListener('click', function() {
+                downloadCanvas(dstCanvas, '去背景_' + Date.now() + '.png');
+            });
+            document.getElementById('btnGenPhoto').addEventListener('click', function() {
+                if (!srcImage) return;
+                generatePhoto();
+                Auth.showToast && Auth.showToast('证件照已生成', 'success');
+            });
+            document.getElementById('btnDownloadPhoto').addEventListener('click', function() {
+                if (!window._photoCanvas) { Auth.showToast && Auth.showToast('请先生成证件照', 'error'); return; }
+                var link = document.createElement('a');
+                link.download = '证件照_' + Date.now() + '.jpg';
+                link.href = window._photoCanvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+            });
+            toleranceInput.addEventListener('input', function() {
+                document.getElementById('tolVal').textContent = toleranceInput.value;
+                if (srcImage && bgColor) processRemove();
+            });
+            softnessInput.addEventListener('input', function() {
+                document.getElementById('softVal').textContent = softnessInput.value;
+                if (srcImage && bgColor) processRemove();
+            });
+        })();
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #7C3AED, #EC4899);">
+                    <i data-lucide="wand-2"></i>
+                </div>
+                <span>在线抠图</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

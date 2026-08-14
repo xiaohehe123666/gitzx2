@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片EXIF信息查看 - 相机参数与元数据</title>
+    <meta name="description" content="免费在线图片EXIF信息查看工具：读取照片的拍摄参数（相机型号、光圈、快门、ISO、焦距）、拍摄时间、GPS定位、文件信息，浏览器本地处理不上传">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .ex-hero { padding: 7rem 0 2rem; text-align: center; }
+    .ex-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(217, 119, 6, 0.1); color: #D97706; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .ex-hero .hero-badge i { width: 16px; height: 16px; }
+    .ex-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .ex-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .ex-section { padding: 1rem 0 2rem; }
+    .ex-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.25rem; max-width: 980px; margin: 0 auto; }
+    .ex-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-lg); }
+    .ex-upload { border: 2px dashed var(--border); border-radius: 16px; padding: 2.5rem 1rem; text-align: center; cursor: pointer; transition: all .25s; }
+    .ex-upload:hover, .ex-upload.dragover { border-color: var(--primary-light); background: rgba(59, 130, 246, 0.04); }
+    .ex-upload i { width: 40px; height: 40px; color: var(--primary-light); margin-bottom: 0.5rem; }
+    .ex-upload b { display: block; font-size: 1rem; margin-bottom: 0.25rem; }
+    .ex-upload p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); }
+    .ex-preview { margin-top: 1rem; }
+    .ex-preview img { width: 100%; max-height: 320px; object-fit: contain; border-radius: 12px; border: 1px solid var(--border); }
+    .ex-hint { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; }
+
+    .ex-empty { text-align: center; padding: 3rem 1rem; color: var(--text-secondary); }
+    .ex-empty i { width: 36px; height: 36px; margin-bottom: 0.5rem; opacity: 0.5; }
+    .ex-empty p { margin: 0; font-size: 0.9rem; }
+
+    .ex-group { margin-bottom: 1.1rem; }
+    .ex-group-title { font-size: 0.85rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem; }
+    .ex-group-title i { width: 16px; height: 16px; }
+    .ex-row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.5rem 0.6rem; border-radius: 8px; }
+    .ex-row:nth-child(odd) { background: var(--bg); }
+    .ex-row span { font-size: 0.85rem; color: var(--text-secondary); flex-shrink: 0; }
+    .ex-row b { font-size: 0.85rem; text-align: right; word-break: break-all; }
+
+    @media (max-width: 768px) {
+        .ex-hero { padding: 6rem 0 1.5rem; }
+        .ex-hero h1 { font-size: 1.85rem; }
+        .ex-layout { grid-template-columns: 1fr; }
+        .ex-card { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="camera"></i>
+                </div>
+                <span class="logo-text">EXIF查看器</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#exif" class="nav-link active">EXIF查看</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="ex-hero">
+            <div class="hero-badge"><i data-lucide="camera"></i><span>照片拍摄参数与元数据</span></div>
+            <h1 class="hero-title">图片 <span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">EXIF</span> 信息</h1>
+            <p class="hero-description">上传照片，查看相机型号、光圈快门、ISO、拍摄时间、GPS 定位等详细信息。</p>
+        </section>
+
+        <section id="exif" class="ex-section">
+            <div class="container">
+                <div class="ex-layout">
+                    <div class="ex-card">
+                        <div class="ex-upload" id="uploadZone">
+                            <i data-lucide="upload-cloud"></i>
+                            <b>点击上传或拖拽图片</b>
+                            <p>支持 JPG / JPEG（含 EXIF），图片仅在本地解析</p>
+                            <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/webp" hidden>
+                        </div>
+                        <div class="ex-preview" id="previewBox" style="display:none;">
+                            <img id="previewImg" alt="图片预览">
+                        </div>
+                        <p class="ex-hint" id="exHint">提示：手机、相机拍摄的 JPEG 照片通常带有 EXIF 信息；经过社交软件压缩或微信发送的图片可能已丢失。</p>
+                    </div>
+
+                    <div class="ex-card">
+                        <div id="exifContent">
+                            <div class="ex-empty">
+                                <i data-lucide="info"></i>
+                                <p>上传图片后，这里将显示详细的 EXIF 与文件信息</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="camera"></i>
+                </div>
+                <span>EXIF查看器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        var fileInput = document.getElementById('fileInput');
+        var zone = document.getElementById('uploadZone');
+        zone.addEventListener('click', function() { fileInput.click(); });
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files && fileInput.files[0]) process(fileInput.files[0]);
+        });
+        zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+        zone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            zone.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) process(e.dataTransfer.files[0]);
+        });
+
+        function process(file) {
+            if (!file.type.match(/^image\//)) { showToast('请选择图片文件', 'error'); return; }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var dataUrl = e.target.result;
+                document.getElementById('previewImg').src = dataUrl;
+                document.getElementById('previewBox').style.display = 'block';
+                parseExif(dataUrl, file);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* 解析 EXIF（轻量自实现 JPEG APP1 段） */
+        function parseExif(dataUrl, file) {
+            var base64 = dataUrl.split(',')[1];
+            var binary = atob(base64);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+            var groups = [];
+            var fileInfo = {
+                '文件名': file.name,
+                '文件大小': formatSize(file.size),
+                '文件类型': (file.type || '未知')
+            };
+            groups.push({ title: '文件信息', icon: 'file-text', rows: fileInfo });
+
+            var exif = readExif(bytes);
+            if (exif && Object.keys(exif).length) {
+                var camera = {}, shutter = {}, gps = {}, other = {};
+                var mapped = {
+                    Make: '相机品牌', Model: '相机型号', Software: '软件',
+                    DateTimeOriginal: '拍摄时间', DateTimeDigitized: '数字化时间',
+                    ExposureTime: '曝光时间', FNumber: '光圈', ISOSpeedRatings: 'ISO',
+                    FocalLength: '焦距', ExposureProgram: '曝光程序',
+                    Flash: '闪光灯', WhiteBalance: '白平衡', Orientation: '方向',
+                    PixelXDimension: '像素宽', PixelYDimension: '像素高',
+                    GPSLatitude: '纬度', GPSLongitude: '经度', GPSAltitude: '海拔'
+                };
+                for (var key in exif) {
+                    if (!exif.hasOwnProperty(key)) continue;
+                    var label = mapped[key] || key;
+                    var val = exif[key];
+                    if (key === 'GPSLatitude') { gps[label] = val; continue; }
+                    if (key === 'GPSLongitude') { gps[label] = val; continue; }
+                    if (key === 'GPSAltitude') { gps[label] = val; continue; }
+                    if (key === 'Make' || key === 'Model' || key === 'Software') { camera[label] = val; continue; }
+                    if (key === 'ExposureTime' || key === 'FNumber' || key === 'ISOSpeedRatings' || key === 'FocalLength' || key === 'ExposureProgram' || key === 'Flash' || key === 'WhiteBalance') { shutter[label] = val; continue; }
+                    other[label] = val;
+                }
+                if (Object.keys(camera).length) groups.push({ title: '相机信息', icon: 'camera', rows: camera });
+                if (Object.keys(shutter).length) groups.push({ title: '拍摄参数', icon: 'aperture', rows: shutter });
+                if (Object.keys(gps).length) groups.push({ title: 'GPS 信息', icon: 'map-pin', rows: gps });
+                if (Object.keys(other).length) groups.push({ title: '其他信息', icon: 'more-horizontal', rows: other });
+            } else {
+                groups.push({ title: 'EXIF 信息', icon: 'info', rows: { '结果': '未检测到 EXIF 数据（图片可能已被压缩处理）' } });
+            }
+
+            render(groups);
+        }
+
+        function readExif(bytes) {
+            // 查找 JPEG SOI + APP1 (Exif) 标记
+            if (bytes[0] !== 0xFF || bytes[1] !== 0xD8) return null;
+            var offset = 2;
+            var exif = {};
+            while (offset < bytes.length) {
+                if (bytes[offset] !== 0xFF) { offset++; continue; }
+                var marker = bytes[offset + 1];
+                var len = (bytes[offset + 2] << 8) | bytes[offset + 3];
+                if (marker === 0xE1) {
+                    // APP1 - Exif
+                    var tiffStart = offset + 4;
+                    var header = '';
+                    for (var i = 0; i < 6; i++) header += String.fromCharCode(bytes[tiffStart + i]);
+                    if (header.indexOf('Exif') === 0) {
+                        parseTiff(bytes, tiffStart + 6, exif);
+                        return exif;
+                    }
+                }
+                if (marker === 0xDA) break; // SOS，数据开始
+                offset += 2 + len;
+            }
+            return exif;
+        }
+
+        function parseTiff(bytes, tiffStart, exif) {
+            var endian = (bytes[tiffStart] === 0x49) ? true : false; // true = little endian
+            var get16 = function(o) {
+                var a = bytes[o], b = bytes[o + 1];
+                return endian ? (a | (b << 8)) : ((a << 8) | b);
+            };
+            var get32 = function(o) {
+                var a = bytes[o], b = bytes[o + 1], c = bytes[o + 2], d = bytes[o + 3];
+                if (endian) return a | (b << 8) | (c << 16) | (d << 24);
+                return (a << 24) | (b << 16) | (c << 8) | d;
+            };
+            var ifdOffset = get32(tiffStart + 4);
+            var ifdStart = tiffStart + ifdOffset;
+
+            var count = get16(ifdStart);
+            for (var i = 0; i < count; i++) {
+                var entry = ifdStart + 2 + i * 12;
+                var tag = get16(entry);
+                var type = get16(entry + 2);
+                var countVal = get32(entry + 4);
+                var valueOffset = entry + 8;
+                var value;
+
+                var typeSizes = { 1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1, 9: 4, 10: 8 };
+                var size = typeSizes[type] || 1;
+                var total = size * countVal;
+                var dataStart = valueOffset;
+                if (total > 4) dataStart = tiffStart + get32(valueOffset);
+
+                try {
+                    if (type === 2) { // ASCII
+                        var s = '';
+                        for (var j = 0; j < countVal && j < 100; j++) {
+                            var c = bytes[dataStart + j];
+                            if (c === 0) break;
+                            s += String.fromCharCode(c);
+                        }
+                        value = s;
+                    } else if (type === 3) { // SHORT
+                        value = get16(dataStart);
+                    } else if (type === 4) { // LONG
+                        value = get32(dataStart);
+                    } else if (type === 5) { // RATIONAL
+                        var num = get32(dataStart);
+                        var den = get32(dataStart + 4);
+                        value = den ? (num / den) : 0;
+                        value = formatRational(value);
+                    } else if (type === 1) { // BYTE
+                        value = bytes[dataStart];
+                    } else if (type === 9) { // SLONG
+                        value = get32(dataStart);
+                    } else if (type === 10) { // SRATIONAL
+                        var n2 = get32(dataStart);
+                        var d2 = get32(dataStart + 4);
+                        value = d2 ? (n2 / d2) : 0;
+                        value = formatRational(value);
+                    } else {
+                        value = undefined;
+                    }
+
+                    if (value !== undefined) {
+                        if (tag === 33434) exif.ExposureTime = value + ' 秒'; // 曝光时间
+                        else if (tag === 33437) exif.FNumber = 'f/' + value; // 光圈
+                        else if (tag === 34855) exif.ISOSpeedRatings = 'ISO ' + value;
+                        else if (tag === 36867) exif.DateTimeOriginal = value;
+                        else if (tag === 36868) exif.DateTimeDigitized = value;
+                        else if (tag === 271) exif.Make = value;
+                        else if (tag === 272) exif.Model = value;
+                        else if (tag === 305) exif.Software = value;
+                        else if (tag === 37386) exif.FocalLength = value + ' mm';
+                        else if (tag === 34850) exif.ExposureProgram = exposureProgram(value);
+                        else if (tag === 37385) exif.Flash = flashMode(value);
+                        else if (tag === 41987) exif.WhiteBalance = value ? '手动' : '自动';
+                        else if (tag === 274) exif.Orientation = orientation(value);
+                        else if (tag === 40962) exif.PixelXDimension = value;
+                        else if (tag === 40963) exif.PixelYDimension = value;
+                    }
+                } catch (e) {}
+            }
+        }
+
+        function formatRational(v) {
+            if (typeof v !== 'number' || isNaN(v)) return '未知';
+            if (v >= 1) return Math.round(v * 100) / 100;
+            // 分数形式
+            var t = 1 / v;
+            if (Math.abs(t - Math.round(t)) < 0.05) return '1/' + Math.round(t);
+            return Math.round(v * 1000) / 1000;
+        }
+        function exposureProgram(v) {
+            var map = { 0: '未定义', 1: '手动', 2: '程序自动', 3: '光圈优先', 4: '快门优先', 5: '创意', 6: '运动', 7: '人像', 8: '风景' };
+            return map[v] || v;
+        }
+        function flashMode(v) {
+            if (v === 0) return '未使用';
+            if (v === 1) return '闪光';
+            if (v === 16) return '未使用（强制关闭）';
+            return '闪光（模式 ' + v + '）';
+        }
+        function orientation(v) {
+            var map = { 1: '正常', 3: '旋转180°', 6: '顺时针90°', 8: '逆时针90°' };
+            return map[v] || v;
+        }
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        function render(groups) {
+            var content = document.getElementById('exifContent');
+            content.innerHTML = '';
+            groups.forEach(function(g) {
+                var div = document.createElement('div');
+                div.className = 'ex-group';
+                var title = '<div class="ex-group-title"><i data-lucide="' + g.icon + '"></i>' + g.title + '</div>';
+                var rows = '';
+                for (var k in g.rows) {
+                    if (!g.rows.hasOwnProperty(k)) continue;
+                    rows += '<div class="ex-row"><span>' + k + '</span><b>' + g.rows[k] + '</b></div>';
+                }
+                div.innerHTML = title + rows;
+                content.appendChild(div);
+            });
+            if (window.lucide) lucide.createIcons();
+        }
+    })();
+    </script>
+</body>
+</html>

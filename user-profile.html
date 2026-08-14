@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心 - 在线工具箱</title>
+    <meta name="description" content="用户中心：管理个人信息、查看收藏工具、最近使用记录与积分，个性化你的工具箱">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/starlight.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <script src="js/starlight.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <canvas id="starlightCanvas"></canvas>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <span class="logo-text">在线工具箱</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 未登录提示 -->
+        <section class="profile-not-logged-in" id="notLoggedIn">
+            <div class="profile-empty-icon">
+                <i data-lucide="user-x"></i>
+            </div>
+            <h2>您还未登录</h2>
+            <p>登录后即可使用用户中心和个性化设置</p>
+            <div class="profile-empty-actions">
+                <button class="profile-empty-btn primary" id="emptyLoginBtn">
+                    <i data-lucide="log-in" style="width:18px;height:18px;"></i>
+                    登录
+                </button>
+                <button class="profile-empty-btn" id="emptyRegisterBtn">
+                    <i data-lucide="user-plus" style="width:18px;height:18px;"></i>
+                    注册
+                </button>
+            </div>
+        </section>
+
+        <!-- 用户中心内容 -->
+        <section class="profile-section hidden" id="profileSection">
+            <!-- 个人信息卡片 -->
+            <div class="profile-card">
+                <div class="profile-banner" id="profileBanner"></div>
+                <div class="profile-header">
+                    <div class="profile-avatar-large" id="profileAvatar"></div>
+                    <div class="profile-header-info">
+                        <h2 id="profileNickname"></h2>
+                        <p class="profile-username">@<span id="profileUsername"></span></p>
+                        <p class="profile-bio" id="profileBio"></p>
+                        <div class="profile-meta">
+                            <span class="profile-meta-item">
+                                <i data-lucide="mail" style="width:14px;height:14px;"></i>
+                                <span id="profileEmail"></span>
+                            </span>
+                            <span class="profile-meta-item">
+                                <i data-lucide="calendar" style="width:14px;height:14px;"></i>
+                                <span id="profileJoinDate"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置区域 -->
+            <div class="profile-settings-grid">
+                <!-- 编辑资料 -->
+                <div class="profile-panel">
+                    <div class="profile-panel-header">
+                        <div class="profile-panel-icon" style="background: linear-gradient(135deg, #6366F1, #8B5CF6);">
+                            <i data-lucide="edit-3"></i>
+                        </div>
+                        <div>
+                            <h3>编辑资料</h3>
+                            <p>自定义您的个人信息</p>
+                        </div>
+                    </div>
+                    <div class="profile-panel-body">
+                        <div class="profile-form-group">
+                            <label>昵称</label>
+                            <input type="text" id="editNickname" class="profile-input" placeholder="输入您的昵称" maxlength="20">
+                        </div>
+                        <div class="profile-form-group">
+                            <label>邮箱</label>
+                            <input type="email" id="editEmail" class="profile-input" placeholder="example@email.com">
+                        </div>
+                        <div class="profile-form-group">
+                            <label>个性签名</label>
+                            <textarea id="editBio" class="profile-input profile-textarea" placeholder="介绍一下自己吧..." maxlength="100" rows="2"></textarea>
+                            <span class="profile-char-count"><span id="bioCount">0</span>/100</span>
+                        </div>
+                        <button class="profile-save-btn" id="saveProfileBtn">
+                            <i data-lucide="check" style="width:16px;height:16px;"></i>
+                            保存资料
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 头像设置 -->
+                <div class="profile-panel">
+                    <div class="profile-panel-header">
+                        <div class="profile-panel-icon" style="background: linear-gradient(135deg, #0891B2, #06B6D4);">
+                            <i data-lucide="palette"></i>
+                        </div>
+                        <div>
+                            <h3>头像设置</h3>
+                            <p>选择您喜欢的头像样式</p>
+                        </div>
+                    </div>
+                    <div class="profile-panel-body">
+                        <div class="profile-avatar-preview" id="avatarPreview"></div>
+                        <div class="profile-form-group">
+                            <label>自定义头像图片</label>
+                            <div class="profile-image-upload-area">
+                                <input type="file" id="avatarImageInput" accept="image/*" style="display:none;">
+                                <button type="button" class="profile-btn profile-btn-secondary" id="avatarUploadBtn">
+                                    <i data-lucide="upload" style="width:16px;height:16px;"></i>
+                                    <span>选择图片</span>
+                                </button>
+                                <button type="button" class="profile-btn profile-btn-danger-ghost hidden" id="avatarRemoveBtn">
+                                    <i data-lucide="x" style="width:16px;height:16px;"></i>
+                                    <span>移除图片</span>
+                                </button>
+                                <span class="profile-upload-tip">建议正方形图片，会自动压缩后本地存储</span>
+                            </div>
+                        </div>
+                        <div class="profile-form-group">
+                            <label>头像表情（选填，与图片二选一）</label>
+                            <input type="text" id="editAvatarEmoji" class="profile-input" placeholder="输入一个表情符号，如 🚀" maxlength="2">
+                        </div>
+                        <div class="profile-form-group">
+                            <label>头像颜色</label>
+                            <div class="profile-color-grid" id="avatarColorGrid"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 修改密码 -->
+                <div class="profile-panel">
+                    <div class="profile-panel-header">
+                        <div class="profile-panel-icon" style="background: linear-gradient(135deg, #DC2626, #F59E0B);">
+                            <i data-lucide="key"></i>
+                        </div>
+                        <div>
+                            <h3>修改密码</h3>
+                            <p>定期更换密码更安全</p>
+                        </div>
+                    </div>
+                    <div class="profile-panel-body">
+                        <div class="profile-form-group">
+                            <label>原密码</label>
+                            <div class="profile-input-wrapper">
+                                <input type="password" id="oldPassword" class="profile-input" placeholder="输入原密码">
+                                <button type="button" class="profile-password-toggle" data-target="oldPassword">
+                                    <i data-lucide="eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="profile-form-group">
+                            <label>新密码</label>
+                            <div class="profile-input-wrapper">
+                                <input type="password" id="newPassword" class="profile-input" placeholder="至少 6 位">
+                                <button type="button" class="profile-password-toggle" data-target="newPassword">
+                                    <i data-lucide="eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="profile-form-group">
+                            <label>确认新密码</label>
+                            <div class="profile-input-wrapper">
+                                <input type="password" id="confirmPassword" class="profile-input" placeholder="再次输入新密码">
+                                <button type="button" class="profile-password-toggle" data-target="confirmPassword">
+                                    <i data-lucide="eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="profile-save-btn" id="changePasswordBtn">
+                            <i data-lucide="shield" style="width:16px;height:16px;"></i>
+                            修改密码
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 数据统计 -->
+                <div class="profile-panel">
+                    <div class="profile-panel-header">
+                        <div class="profile-panel-icon" style="background: linear-gradient(135deg, #059669, #10B981);">
+                            <i data-lucide="bar-chart-3"></i>
+                        </div>
+                        <div>
+                            <h3>数据统计</h3>
+                            <p>您的使用数据概览</p>
+                        </div>
+                    </div>
+                    <div class="profile-panel-body">
+                        <div class="profile-stats">
+                            <div class="profile-stat-item">
+                                <div class="profile-stat-value" id="statConversations">0</div>
+                                <div class="profile-stat-label">AI 对话</div>
+                            </div>
+                            <div class="profile-stat-item">
+                                <div class="profile-stat-value" id="statStorage">0 KB</div>
+                                <div class="profile-stat-label">存储占用</div>
+                            </div>
+                            <div class="profile-stat-item">
+                                <div class="profile-stat-value" id="statDays">0</div>
+                                <div class="profile-stat-label">注册天数</div>
+                            </div>
+                        </div>
+                        <button class="profile-danger-btn" id="clearDataBtn">
+                            <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
+                            清空所有数据
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 星空主题 -->
+                <div class="profile-panel">
+                    <div class="profile-panel-header">
+                        <div class="profile-panel-icon" style="background: linear-gradient(135deg, #8B5CF6, #EC4899);">
+                            <i data-lucide="sparkles"></i>
+                        </div>
+                        <div>
+                            <h3>星空主题</h3>
+                            <p>隐藏彩蛋 · 愿星光指引你的旅程</p>
+                        </div>
+                    </div>
+                    <div class="profile-panel-body">
+                        <div class="starlight-setting-row">
+                            <div class="starlight-setting-info">
+                                <strong>开启星空主题</strong>
+                                <span>在梦幻星空下使用工具箱</span>
+                            </div>
+                            <label class="starlight-switch">
+                                <input type="checkbox" id="starlightSwitch">
+                                <span class="starlight-switch-slider"></span>
+                            </label>
+                        </div>
+                        <div class="starlight-setting-hint">彩蛋入口：在首页搜索框输入 <code>作者大大最帅</code> 即可触发。开启后全站生效，也可在此随时关闭。</div>
+                    </div>
+                </div>
+
+                <!-- 积分签到 -->
+                <div class="profile-panel">
+                    <div class="profile-panel-header">
+                        <div class="profile-panel-icon" style="background: linear-gradient(135deg, #F59E0B, #EF4444);">
+                            <i data-lucide="badge-plus"></i>
+                        </div>
+                        <div>
+                            <h3>积分签到</h3>
+                            <p>每日签到领积分 · 连续签到有额外奖励</p>
+                        </div>
+                    </div>
+                    <div class="profile-panel-body">
+                        <div class="points-overview">
+                            <div class="points-total">
+                                <div class="points-total-num" id="pointsTotal">0</div>
+                                <div class="points-total-label">我的积分</div>
+                            </div>
+                            <div class="points-streak" id="pointsStreak">
+                                <i data-lucide="flame" style="width:18px;height:18px;"></i>
+                                <span>连续签到 <b id="pointsStreakNum">0</b> 天</span>
+                            </div>
+                        </div>
+                        <button class="points-checkin-btn" id="checkInBtn">
+                            <i data-lucide="calendar-check"></i>
+                            <span>立即签到</span>
+                        </button>
+                        <div class="points-rules">
+                            <span><i data-lucide="circle-dot" style="width:13px;height:13px;"></i>每天签到 +5 积分</span>
+                            <span><i data-lucide="circle-dot" style="width:13px;height:13px;"></i>连续签到每满 7 天额外 +10</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 我的收藏 & 最近使用 -->
+                <div class="profile-panel">
+                    <div class="profile-panel-header">
+                        <div class="profile-panel-icon" style="background: linear-gradient(135deg, #0EA5E9, #6366F1);">
+                            <i data-lucide="bookmark"></i>
+                        </div>
+                        <div>
+                            <h3>我的收藏 & 最近使用</h3>
+                            <p>快速回到常用工具</p>
+                        </div>
+                    </div>
+                    <div class="profile-panel-body">
+                        <div class="profile-sub-section">
+                            <div class="profile-sub-title"><i data-lucide="bookmark" style="width:15px;height:15px;"></i>我的收藏</div>
+                            <div class="profile-tool-grid" id="favToolList">
+                                <div class="profile-tool-empty">还没有收藏任何工具，在工具卡片上点星标即可收藏</div>
+                            </div>
+                        </div>
+                        <div class="profile-sub-section" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                            <div class="profile-sub-title"><i data-lucide="history" style="width:15px;height:15px;"></i>最近使用</div>
+                            <div class="profile-tool-grid" id="recentToolList">
+                                <div class="profile-tool-empty">暂无使用记录</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 意见反馈 -->
+        <section class="profile-section">
+            <div class="profile-panel">
+                <div class="profile-panel-header">
+                    <div class="profile-panel-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                        <i data-lucide="message-square"></i>
+                    </div>
+                    <div>
+                        <h3>意见反馈</h3>
+                        <p>有什么建议或问题？告诉我们</p>
+                    </div>
+                </div>
+                <div class="profile-panel-body">
+                    <div class="profile-form-group">
+                        <label class="profile-form-label">反馈类型</label>
+                        <select id="feedbackCategory" class="profile-form-input" style="padding:0.625rem 0.75rem;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.9375rem;background:var(--bg-card);color:var(--text);">
+                            <option value="建议">功能建议</option>
+                            <option value="Bug">问题报告</option>
+                            <option value="体验">使用体验</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="profile-form-group">
+                        <label class="profile-form-label">反馈内容</label>
+                        <textarea id="feedbackContent" class="profile-form-input" rows="4" placeholder="请详细描述您的建议或遇到的问题..." style="padding:0.625rem 0.75rem;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.9375rem;background:var(--bg-card);color:var(--text);resize:vertical;min-height:100px;"></textarea>
+                    </div>
+                    <div class="profile-form-group">
+                        <label class="profile-form-label">联系方式（选填）</label>
+                        <input type="text" id="feedbackContact" class="profile-form-input" placeholder="邮箱或 QQ，方便我们回复您" style="padding:0.625rem 0.75rem;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.9375rem;background:var(--bg-card);color:var(--text);">
+                    </div>
+                    <button id="submitFeedbackBtn" class="profile-save-btn" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                        <i data-lucide="send" style="width:16px;height:16px;"></i>
+                        <span>提交反馈</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast 提示 -->
+    <div class="toast hidden" id="toast">
+        <div class="toast-icon" id="toastIcon"></div>
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div class="auth-modal" id="confirmModal">
+        <div class="auth-modal-overlay"></div>
+        <div class="auth-modal-content" style="max-width: 380px;">
+            <div class="auth-modal-header" style="margin-bottom: 1rem;">
+                <div class="auth-modal-logo" style="background: linear-gradient(135deg, #EF4444, #DC2626); width: 48px; height: 48px;">
+                    <i data-lucide="alert-triangle" style="width:24px;height:24px;"></i>
+                </div>
+                <h3 style="margin-top: 0.75rem;">确认操作</h3>
+            </div>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;" id="confirmMessage"></p>
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="profile-save-btn" id="confirmCancelBtn" style="flex: 1; background: var(--bg); color: var(--text); border: 1.5px solid var(--border);">
+                    取消
+                </button>
+                <button class="profile-save-btn" id="confirmOkBtn" style="flex: 1; background: linear-gradient(135deg, #EF4444, #DC2626);">
+                    确认
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var els = {
+            notLoggedIn: document.getElementById('notLoggedIn'),
+            profileSection: document.getElementById('profileSection'),
+            profileBanner: document.getElementById('profileBanner'),
+            profileAvatar: document.getElementById('profileAvatar'),
+            profileNickname: document.getElementById('profileNickname'),
+            profileUsername: document.getElementById('profileUsername'),
+            profileBio: document.getElementById('profileBio'),
+            profileEmail: document.getElementById('profileEmail'),
+            profileJoinDate: document.getElementById('profileJoinDate'),
+            editNickname: document.getElementById('editNickname'),
+            editEmail: document.getElementById('editEmail'),
+            editBio: document.getElementById('editBio'),
+            bioCount: document.getElementById('bioCount'),
+            saveProfileBtn: document.getElementById('saveProfileBtn'),
+            avatarPreview: document.getElementById('avatarPreview'),
+            avatarImageInput: document.getElementById('avatarImageInput'),
+            avatarUploadBtn: document.getElementById('avatarUploadBtn'),
+            avatarRemoveBtn: document.getElementById('avatarRemoveBtn'),
+            editAvatarEmoji: document.getElementById('editAvatarEmoji'),
+            avatarColorGrid: document.getElementById('avatarColorGrid'),
+            oldPassword: document.getElementById('oldPassword'),
+            newPassword: document.getElementById('newPassword'),
+            confirmPassword: document.getElementById('confirmPassword'),
+            changePasswordBtn: document.getElementById('changePasswordBtn'),
+            statConversations: document.getElementById('statConversations'),
+            statStorage: document.getElementById('statStorage'),
+            statDays: document.getElementById('statDays'),
+            clearDataBtn: document.getElementById('clearDataBtn'),
+            toast: document.getElementById('toast'),
+            toastMessage: document.getElementById('toastMessage'),
+            toastIcon: document.getElementById('toastIcon'),
+            confirmModal: document.getElementById('confirmModal'),
+            confirmMessage: document.getElementById('confirmMessage'),
+            confirmCancelBtn: document.getElementById('confirmCancelBtn'),
+            confirmOkBtn: document.getElementById('confirmOkBtn'),
+            emptyLoginBtn: document.getElementById('emptyLoginBtn'),
+            emptyRegisterBtn: document.getElementById('emptyRegisterBtn'),
+            pointsTotal: document.getElementById('pointsTotal'),
+            pointsStreakNum: document.getElementById('pointsStreakNum'),
+            checkInBtn: document.getElementById('checkInBtn'),
+            favToolList: document.getElementById('favToolList'),
+            recentToolList: document.getElementById('recentToolList')
+        };
+
+        var selectedAvatarColor = 0;
+        var selectedAvatarImage = '';
+
+        /**
+         * 使用 Canvas 将图片压缩为指定尺寸并返回 base64
+         */
+        function compressImage(file, maxSize, quality, callback) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    try {
+                        var canvas = document.createElement('canvas');
+                        var size = maxSize || 256;
+                        var w = img.naturalWidth;
+                        var h = img.naturalHeight;
+                        // 居中裁剪正方形
+                        var sx = 0, sy = 0, sw = w, sh = h;
+                        if (w > h) { sx = (w - h) / 2; sw = h; }
+                        else { sy = (h - w) / 2; sh = w; }
+                        canvas.width = size;
+                        canvas.height = size;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+                        var dataUrl = canvas.toDataURL('image/jpeg', quality || 0.85);
+                        callback(null, dataUrl);
+                    } catch (err) {
+                        callback(err);
+                    }
+                };
+                img.onerror = function() { callback(new Error('图片加载失败')); };
+                img.src = e.target.result;
+            };
+            reader.onerror = function() { callback(new Error('文件读取失败')); };
+            reader.readAsDataURL(file);
+        }
+
+        function showToast(msg, type) {
+            els.toastMessage.textContent = msg;
+            var iconHtml = type === 'error' ? '<i data-lucide="x-circle"></i>' : '<i data-lucide="check-circle"></i>';
+            els.toastIcon.innerHTML = iconHtml;
+            els.toastIcon.className = 'toast-icon toast-' + (type || 'success');
+            els.toast.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(function() {
+                els.toast.classList.add('hidden');
+            }, 2500);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatDate(ts) {
+            if (!ts) return '';
+            var d = new Date(ts);
+            return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+        }
+
+        function getAvatarStyle(colorIndex) {
+            var c = window.Auth ? Auth.getAvatarColor(colorIndex) : { from: '#6366F1', to: '#8B5CF6' };
+            return 'background: linear-gradient(135deg, ' + c.from + ', ' + c.to + ');';
+        }
+
+        function getAvatarText(emoji, name) {
+            if (emoji) return emoji;
+            return (name || '?').charAt(0).toUpperCase();
+        }
+
+        function renderProfile() {
+            var userInfo = window.Auth ? Auth.getCurrentUserInfo() : null;
+            if (!userInfo) {
+                els.notLoggedIn.classList.remove('hidden');
+                els.profileSection.classList.add('hidden');
+                return;
+            }
+
+            els.notLoggedIn.classList.add('hidden');
+            els.profileSection.classList.remove('hidden');
+
+            var colorIdx = 0;
+            var profile = Auth.getProfile();
+            if (profile) {
+                colorIdx = profile.avatarColor;
+                selectedAvatarImage = profile.avatarImage || '';
+            } else {
+                selectedAvatarImage = '';
+            }
+
+            var fullAvatarStyle = getAvatarStyle(colorIdx);
+            var displayText = getAvatarText(userInfo.avatarEmoji, userInfo.nickname);
+            var hasImage = !!selectedAvatarImage;
+
+            // Banner：有图片时使用图片+模糊，无图片时使用头像颜色渐变
+            var c = Auth.getAvatarColor(colorIdx);
+            if (hasImage) {
+                els.profileBanner.style.background = 'linear-gradient(135deg, rgba(0,0,0,0.2), rgba(0,0,0,0.35)), url(' + selectedAvatarImage + ') center/cover no-repeat';
+            } else {
+                els.profileBanner.style.background = 'linear-gradient(135deg, ' + c.from + ', ' + c.to + ')';
+            }
+
+            // 头像
+            if (hasImage) {
+                els.profileAvatar.style.cssText = fullAvatarStyle + 'background-image:url(' + selectedAvatarImage + ');background-size:cover;background-position:center;background-repeat:no-repeat;';
+                els.profileAvatar.textContent = '';
+                els.profileAvatar.classList.add('profile-avatar-img-mode');
+            } else {
+                els.profileAvatar.style.cssText = fullAvatarStyle;
+                els.profileAvatar.textContent = displayText;
+                els.profileAvatar.classList.remove('profile-avatar-img-mode');
+            }
+
+            // 信息
+            els.profileNickname.textContent = userInfo.nickname;
+            els.profileUsername.textContent = userInfo.username;
+            els.profileBio.textContent = userInfo.bio || '这个人很神秘，什么都没写~';
+            els.profileEmail.textContent = userInfo.email || '未设置邮箱';
+            els.profileJoinDate.textContent = formatDate(userInfo.createdAt);
+
+            // 编辑表单
+            els.editNickname.value = userInfo.nickname === userInfo.username ? '' : userInfo.nickname;
+            els.editEmail.value = userInfo.email || '';
+            els.editBio.value = userInfo.bio || '';
+            els.bioCount.textContent = (userInfo.bio || '').length;
+            els.editAvatarEmoji.value = userInfo.avatarEmoji || '';
+
+            // 上传按钮状态
+            if (hasImage) {
+                els.avatarRemoveBtn.classList.remove('hidden');
+                els.avatarUploadBtn.querySelector('span').textContent = '更换图片';
+            } else {
+                els.avatarRemoveBtn.classList.add('hidden');
+                els.avatarUploadBtn.querySelector('span').textContent = '选择图片';
+            }
+
+            // 头像预览
+            updateAvatarPreview();
+
+            // 颜色选择器
+            renderColorGrid(colorIdx);
+
+            // 统计
+            renderStats(userInfo);
+
+            // 积分签到 + 收藏/最近使用
+            renderPoints();
+            renderFavAndRecent();
+        }
+
+        function updateAvatarPreview() {
+            var hasImage = !!selectedAvatarImage;
+            var emoji = els.editAvatarEmoji.value.trim();
+            var nickname = els.editNickname.value.trim() || (Auth.getCurrentUser() || '?');
+            var text = getAvatarText(emoji, nickname);
+            var baseStyle = getAvatarStyle(selectedAvatarColor);
+            if (hasImage) {
+                els.avatarPreview.style.cssText = baseStyle + 'background-image:url(' + selectedAvatarImage + ');background-size:cover;background-position:center;background-repeat:no-repeat;';
+                els.avatarPreview.textContent = '';
+                els.avatarPreview.classList.add('profile-avatar-preview-img');
+            } else {
+                els.avatarPreview.style.cssText = baseStyle;
+                els.avatarPreview.textContent = text;
+                els.avatarPreview.classList.remove('profile-avatar-preview-img');
+            }
+        }
+
+        function renderColorGrid(currentIdx) {
+            var colors = Auth.getAvatarColors();
+            els.avatarColorGrid.innerHTML = '';
+            colors.forEach(function(c, i) {
+                var item = document.createElement('div');
+                item.className = 'profile-color-item' + (i === currentIdx ? ' selected' : '');
+                item.style.background = 'linear-gradient(135deg, ' + c.from + ', ' + c.to + ')';
+                item.title = c.name;
+                item.addEventListener('click', function() {
+                    selectedAvatarColor = i;
+                    document.querySelectorAll('.profile-color-item').forEach(function(el) {
+                        el.classList.remove('selected');
+                    });
+                    item.classList.add('selected');
+                    updateAvatarPreview();
+                });
+                els.avatarColorGrid.appendChild(item);
+            });
+            selectedAvatarColor = currentIdx;
+        }
+
+        function renderStats(userInfo) {
+            // AI 对话数
+            var conversations = Auth.getUserData('ai-chat-history') || [];
+            els.statConversations.textContent = conversations.length;
+
+            // 存储占用
+            var username = Auth.getCurrentUser();
+            var totalSize = 0;
+            for (var i = 0; i < localStorage.length; i++) {
+                var key = localStorage.key(i);
+                if (key.indexOf('toolbox_ud_' + username + '_') === 0 || key === 'toolbox_users') {
+                    totalSize += (localStorage.getItem(key) || '').length;
+                }
+            }
+            var sizeStr = totalSize < 1024 ? totalSize + ' B' : (totalSize / 1024).toFixed(1) + ' KB';
+            if (totalSize > 1024 * 1024) sizeStr = (totalSize / (1024 * 1024)).toFixed(1) + ' MB';
+            els.statStorage.textContent = sizeStr;
+
+            // 注册天数
+            if (userInfo.createdAt) {
+                var days = Math.floor((Date.now() - userInfo.createdAt) / (1000 * 60 * 60 * 24));
+                els.statDays.textContent = days;
+            }
+        }
+
+        function renderPoints() {
+            var points = Auth.getPoints();
+            els.pointsTotal.textContent = points;
+
+            // 查询签到状态（今天是否已签）
+            var user = Auth.getCurrentUser();
+            if (!user) return;
+            var checkinKey = 'toolbox_checkin_' + user;
+            var info = {};
+            try { info = JSON.parse(localStorage.getItem(checkinKey) || '{}'); } catch (e) {}
+            var today = (function() {
+                var d = new Date();
+                return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+            })();
+            els.pointsStreakNum.textContent = info.streak || 0;
+            if (info.lastDate === today) {
+                els.checkInBtn.disabled = true;
+                els.checkInBtn.innerHTML = '<i data-lucide="check-circle"></i><span>今日已签到</span>';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function toolIconById(toolId, catalog) {
+            for (var i = 0; i < catalog.length; i++) {
+                if (catalog[i].href === toolId) return catalog[i];
+            }
+            return null;
+        }
+
+        function renderFavAndRecent() {
+            var catalog = Auth.getToolCatalog();
+            var favs = Auth.getFavoriteTools();
+            var recents = Auth.getRecentTools();
+
+            els.favToolList.innerHTML = '';
+            els.recentToolList.innerHTML = '';
+
+            if (!favs.length) {
+                els.favToolList.innerHTML = '<div class="profile-tool-empty">还没有收藏任何工具，在工具卡片上点星标即可收藏</div>';
+            } else {
+                favs.forEach(function(id) {
+                    var meta = toolIconById(id, catalog);
+                    if (!meta) return;
+                    var item = document.createElement('a');
+                    item.className = 'profile-tool-item';
+                    item.href = meta.href;
+                    item.innerHTML =
+                        '<span class="profile-tool-item-icon"><i data-lucide="' + (meta.icon || 'wrench') + '" style="width:15px;height:15px;"></i></span>' +
+                        '<span class="profile-tool-item-text">' + meta.title + '</span>';
+                    els.favToolList.appendChild(item);
+                });
+            }
+
+            if (!recents.length) {
+                els.recentToolList.innerHTML = '<div class="profile-tool-empty">暂无使用记录</div>';
+            } else {
+                recents.forEach(function(id) {
+                    var meta = toolIconById(id, catalog);
+                    if (!meta) return;
+                    var item = document.createElement('a');
+                    item.className = 'profile-tool-item';
+                    item.href = meta.href;
+                    item.innerHTML =
+                        '<span class="profile-tool-item-icon"><i data-lucide="' + (meta.icon || 'wrench') + '" style="width:15px;height:15px;"></i></span>' +
+                        '<span class="profile-tool-item-text">' + meta.title + '</span>';
+                    els.recentToolList.appendChild(item);
+                });
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function handleCheckIn() {
+            var result = Auth.checkIn();
+            if (result.needLogin) {
+                showToast('请先登录', 'error');
+                return;
+            }
+            if (result.already) {
+                showToast('今天已经签到过了', 'error');
+                renderPoints();
+                return;
+            }
+            renderPoints();
+            els.pointsTotal.textContent = result.total;
+            els.pointsStreakNum.textContent = result.streak;
+            els.checkInBtn.disabled = true;
+            els.checkInBtn.innerHTML = '<i data-lucide="check-circle"></i><span>今日已签到</span>';
+            if (window.lucide) lucide.createIcons();
+            showToast('签到成功！+ ' + result.gained + ' 积分');
+        }
+
+        function saveProfile() {
+            var profile = Auth.getProfile();
+            if (!profile) return;
+
+            profile.nickname = els.editNickname.value.trim() || Auth.getCurrentUser();
+            profile.email = els.editEmail.value.trim();
+            profile.bio = els.editBio.value.trim();
+            // 有图片时，使用图片，表情仅作为无图片时的备选
+            if (selectedAvatarImage) {
+                profile.avatarImage = selectedAvatarImage;
+            } else {
+                delete profile.avatarImage;
+                profile.avatarImage = '';
+            }
+            profile.avatarEmoji = els.editAvatarEmoji.value.trim();
+            profile.avatarColor = selectedAvatarColor;
+
+            Auth.saveProfile(profile);
+            Auth.updateNavUserState();
+            renderProfile();
+            showToast('资料保存成功');
+        }
+
+        async function changePassword() {
+            var oldPwd = els.oldPassword.value;
+            var newPwd = els.newPassword.value;
+            var confirmPwd = els.confirmPassword.value;
+
+            if (!oldPwd || !newPwd) {
+                showToast('请填写完整密码信息', 'error');
+                return;
+            }
+            if (newPwd !== confirmPwd) {
+                showToast('两次输入的新密码不一致', 'error');
+                return;
+            }
+            if (newPwd.length < 6) {
+                showToast('新密码至少需要 6 个字符', 'error');
+                return;
+            }
+
+            els.changePasswordBtn.disabled = true;
+            els.changePasswordBtn.textContent = '修改中...';
+
+            var result = await Auth.changePassword(oldPwd, newPwd);
+
+            els.changePasswordBtn.disabled = false;
+            els.changePasswordBtn.innerHTML = '<i data-lucide="shield" style="width:16px;height:16px;"></i> 修改密码';
+            if (window.lucide) lucide.createIcons();
+
+            if (result.success) {
+                els.oldPassword.value = '';
+                els.newPassword.value = '';
+                els.confirmPassword.value = '';
+                showToast('密码修改成功');
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        function showConfirm(message, callback) {
+            els.confirmMessage.textContent = message;
+            els.confirmModal.classList.add('show');
+            if (window.lucide) lucide.createIcons();
+
+            els.confirmOkBtn.onclick = function() {
+                els.confirmModal.classList.remove('show');
+                callback();
+            };
+            els.confirmCancelBtn.onclick = function() {
+                els.confirmModal.classList.remove('show');
+            };
+        }
+
+        function clearAllData() {
+            showConfirm('确定要清空所有数据吗？此操作不可恢复，包括 AI 对话历史等所有个人数据。', function() {
+                var username = Auth.getCurrentUser();
+                var keysToRemove = [];
+                for (var i = 0; i < localStorage.length; i++) {
+                    var key = localStorage.key(i);
+                    if (key.indexOf('toolbox_ud_' + username + '_') === 0) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(function(key) { localStorage.removeItem(key); });
+                showToast('数据已清空');
+                renderProfile();
+            });
+        }
+
+        function handleAvatarImageFile(file) {
+            if (!file) return;
+            if (!file.type || file.type.indexOf('image/') !== 0) {
+                showToast('请选择图片文件', 'error');
+                return;
+            }
+            // 限制 5MB
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('图片过大，请选择小于 5MB 的图片', 'error');
+                return;
+            }
+            var originalText = els.avatarUploadBtn.querySelector('span').textContent;
+            els.avatarUploadBtn.disabled = true;
+            els.avatarUploadBtn.querySelector('span').textContent = '处理中...';
+            compressImage(file, 256, 0.85, function(err, dataUrl) {
+                els.avatarUploadBtn.disabled = false;
+                els.avatarUploadBtn.querySelector('span').textContent = originalText;
+                if (err) {
+                    showToast('图片处理失败：' + err.message, 'error');
+                    return;
+                }
+                selectedAvatarImage = dataUrl;
+                els.avatarRemoveBtn.classList.remove('hidden');
+                els.avatarUploadBtn.querySelector('span').textContent = '更换图片';
+                updateAvatarPreview();
+                showToast('图片已加载，点击「保存资料」后生效');
+            });
+        }
+
+        function setupEvents() {
+            // 保存资料
+            els.saveProfileBtn.addEventListener('click', saveProfile);
+
+            // 字数统计
+            els.editBio.addEventListener('input', function() {
+                els.bioCount.textContent = this.value.length;
+            });
+
+            // 头像图片上传
+            els.avatarUploadBtn.addEventListener('click', function() {
+                els.avatarImageInput.click();
+            });
+            els.avatarImageInput.addEventListener('change', function(e) {
+                var file = e.target.files && e.target.files[0];
+                handleAvatarImageFile(file);
+                // 清空以便再次选择同一文件
+                e.target.value = '';
+            });
+            els.avatarRemoveBtn.addEventListener('click', function() {
+                selectedAvatarImage = '';
+                els.avatarRemoveBtn.classList.add('hidden');
+                els.avatarUploadBtn.querySelector('span').textContent = '选择图片';
+                updateAvatarPreview();
+                showToast('已移除图片，点击「保存资料」后生效');
+            });
+
+            // 头像预览更新
+            els.editNickname.addEventListener('input', updateAvatarPreview);
+            els.editAvatarEmoji.addEventListener('input', updateAvatarPreview);
+
+            // 彩蛋：输入 55565 切换星空主题（激活/退出二合一）
+            var eggDebouncing = false;
+            els.editNickname.addEventListener('input', function() {
+                var val = this.value.trim();
+                if (val !== '55565' || eggDebouncing) return;
+                eggDebouncing = true;
+                setTimeout(function() { eggDebouncing = false; }, 1200);
+                if (window.Starlight) Starlight.toggle();
+            });
+
+            // 修改密码
+            els.changePasswordBtn.addEventListener('click', changePassword);
+
+            // 清空数据
+            els.clearDataBtn.addEventListener('click', clearAllData);
+
+            // 每日签到
+            els.checkInBtn.addEventListener('click', handleCheckIn);
+
+            // 未登录页面按钮
+            els.emptyLoginBtn.addEventListener('click', function() {
+                Auth.openAuthModal('login');
+            });
+            els.emptyRegisterBtn.addEventListener('click', function() {
+                Auth.openAuthModal('register');
+            });
+
+            // 密码显示/隐藏
+            document.querySelectorAll('.profile-password-toggle').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var target = document.getElementById(this.getAttribute('data-target'));
+                    if (target.type === 'password') {
+                        target.type = 'text';
+                        this.querySelector('i').setAttribute('data-lucide', 'eye-off');
+                    } else {
+                        target.type = 'password';
+                        this.querySelector('i').setAttribute('data-lucide', 'eye');
+                    }
+                    if (window.lucide) lucide.createIcons();
+                });
+            });
+
+            // 确认弹窗关闭
+            els.confirmModal.querySelector('.auth-modal-overlay').addEventListener('click', function() {
+                els.confirmModal.classList.remove('show');
+            });
+
+            // 提交反馈
+            var submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+            if (submitFeedbackBtn) {
+                submitFeedbackBtn.addEventListener('click', function() {
+                    var category = document.getElementById('feedbackCategory').value;
+                    var content = document.getElementById('feedbackContent').value.trim();
+                    var contact = document.getElementById('feedbackContact').value.trim();
+                    if (!content) {
+                        showToast('请输入反馈内容', 'error');
+                        return;
+                    }
+                    if (!window.Auth || !Auth.submitFeedback) {
+                        showToast('反馈功能不可用', 'error');
+                        return;
+                    }
+                    var r = Auth.submitFeedback({ category: category, content: content, contact: contact });
+                    showToast(r.message, r.success ? 'success' : 'error');
+                    if (r.success) {
+                        document.getElementById('feedbackContent').value = '';
+                        document.getElementById('feedbackContact').value = '';
+                    }
+                });
+            }
+
+            // 认证状态变化
+            if (window.Auth) {
+                Auth.onAuthChange = function() {
+                    renderProfile();
+                };
+            }
+        }
+
+        function init() {
+            setupEvents();
+            renderProfile();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+
+    // ===== 星空主题（动画与状态由共享模块 js/starlight.js 管理）=====
+    // 用户中心专属彩蛋：星空主题开启时给头像戴上猫耳朵
+    window.StarlightHooks = {
+        onEnable: function() {
+            attachCatEars();
+        },
+        onDisable: function() {
+            removeCatEars();
+        }
+    };
+    // 若主题已持久化开启（如从首页触发后跳转过来），补挂猫耳朵
+    if (window.Starlight && Starlight.isActive()) {
+        setTimeout(attachCatEars, 200);
+    }
+
+    // ===== 猫耳朵装饰 =====
+    // 目标头像选择器：用户中心大头像、编辑预览头像、导航栏头像
+    var CAT_EAR_TARGETS = [
+        '#profileAvatar',
+        '#avatarPreview',
+        '.nav-user-avatar',
+        '.nav-user-avatar-img'
+    ];
+
+    function attachCatEars() {
+        for (var i = 0; i < CAT_EAR_TARGETS.length; i++) {
+            var nodes = document.querySelectorAll(CAT_EAR_TARGETS[i]);
+            for (var j = 0; j < nodes.length; j++) {
+                var avatar = nodes[j];
+                if (avatar.dataset.catEars === '1') continue;
+                // 包装：把头像元素用 .cat-ears-wrap 包起来
+                var parent = avatar.parentNode;
+                if (!parent) continue;
+                var wrap = document.createElement('div');
+                wrap.className = 'cat-ears-wrap';
+                wrap.dataset.catEarsWrap = '1';
+                // 记录原始 display，避免破坏布局
+                wrap.dataset.prevDisplay = window.getComputedStyle(avatar).display;
+                parent.insertBefore(wrap, avatar);
+                wrap.appendChild(avatar);
+
+                // 插入左右耳
+                var leftEar = document.createElement('div');
+                leftEar.className = 'cat-ear left';
+                var rightEar = document.createElement('div');
+                rightEar.className = 'cat-ear right';
+                wrap.appendChild(leftEar);
+                wrap.appendChild(rightEar);
+
+                avatar.dataset.catEars = '1';
+
+                // 触发动画
+                (function(w) {
+                    requestAnimationFrame(function() {
+                        requestAnimationFrame(function() {
+                            w.classList.add('active');
+                        });
+                    });
+                })(wrap);
+            }
+        }
+    }
+
+    function removeCatEars() {
+        var wraps = document.querySelectorAll('.cat-ears-wrap[data-cat-ears-wrap="1"]');
+        for (var i = 0; i < wraps.length; i++) {
+            var wrap = wraps[i];
+            wrap.classList.remove('active');
+            // 等动画结束后恢复 DOM
+            (function(w) {
+                setTimeout(function() {
+                    var avatar = w.querySelector('[data-cat-ears="1"]');
+                    if (!avatar) { if (w.parentNode) w.parentNode.removeChild(w); return; }
+                    var prevDisplay = w.dataset.prevDisplay || '';
+                    // 把头像移回原位置
+                    w.parentNode.insertBefore(avatar, w);
+                    if (prevDisplay) avatar.style.display = prevDisplay;
+                    delete avatar.dataset.catEars;
+                    if (w.parentNode) w.parentNode.removeChild(w);
+                }, 600);
+            })(wrap);
+        }
+    }
+    </script>
+</body>
+</html>

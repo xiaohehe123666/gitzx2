@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线倒计时与闹钟 - 定时提醒工具</title>
+    <meta name="description" content="免费在线倒计时闹钟工具：秒表计时、倒计时提醒、定时闹钟，支持自定义名称与声音提醒，浏览器本地运行，无需安装">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .tm-hero { padding: 7rem 0 2rem; text-align: center; }
+    .tm-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(217, 119, 6, 0.1); color: #D97706; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .tm-hero .hero-badge i { width: 16px; height: 16px; }
+    .tm-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .tm-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .tm-section { padding: 1rem 0 2rem; }
+    .tm-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem; max-width: 900px; margin: 0 auto; }
+    .tm-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-lg); }
+    .tm-card h3 { margin: 0 0 1rem; font-size: 1.05rem; display: flex; align-items: center; gap: 0.45rem; }
+    .tm-card h3 i { width: 18px; height: 18px; color: var(--primary-light); }
+
+    .tm-display { font-size: 3rem; font-weight: 700; font-family: 'Space Grotesk', monospace; text-align: center; letter-spacing: 2px; margin: 0.75rem 0; }
+    .tm-display.running { color: var(--primary-light); }
+    .tm-presets { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; }
+    .tm-chip { padding: 0.4rem 0.9rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); font-size: 0.82rem; cursor: pointer; color: var(--text); transition: all .2s; }
+    .tm-chip:hover, .tm-chip.active { border-color: var(--primary-light); color: var(--primary-light); }
+
+    .tm-controls { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+    .tm-btn { padding: 0.65rem 1.3rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s; }
+    .tm-btn i { width: 16px; height: 16px; }
+    .tm-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .tm-btn-primary { background: linear-gradient(135deg, #D97706, #F59E0B); color: #fff; border: none; }
+    .tm-btn-primary:hover { box-shadow: 0 6px 16px rgba(217, 119, 6, 0.3); }
+    .tm-btn-danger { background: linear-gradient(135deg, #EF4444, #F97316); color: #fff; border: none; }
+
+    .tm-form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-bottom: 0.85rem; }
+    .tm-field label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.3rem; font-weight: 600; }
+    .tm-field input { width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.9rem; box-sizing: border-box; }
+    .tm-field input:focus { outline: none; border-color: var(--primary-light); }
+    .tm-name { margin-bottom: 0.85rem; }
+    .tm-name input { width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.9rem; box-sizing: border-box; }
+    .tm-name input:focus { outline: none; border-color: var(--primary-light); }
+
+    .tm-alarm-status { text-align: center; font-size: 0.85rem; color: var(--text-secondary); min-height: 1.5em; margin-top: 0.75rem; }
+    .tm-alarm-status.ring { color: #EF4444; font-weight: 700; animation: tmPulse 0.6s ease infinite; }
+    @keyframes tmPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .tm-sec { font-size: 0.75rem; color: var(--text-secondary); text-align: center; margin-top: 1.25rem; }
+
+    @media (max-width: 768px) {
+        .tm-hero { padding: 6rem 0 1.5rem; }
+        .tm-hero h1 { font-size: 1.85rem; }
+        .tm-card { padding: 1rem; }
+        .tm-display { font-size: 2.3rem; }
+        .tm-form { grid-template-columns: repeat(2, 1fr); }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="timer"></i>
+                </div>
+                <span class="logo-text">倒计时闹钟</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#timer" class="nav-link active">倒计时闹钟</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="tm-hero">
+            <div class="hero-badge"><i data-lucide="timer"></i><span>倒计时 · 秒表 · 定时闹钟</span></div>
+            <h1 class="hero-title">倒计时与<span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">闹钟</span></h1>
+            <p class="hero-description">秒表计时、倒计时提醒、定时闹钟，三合一在线计时工具。</p>
+        </section>
+
+        <section id="timer" class="tm-section">
+            <div class="container">
+                <div class="tm-layout">
+                    <!-- 倒计时 -->
+                    <div class="tm-card">
+                        <h3><i data-lucide="hourglass"></i>倒计时</h3>
+                        <div class="tm-presets" id="presetChips">
+                            <button type="button" class="tm-chip active" data-sec="300">5分钟</button>
+                            <button type="button" class="tm-chip" data-sec="600">10分钟</button>
+                            <button type="button" class="tm-chip" data-sec="900">15分钟</button>
+                            <button type="button" class="tm-chip" data-sec="1800">30分钟</button>
+                            <button type="button" class="tm-chip" data-sec="3600">1小时</button>
+                        </div>
+                        <div class="tm-display" id="countdownDisplay">05:00</div>
+                        <div class="tm-controls">
+                            <button type="button" class="tm-btn tm-btn-primary" id="btnCountStart"><i data-lucide="play"></i>开始</button>
+                            <button type="button" class="tm-btn" id="btnCountPause"><i data-lucide="pause"></i>暂停</button>
+                            <button type="button" class="tm-btn" id="btnCountReset"><i data-lucide="rotate-ccw"></i>重置</button>
+                        </div>
+                        <p class="tm-sec">提示：倒计时结束后会播放提醒音效</p>
+                    </div>
+
+                    <!-- 秒表 -->
+                    <div class="tm-card">
+                        <h3><i data-lucide="watch"></i>秒表</h3>
+                        <div class="tm-display" id="stopwatchDisplay">00:00:00</div>
+                        <div class="tm-controls">
+                            <button type="button" class="tm-btn tm-btn-primary" id="btnStopStart"><i data-lucide="play"></i>开始</button>
+                            <button type="button" class="tm-btn" id="btnStopPause"><i data-lucide="pause"></i>暂停</button>
+                            <button type="button" class="tm-btn" id="btnStopLap"><i data-lucide="flag"></i>计次</button>
+                            <button type="button" class="tm-btn" id="btnStopReset"><i data-lucide="rotate-ccw"></i>重置</button>
+                        </div>
+                        <div id="lapList" style="margin-top:0.85rem;"></div>
+                        <p class="tm-sec">点击"计次"记录当前时间点</p>
+                    </div>
+
+                    <!-- 定时闹钟 -->
+                    <div class="tm-card">
+                        <h3><i data-lucide="alarm-clock"></i>定时闹钟</h3>
+                        <div class="tm-form">
+                            <div class="tm-field"><label>时</label><input type="number" id="alarmHour" min="0" max="23" placeholder="9"></div>
+                            <div class="tm-field"><label>分</label><input type="number" id="alarmMinute" min="0" max="59" placeholder="30"></div>
+                            <div class="tm-field"><label>秒</label><input type="number" id="alarmSecond" min="0" max="59" placeholder="0"></div>
+                            <div class="tm-field"><label>时长(分)</label><input type="number" id="alarmDuration" min="1" max="120" placeholder="5" value="5"></div>
+                        </div>
+                        <div class="tm-name"><input type="text" id="alarmName" placeholder="闹钟名称（选填，如：下午开会）"></div>
+                        <div class="tm-controls">
+                            <button type="button" class="tm-btn tm-btn-primary" id="btnAlarmSet"><i data-lucide="alarm-clock"></i>设定闹钟</button>
+                            <button type="button" class="tm-btn tm-btn-danger" id="btnAlarmCancel"><i data-lucide="bell-off"></i>取消闹钟</button>
+                        </div>
+                        <div class="tm-alarm-status" id="alarmStatus">未设定闹钟</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="timer"></i>
+                </div>
+                <span>倒计时闹钟</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        /* 提醒音效（WebAudio 生成） */
+        var audioCtx = null;
+        function playAlarm() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                var now = audioCtx.currentTime;
+                for (var i = 0; i < 3; i++) {
+                    var osc = audioCtx.createOscillator();
+                    var gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = 880;
+                    gain.gain.setValueAtTime(0.4, now + i * 0.3);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.3 + 0.25);
+                    osc.connect(gain).connect(audioCtx.destination);
+                    osc.start(now + i * 0.3);
+                    osc.stop(now + i * 0.3 + 0.3);
+                }
+            } catch (e) {}
+        }
+
+        /* ===== 倒计时 ===== */
+        var countTotal = 300;
+        var countLeft = 300;
+        var countTimer = null;
+        var countRunning = false;
+        var display = document.getElementById('countdownDisplay');
+
+        function fmtCount(s) {
+            var m = Math.floor(s / 60);
+            var sec = s % 60;
+            return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+        }
+        function renderCount() {
+            display.textContent = fmtCount(countLeft);
+            if (countLeft <= 10 && countRunning) display.style.color = '#EF4444';
+            else display.style.color = '';
+        }
+        function stopCount() {
+            if (countTimer) { clearInterval(countTimer); countTimer = null; }
+            countRunning = false;
+        }
+        document.getElementById('btnCountStart').addEventListener('click', function() {
+            if (countLeft <= 0) countLeft = countTotal;
+            stopCount();
+            countRunning = true;
+            countTimer = setInterval(function() {
+                countLeft--;
+                renderCount();
+                if (countLeft <= 0) {
+                    stopCount();
+                    playAlarm();
+                    showToast('倒计时结束！', 'success');
+                }
+            }, 1000);
+            renderCount();
+        });
+        document.getElementById('btnCountPause').addEventListener('click', function() {
+            stopCount();
+            renderCount();
+        });
+        document.getElementById('btnCountReset').addEventListener('click', function() {
+            stopCount();
+            countLeft = countTotal;
+            renderCount();
+        });
+        document.querySelectorAll('#presetChips .tm-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('#presetChips .tm-chip').forEach(function(c) { c.classList.remove('active'); });
+                chip.classList.add('active');
+                stopCount();
+                countTotal = parseInt(chip.getAttribute('data-sec'), 10);
+                countLeft = countTotal;
+                renderCount();
+            });
+        });
+        renderCount();
+
+        /* ===== 秒表 ===== */
+        var stopElapsed = 0;
+        var stopTimer = null;
+        var stopRunning = false;
+        var stopDisplay = document.getElementById('stopwatchDisplay');
+        var lapCount = 0;
+
+        function fmtStop(ms) {
+            var h = Math.floor(ms / 3600000);
+            var m = Math.floor((ms % 3600000) / 60000);
+            var s = Math.floor((ms % 60000) / 1000);
+            var cs = Math.floor((ms % 1000) / 10);
+            return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0');
+        }
+        function renderStop() { stopDisplay.textContent = fmtStop(stopElapsed); }
+
+        document.getElementById('btnStopStart').addEventListener('click', function() {
+            if (stopRunning) return;
+            stopRunning = true;
+            var last = Date.now();
+            stopTimer = setInterval(function() {
+                stopElapsed += Date.now() - last;
+                last = Date.now();
+                renderStop();
+            }, 30);
+        });
+        document.getElementById('btnStopPause').addEventListener('click', function() {
+            stopRunning = false;
+            if (stopTimer) { clearInterval(stopTimer); stopTimer = null; }
+        });
+        document.getElementById('btnStopLap').addEventListener('click', function() {
+            if (!stopRunning) return;
+            lapCount++;
+            var item = document.createElement('div');
+            item.style.cssText = 'font-size:0.8rem;color:var(--text-secondary);padding:0.2rem 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;';
+            item.innerHTML = '<span>计次 ' + lapCount + '</span><span>' + fmtStop(stopElapsed) + '</span>';
+            document.getElementById('lapList').prepend(item);
+        });
+        document.getElementById('btnStopReset').addEventListener('click', function() {
+            stopRunning = false;
+            if (stopTimer) { clearInterval(stopTimer); stopTimer = null; }
+            stopElapsed = 0; lapCount = 0;
+            document.getElementById('lapList').innerHTML = '';
+            renderStop();
+        });
+        renderStop();
+
+        /* ===== 定时闹钟 ===== */
+        var alarmTimer = null;
+        var alarmEnd = 0;
+        var statusEl = document.getElementById('alarmStatus');
+
+        document.getElementById('btnAlarmSet').addEventListener('click', function() {
+            var h = parseInt(document.getElementById('alarmHour').value, 10);
+            var m = parseInt(document.getElementById('alarmMinute').value, 10);
+            var s = parseInt(document.getElementById('alarmSecond').value, 10);
+            var dur = parseInt(document.getElementById('alarmDuration').value, 10) || 5;
+            if (isNaN(h) || isNaN(m) || isNaN(s)) { showToast('请填写完整的时、分、秒', 'error'); return; }
+            if (h < 0 || h > 23 || m < 0 || m > 59 || s < 0 || s > 59) { showToast('时间格式不正确', 'error'); return; }
+
+            var name = document.getElementById('alarmName').value.trim();
+            var now = new Date();
+            var target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, s);
+            if (target <= now) target.setDate(target.getDate() + 1);
+
+            if (alarmTimer) { clearInterval(alarmTimer); alarmTimer = null; }
+            alarmEnd = target.getTime() + dur * 60000;
+            statusEl.className = 'tm-alarm-status';
+            statusEl.textContent = '闹钟已设定：' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + (name ? '（' + name + '）' : '') + '，将响铃 ' + dur + ' 分钟';
+
+            alarmTimer = setInterval(function() {
+                var nowMs = Date.now();
+                if (nowMs >= target.getTime() && nowMs <= alarmEnd) {
+                    statusEl.className = 'tm-alarm-status ring';
+                    statusEl.textContent = '🔔 闹钟响起' + (name ? '（' + name + '）' : '');
+                    playAlarm();
+                }
+                if (nowMs > alarmEnd) {
+                    clearInterval(alarmTimer);
+                    alarmTimer = null;
+                    statusEl.className = 'tm-alarm-status';
+                    statusEl.textContent = '闹钟结束';
+                }
+            }, 500);
+            showToast('闹钟已设定', 'success');
+        });
+
+        document.getElementById('btnAlarmCancel').addEventListener('click', function() {
+            if (alarmTimer) { clearInterval(alarmTimer); alarmTimer = null; }
+            statusEl.className = 'tm-alarm-status';
+            statusEl.textContent = '闹钟已取消';
+        });
+    })();
+    </script>
+</body>
+</html>

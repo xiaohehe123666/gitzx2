@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索 - 聚合搜索 | 在线工具箱</title>
+    <meta name="description" content="聚合搜索引擎：默认 Bing 搜索，支持搜狗、360 搜索切换，一个入口搜全网">
+    <meta name="keywords" content="搜索,Bing,搜狗,360搜索,搜索引擎,聚合搜索">
+    <meta name="theme-color" content="#0F172A">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="搜索 - 聚合搜索">
+    <meta property="og:description" content="默认 Bing 搜索，支持搜狗、360 切换">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .se-wrap {
+            padding-top: 76px;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg);
+        }
+        /* 搜索头部 */
+        .se-header {
+            flex-shrink: 0;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+        }
+        .se-search-row {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+        .se-brand {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--text);
+            letter-spacing: 0.02em;
+        }
+        .se-brand-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            position: relative;
+            background:
+                radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.4), transparent 55%),
+                linear-gradient(135deg, #1D4ED8 0%, #0284C7 45%, #38BDF8 100%);
+            box-shadow:
+                0 8px 20px -4px rgba(14, 100, 200, 0.4),
+                0 2px 6px -1px rgba(14, 100, 200, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .se-brand-icon::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(circle at 70% 80%, rgba(56, 189, 248, 0.35), transparent 60%);
+            pointer-events: none;
+        }
+        .se-brand-icon:hover {
+            transform: translateY(-1px) rotate(-3deg);
+            box-shadow:
+                0 12px 24px -4px rgba(14, 100, 200, 0.5),
+                0 4px 8px -1px rgba(14, 100, 200, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+        }
+        .se-input-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+        }
+        .se-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 3rem 0 2.75rem;
+            border-radius: 12px;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9375rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .se-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+        }
+        .se-search-icon {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+        .se-clear {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 8px;
+            display: none;
+        }
+        .se-clear:hover { color: var(--text); }
+        .se-clear.show { display: flex; }
+        .se-go {
+            flex-shrink: 0;
+            height: 44px;
+            padding: 0 1.25rem;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #0284C7, #0EA5E9);
+            color: #fff;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .se-go:hover { box-shadow: 0 4px 16px rgba(14, 165, 233, 0.35); transform: translateY(-1px); }
+        /* 引擎切换 */
+        .se-engines {
+            max-width: 720px;
+            margin: 0.625rem auto 0;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        .se-engine {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            background: none;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .se-engine:hover { color: var(--primary); }
+        .se-engine.active {
+            background: rgba(2, 132, 199, 0.1);
+            color: #0284C7;
+            border-color: rgba(2, 132, 199, 0.25);
+        }
+        /* 自动补全下拉 */
+        .se-suggest {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            display: none;
+            z-index: 60;
+        }
+        .se-suggest.show { display: block; }
+        .se-suggest-item {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.625rem 0.875rem;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 0.875rem;
+        }
+        .se-suggest-item:hover,
+        .se-suggest-item.hl { background: var(--bg); }
+        .se-suggest-item i { color: var(--text-secondary); flex-shrink: 0; }
+        /* 结果区 */
+        .se-frame-wrap {
+            flex: 1;
+            position: relative;
+            min-height: 0;
+        }
+        .se-frame {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+            background: #fff;
+        }
+        .se-empty {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 2rem;
+        }
+        .se-empty-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.12), rgba(14, 165, 233, 0.12));
+            color: #0284C7;
+        }
+        .se-empty h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            color: var(--text);
+            margin: 0;
+        }
+        .se-loading {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.75rem;
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            z-index: 5;
+        }
+        .se-loading.show { display: flex; }
+        .se-spinner {
+            width: 34px;
+            height: 34px;
+            border: 3px solid var(--border);
+            border-top-color: #0EA5E9;
+            border-radius: 50%;
+            animation: seSpin 0.8s linear infinite;
+        }
+        @keyframes seSpin { to { transform: rotate(360deg); } }
+        .se-flag {
+            position: absolute;
+            right: 0.75rem;
+            bottom: 0.75rem;
+            z-index: 6;
+            background: rgba(15, 23, 42, 0.75);
+            color: #fff;
+            font-size: 0.6875rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 999px;
+            backdrop-filter: blur(4px);
+            pointer-events: none;
+        }
+        @media (max-width: 640px) {
+            .se-wrap { padding-top: 72px; }
+            .se-header { top: 72px; padding: 0.75rem 1rem; }
+            .se-brand span { display: none; }
+            .se-go { padding: 0 0.875rem; }
+            .se-go span { display: none; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <span class="logo-text">在线工具箱</span>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="navigator.html" class="nav-link">导航</a>
+                <a href="software.html" class="nav-link">软件下载</a>
+                <a href="search.html" class="nav-link active">搜索</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main class="se-wrap">
+        <div class="se-header">
+            <div class="se-search-row">
+                <div class="se-brand">
+                    <div class="se-brand-icon">
+                        <i data-lucide="compass" style="width:26px;height:26px;stroke-width:2.25;"></i>
+                    </div>
+                    <span>搜索</span>
+                </div>
+                <div class="se-input-wrap">
+                    <span class="se-search-icon">
+                        <i data-lucide="search" style="width:18px;height:18px;"></i>
+                    </span>
+                    <input type="text" id="seInput" class="se-input" placeholder="输入关键词，回车搜索" autocomplete="off" spellcheck="false">
+                    <button type="button" class="se-clear" id="seClear" title="清空">
+                        <i data-lucide="x" style="width:16px;height:16px;"></i>
+                    </button>
+                    <div class="se-suggest" id="seSuggest"></div>
+                </div>
+                <button type="button" class="se-go" id="seGo">
+                    <i data-lucide="corner-down-left" style="width:16px;height:16px;"></i>
+                    <span>搜索</span>
+                </button>
+            </div>
+            <div class="se-engines" id="seEngines">
+                <button type="button" class="se-engine active" data-key="bing">Bing 搜索</button>
+                <button type="button" class="se-engine" data-key="sogou">搜狗</button>
+                <button type="button" class="se-engine" data-key="so360">360 搜索</button>
+            </div>
+        </div>
+
+        <div class="se-frame-wrap">
+            <div class="se-empty" id="seEmpty">
+                <div class="se-empty-icon">
+                    <i data-lucide="search" style="width:32px;height:32px;"></i>
+                </div>
+                <h2>输入关键词开始搜索</h2>
+                <p style="margin:0;">默认使用 Bing 搜索，可切换到搜狗、360</p>
+            </div>
+            <div class="se-loading" id="seLoading">
+                <div class="se-spinner"></div>
+                <span>正在搜索...</span>
+            </div>
+            <iframe id="seFrame" class="se-frame" src="" loading="eager" referrerpolicy="no-referrer-when-downgrade" title="搜索结果" style="display:none;"></iframe>
+            <div class="se-flag" id="seFlag" style="display:none;"></div>
+        </div>
+    </main>
+
+    <script>
+        (function() {
+            // 引擎配置（均实测允许 iframe 嵌入）
+            var ENGINES = {
+                bing:  { name: 'Bing 搜索', url: function(q) { return 'https://www.bing.com/search?q=' + encodeURIComponent(q); } },
+                sogou: { name: '搜狗',     url: function(q) { return 'https://www.sogou.com/web?query=' + encodeURIComponent(q); } },
+                so360: { name: '360 搜索', url: function(q) { return 'https://www.so.com/s?q=' + encodeURIComponent(q); } }
+            };
+            var DEFAULT_ENGINE = 'bing';
+
+            var input = document.getElementById('seInput');
+            var clearBtn = document.getElementById('seClear');
+            var goBtn = document.getElementById('seGo');
+            var suggestBox = document.getElementById('seSuggest');
+            var emptyBox = document.getElementById('seEmpty');
+            var loadingBox = document.getElementById('seLoading');
+            var frame = document.getElementById('seFrame');
+            var flag = document.getElementById('seFlag');
+            var currentEngine = DEFAULT_ENGINE;
+            var suggestTimer = null;
+            var suggestItems = [];
+            var suggestIndex = -1;
+            var loaded = false;
+
+            function setEngine(key) {
+                currentEngine = ENGINES[key] ? key : DEFAULT_ENGINE;
+                var btns = document.querySelectorAll('.se-engine');
+                for (var i = 0; i < btns.length; i++) {
+                    btns[i].classList.toggle('active', btns[i].getAttribute('data-key') === currentEngine);
+                }
+                input.placeholder = '使用 ' + ENGINES[currentEngine].name + '，输入关键词回车';
+            }
+
+            function doSearch() {
+                var q = input.value.trim();
+                if (!q) { input.focus(); return; }
+                emptyBox.style.display = 'none';
+                loadingBox.classList.add('show');
+                frame.style.display = 'block';
+                loaded = false;
+                flag.textContent = '由 ' + ENGINES[currentEngine].name + ' 提供结果';
+                flag.style.display = 'block';
+                frame.src = ENGINES[currentEngine].url(q);
+                hideSuggest();
+            }
+
+            // 自动补全（Bing 无密钥接口，JSONP）
+            function fetchSuggest() {
+                var q = input.value.trim();
+                if (!q) { hideSuggest(); return; }
+                var cbName = 'seSuggestCb';
+                var script = document.createElement('script');
+                script.src = 'https://api.bing.com/osjson.aspx?query=' + encodeURIComponent(q) + '&JsonType=callback&JsonCallback=' + cbName;
+                window[cbName] = function(data) {
+                    var words = data && data[1] ? data[1] : [];
+                    renderSuggest(words, q);
+                    script.remove();
+                    delete window[cbName];
+                };
+                script.onerror = function() { script.remove(); delete window[cbName]; };
+                document.head.appendChild(script);
+            }
+
+            function renderSuggest(words, q) {
+                if (!q || input.value.trim() !== q) return;
+                suggestBox.innerHTML = '';
+                suggestItems = [];
+                suggestIndex = -1;
+                if (!words || !words.length) { hideSuggest(); return; }
+                words.forEach(function(w) {
+                    var item = document.createElement('div');
+                    item.className = 'se-suggest-item';
+                    item.innerHTML = '<i data-lucide="search" style="width:14px;height:14px;"></i><span></span>';
+                    item.querySelector('span').textContent = w;
+                    item.addEventListener('mousedown', function(e) {
+                        e.preventDefault();
+                        input.value = w;
+                        doSearch();
+                    });
+                    suggestBox.appendChild(item);
+                    suggestItems.push(item);
+                });
+                try { if (window.lucide) lucide.createIcons(); } catch (e) {}
+                suggestBox.classList.add('show');
+            }
+
+            function hideSuggest() {
+                suggestBox.classList.remove('show');
+                suggestItems = [];
+                suggestIndex = -1;
+            }
+
+            function moveSuggest(dir) {
+                if (!suggestItems.length) return;
+                if (suggestIndex >= 0) suggestItems[suggestIndex].classList.remove('hl');
+                suggestIndex += dir;
+                if (suggestIndex < 0) suggestIndex = suggestItems.length - 1;
+                if (suggestIndex >= suggestItems.length) suggestIndex = 0;
+                suggestItems[suggestIndex].classList.add('hl');
+            }
+
+            // 事件绑定
+            input.addEventListener('input', function() {
+                clearBtn.classList.toggle('show', !!input.value);
+                if (suggestTimer) clearTimeout(suggestTimer);
+                suggestTimer = setTimeout(fetchSuggest, 200);
+            });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    if (suggestIndex >= 0 && suggestItems[suggestIndex]) {
+                        input.value = suggestItems[suggestIndex].querySelector('span').textContent;
+                    }
+                    doSearch();
+                    e.preventDefault();
+                } else if (e.key === 'ArrowDown') {
+                    moveSuggest(1); e.preventDefault();
+                } else if (e.key === 'ArrowUp') {
+                    moveSuggest(-1); e.preventDefault();
+                } else if (e.key === 'Escape') {
+                    hideSuggest(); input.blur();
+                }
+            });
+            input.addEventListener('blur', function() {
+                setTimeout(hideSuggest, 150);
+            });
+            clearBtn.addEventListener('click', function() {
+                input.value = '';
+                clearBtn.classList.remove('show');
+                input.focus();
+                hideSuggest();
+            });
+            goBtn.addEventListener('click', doSearch);
+
+            var engineBtns = document.querySelectorAll('.se-engine');
+            for (var i = 0; i < engineBtns.length; i++) {
+                engineBtns[i].addEventListener('click', function() {
+                    setEngine(this.getAttribute('data-key'));
+                    if (input.value.trim()) doSearch();
+                });
+            }
+
+            // 从 URL 参数 ?q=xxx 直接搜索
+            try {
+                var params = new URLSearchParams(window.location.search);
+                var initQ = params.get('q');
+                var initE = params.get('engine');
+                if (initE) setEngine(initE);
+                if (initQ) {
+                    input.value = initQ;
+                    clearBtn.classList.add('show');
+                    doSearch();
+                }
+            } catch (e) {}
+
+            frame.addEventListener('load', function() {
+                loadingBox.classList.remove('show');
+            });
+        })();
+    </script>
+</body>
+</html>

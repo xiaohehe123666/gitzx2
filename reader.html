@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清爽阅读器 - 在线工具箱</title>
+    <meta name="description" content="免费在线清爽阅读器：粘贴网页链接自动提取正文、去除广告，纯净排版享受沉浸式阅读">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <style>
+        /* ===== 阅读器页面样式 ===== */
+        .reader-hero {
+            background: linear-gradient(135deg, #1E293B, #334155);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            text-align: center;
+        }
+        .reader-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #FCD34D;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .reader-hero h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .reader-hero p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        /* URL 输入区 */
+        .reader-input-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+        }
+        .reader-input-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: stretch;
+        }
+        .reader-url-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            background: var(--bg);
+            color: var(--text);
+            transition: border-color 0.2s;
+            font-family: inherit;
+            min-width: 0;
+        }
+        .reader-url-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .reader-url-input::placeholder {
+            color: var(--text-light);
+        }
+        .reader-read-btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-family: inherit;
+            will-change: transform;
+        }
+        .reader-read-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+        .reader-read-btn:active {
+            transform: scale(0.97);
+        }
+        .reader-read-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .reader-read-btn i { width: 18px; height: 18px; }
+
+        /* 提示条 */
+        .reader-hint {
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        .reader-hint i { width: 16px; height: 16px; flex-shrink: 0; }
+
+        /* 加载状态 */
+        .reader-loading {
+            display: none;
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+        .reader-loading.show { display: block; }
+        .reader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: readerSpin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes readerSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 错误提示 */
+        .reader-error {
+            display: none;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            color: #DC2626;
+            font-size: 0.875rem;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+        .reader-error.show { display: flex; }
+        .reader-error i { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; }
+        .reader-error a { color: var(--primary); text-decoration: underline; }
+
+        /* 阅读区域 */
+        .reader-content-wrapper {
+            display: none;
+        }
+        .reader-content-wrapper.show { display: block; }
+
+        /* 工具栏 */
+        .reader-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 0.625rem 0.875rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0.5rem;
+            z-index: 100;
+        }
+        .reader-toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .reader-toolbar-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+            margin: 0 0.25rem;
+        }
+        .reader-tool-btn {
+            padding: 0.375rem 0.625rem;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: inherit;
+        }
+        .reader-tool-btn:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+        .reader-tool-btn.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border-color: rgba(99, 102, 241, 0.2);
+        }
+        .reader-tool-btn i { width: 16px; height: 16px; }
+        .reader-font-size-display {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            min-width: 32px;
+            text-align: center;
+        }
+
+        /* 阅读内容区 */
+        .reader-article {
+            background: var(--reader-bg, var(--bg-card));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem 3rem;
+            box-shadow: var(--shadow-md);
+            max-width: 800px;
+            margin: 0 auto;
+            color: var(--reader-text, var(--text));
+            line-height: var(--reader-line-height, 1.8);
+            font-size: var(--reader-font-size, 18px);
+            transition: background 0.3s, color 0.3s;
+            min-height: 300px;
+        }
+        .reader-article h1 {
+            font-size: 1.75em;
+            font-weight: 800;
+            margin-bottom: 0.5em;
+            line-height: 1.3;
+        }
+        .reader-article h2 {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin: 1.2em 0 0.5em;
+        }
+        .reader-article h3 {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin: 1em 0 0.4em;
+        }
+        .reader-article p {
+            margin: 0 0 1em;
+        }
+        .reader-article img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 1em 0;
+        }
+        .reader-article blockquote {
+            border-left: 4px solid var(--primary);
+            padding: 0.5em 1em;
+            margin: 1em 0;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-secondary);
+        }
+        .reader-article pre {
+            background: rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            padding: 1em;
+            overflow-x: auto;
+            margin: 1em 0;
+            font-size: 0.85em;
+        }
+        body.dark-mode .reader-article pre {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .reader-article code {
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .reader-article a {
+            color: var(--primary);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--primary);
+        }
+        .reader-article a:hover {
+            opacity: 0.8;
+        }
+        .reader-article ul, .reader-article ol {
+            margin: 0 0 1em;
+            padding-left: 1.5em;
+        }
+        .reader-article li {
+            margin-bottom: 0.3em;
+        }
+        .reader-article table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+        }
+        .reader-article th, .reader-article td {
+            border: 1px solid var(--border);
+            padding: 0.5em 0.75em;
+            text-align: left;
+        }
+        .reader-article th {
+            background: rgba(99, 102, 241, 0.05);
+            font-weight: 700;
+        }
+        .reader-article hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 2em 0;
+        }
+
+        /* 阅读主题 */
+        .reader-article.theme-light {
+            --reader-bg: #FFFFFF;
+            --reader-text: #1A1A1A;
+        }
+        .reader-article.theme-sepia {
+            --reader-bg: #F4ECD8;
+            --reader-text: #5B4636;
+        }
+        .reader-article.theme-dark {
+            --reader-bg: #1A1A2E;
+            --reader-text: #C8C8D0;
+        }
+        .reader-article.theme-green {
+            --reader-bg: #C7EDCC;
+            --reader-text: #2D4A2D;
+        }
+
+        /* 空状态 */
+        .reader-empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-light);
+        }
+        .reader-empty i {
+            width: 56px;
+            height: 56px;
+            margin-bottom: 1rem;
+            opacity: 0.4;
+        }
+
+        /* 功能区 */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .feature-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem;
+            display: flex;
+            gap: 0.875rem;
+            align-items: flex-start;
+        }
+        .feature-icon-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .feature-item h4 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .feature-item p {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Toast */
+        .reader-toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text);
+            color: var(--bg);
+            padding: 0.625rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+        .reader-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .reader-hero { padding: 1.75rem 1rem; }
+            .reader-input-row { flex-direction: column; }
+            .reader-read-btn { justify-content: center; }
+            .reader-article { padding: 1.5rem 1.25rem; border-radius: 16px; }
+            .reader-toolbar { position: relative; top: 0; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon"><i data-lucide="wrench"></i></div>
+                <span class="logo-text">在线工具箱</span>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 900px; padding: 2rem 1rem 4rem;">
+        <!-- Hero -->
+        <div class="reader-hero">
+            <div class="reader-hero-badge">
+                <i data-lucide="book-open" style="width:14px;height:14px;"></i>
+                清爽阅读
+            </div>
+            <h1>无广告阅读器</h1>
+            <p>粘贴网页链接，自动去除广告、导航和弹窗，享受纯净阅读体验</p>
+        </div>
+
+        <!-- URL 输入 -->
+        <div class="reader-input-card">
+            <div class="reader-input-row">
+                <input type="text" class="reader-url-input" id="urlInput"
+                    placeholder="粘贴网页链接，如 https://example.com/article" />
+                <button class="reader-read-btn" id="readBtn" onclick="readerRead()">
+                    <i data-lucide="book-open"></i>
+                    <span>开始阅读</span>
+                </button>
+            </div>
+            <div class="reader-hint">
+                <i data-lucide="info"></i>
+                <span>支持大部分新闻、博客、文章页面。通过公共代理抓取，请勿用于付费内容。</span>
+            </div>
+        </div>
+
+        <!-- 加载中 -->
+        <div class="reader-loading" id="readerLoading">
+            <div class="reader-spinner"></div>
+            <p id="loadingText">正在抓取页面内容...</p>
+        </div>
+
+        <!-- 错误提示 -->
+        <div class="reader-error" id="readerError">
+            <i data-lucide="alert-circle"></i>
+            <div id="errorText"></div>
+        </div>
+
+        <!-- 阅读区 -->
+        <div class="reader-content-wrapper" id="readerContent">
+            <!-- 工具栏 -->
+            <div class="reader-toolbar">
+                <div class="reader-toolbar-group">
+                    <button class="reader-tool-btn" onclick="readerAdjustFont(-1)" title="缩小字体">
+                        <i data-lucide="minus"></i>
+                    </button>
+                    <span class="reader-font-size-display" id="fontSizeDisplay">18px</span>
+                    <button class="reader-tool-btn" onclick="readerAdjustFont(1)" title="放大字体">
+                        <i data-lucide="plus"></i>
+                    </button>
+                </div>
+                <div class="reader-toolbar-divider"></div>
+                <div class="reader-toolbar-group">
+                    <button class="reader-tool-btn" onclick="readerAdjustLineHeight(-0.1)" title="减小行距">
+                        <i data-lucide="align-justify"></i>
+                        <span style="font-size:0.7rem;">紧</span>
+                    </button>
+                    <button class="reader-tool-btn" onclick="readerAdjustLineHeight(0.1)" title="增大行距">
+                        <i data-lucide="align-justify"></i>
+                        <span style="font-size:0.7rem;">松</span>
+                    </button>
+                </div>
+                <div class="reader-toolbar-divider"></div>
+                <div class="reader-toolbar-group">
+                    <button class="reader-tool-btn active" data-theme="light" onclick="readerSetTheme('light')" title="亮色">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <button class="reader-tool-btn" data-theme="sepia" onclick="readerSetTheme('sepia')" title="护眼黄">
+                        <i data-lucide="coffee"></i>
+                    </button>
+                    <button class="reader-tool-btn" data-theme="green" onclick="readerSetTheme('green')" title="护眼绿">
+                        <i data-lucide="leaf"></i>
+                    </button>
+                    <button class="reader-tool-btn" data-theme="dark" onclick="readerSetTheme('dark')" title="夜间">
+                        <i data-lucide="moon"></i>
+                    </button>
+                </div>
+                <div class="reader-toolbar-divider"></div>
+                <div class="reader-toolbar-group">
+                    <button class="reader-tool-btn" onclick="readerCopyUrl()" title="复制原文链接">
+                        <i data-lucide="link"></i>
+                    </button>
+                    <button class="reader-tool-btn" onclick="readerPrint()" title="打印">
+                        <i data-lucide="printer"></i>
+                    </button>
+                    <button class="reader-tool-btn" onclick="readerClose()" title="关闭阅读">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 文章正文 -->
+            <article class="reader-article theme-light" id="readerArticle">
+            </article>
+        </div>
+
+        <!-- 空状态 -->
+        <div class="reader-empty" id="readerEmpty">
+            <i data-lucide="book-open"></i>
+            <p>粘贴链接上方输入框，开始清爽阅读</p>
+        </div>
+
+        <!-- 功能介绍 -->
+        <div class="features-grid" id="featuresGrid">
+            <div class="feature-item">
+                <div class="feature-icon-sm" style="background: rgba(99,102,241,0.1); color: var(--primary);">
+                    <i data-lucide="shield-check" style="width:20px;height:20px;"></i>
+                </div>
+                <div>
+                    <h4>广告屏蔽</h4>
+                    <p>自动识别并移除广告、弹窗、导航栏等干扰元素</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon-sm" style="background: rgba(16,185,129,0.1); color: #10B981;">
+                    <i data-lucide="eye" style="width:20px;height:20px;"></i>
+                </div>
+                <div>
+                    <h4>护眼模式</h4>
+                    <p>支持亮色、护眼黄、护眼绿、夜间四种阅读主题</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon-sm" style="background: rgba(245,158,11,0.1); color: #F59E0B;">
+                    <i data-lucide="type" style="width:20px;height:20px;"></i>
+                </div>
+                <div>
+                    <h4>字体调节</h4>
+                    <p>自由调整字号和行距，找到最舒适的阅读体验</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon-sm" style="background: rgba(239,68,68,0.1); color: #EF4444;">
+                    <i data-lucide="zap" style="width:20px;height:20px;"></i>
+                </div>
+                <div>
+                    <h4>智能提取</h4>
+                    <p>自动识别正文内容，过滤无关代码和脚本</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer style="background: var(--bg-card); border-top: 1px solid var(--border); padding: 2rem 1rem; text-align: center; color: var(--text-light); font-size: 0.8125rem;">
+        <p>© 2024 GIT团队 · 在线工具箱 · 纯前端实现，隐私安全</p>
+    </footer>
+
+    <div class="reader-toast" id="readerToast"></div>
+
+    <script src="js/auth.js" defer></script>
+    <script>
+        // ===== 阅读器核心逻辑 =====
+        var readerState = {
+            fontSize: 18,
+            lineHeight: 1.8,
+            theme: 'light',
+            currentUrl: '',
+            title: ''
+        };
+
+        // CORS 代理列表（多后备）
+        var CORS_PROXIES = [
+            function(url) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url); },
+            function(url) { return 'https://corsproxy.io/?' + encodeURIComponent(url); },
+            function(url) { return 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url); }
+        ];
+
+        // ===== 主函数：读取URL并提取正文 =====
+        function readerRead() {
+            var input = document.getElementById('urlInput');
+            var url = input.value.trim();
+            if (!url) {
+                readerShowToast('请输入网页链接');
+                return;
+            }
+            // 补全协议
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+            }
+
+            readerState.currentUrl = url;
+            readerShowLoading('正在抓取页面内容...');
+            readerHideError();
+            document.getElementById('readerContent').classList.remove('show');
+            document.getElementById('readerEmpty').style.display = 'none';
+            document.getElementById('featuresGrid').style.display = 'none';
+
+            readerFetchWithProxy(url, 0);
+        }
+
+        // 尝试多个代理
+        function readerFetchWithProxy(url, proxyIndex) {
+            if (proxyIndex >= CORS_PROXIES.length) {
+                readerHideLoading();
+                readerShowError('无法抓取该页面，可能原因：1) 网站限制了跨域访问 2) 网址无法访问 3) 代理服务暂时不可可用。你可以尝试复制网页源代码到其他工具中处理。');
+                return;
+            }
+
+            var proxyUrl = CORS_PROXIES[proxyIndex](url);
+            document.getElementById('loadingText').textContent = '正在通过代理 ' + (proxyIndex + 1) + '/' + CORS_PROXIES.length + ' 抓取...';
+
+            fetch(proxyUrl, {
+                method: 'GET',
+                signal: AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined
+            })
+            .then(function(resp) {
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                return resp.text();
+            })
+            .then(function(html) {
+                readerHideLoading();
+                try {
+                    var article = readerExtractContent(html, url);
+                    if (article && article.textContent && article.textContent.trim().length > 50) {
+                        readerDisplayArticle(article);
+                    } else {
+                        throw new Error('提取到的内容太少');
+                    }
+                } catch(e) {
+                    // 内容提取失败，尝试下一个代理
+                    console.warn('提取失败，尝试下一个代理:', e.message);
+                    readerFetchWithProxy(url, proxyIndex + 1);
+                }
+            })
+            .catch(function(err) {
+                console.warn('代理 ' + proxyIndex + ' 失败:', err.message);
+                readerFetchWithProxy(url, proxyIndex + 1);
+            });
+        }
+
+        // ===== 正文提取算法 =====
+        function readerExtractContent(rawHtml, baseUrl) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(rawHtml, 'text/html');
+
+            // 获取标题
+            readerState.title = doc.title || '无标题文章';
+
+            // 移除不需要的元素
+            var removeSelectors = [
+                'script', 'style', 'noscript', 'iframe', 'nav', 'header', 'footer',
+                'aside', 'form', 'button', 'input', 'select', 'textarea',
+                '.ad', '.ads', '.adsbygoogle', '.advertisement', '.ad-banner',
+                '.sidebar', '.side-bar', '.comment', '.comments', '.related',
+                '.share', '.social', '.popup', '.modal', '.banner',
+                '.breadcrumb', '.pagination', '#breadcrumb', '#sidebar',
+                '[class*="ad-"]', '[class*="ads-"]', '[class*="advert"]',
+                '[id*="ad-"]', '[id*="ads-"]', '[id*="advert"]',
+                '[class*="banner"]', '[class*="popup"]', '[class*="modal"]',
+                '[class*="share"]', '[class*="social"]', '[class*="comment"]',
+                '[class*="related"]', '[class*="recommend"]',
+                '[role="navigation"]', '[role="banner"]', '[role="complementary"]',
+                '.skip-link', '.accessibility'
+            ];
+            for (var si = 0; si < removeSelectors.length; si++) {
+                var els = doc.querySelectorAll(removeSelectors[si]);
+                for (var ei = els.length - 1; ei >= 0; ei--) {
+                    if (els[ei].parentNode) els[ei].parentNode.removeChild(els[ei]);
+                }
+            }
+
+            // 修复图片链接（相对路径→绝对路径）
+            var imgs = doc.querySelectorAll('img');
+            for (var ii = 0; ii < imgs.length; ii++) {
+                var src = imgs[ii].getAttribute('src') || imgs[ii].getAttribute('data-src') || '';
+                if (src) {
+                    try {
+                        imgs[ii].src = new URL(src, baseUrl).href;
+                    } catch(e) {}
+                }
+                // 移除懒加载属性
+                imgs[ii].removeAttribute('loading');
+                imgs[ii].removeAttribute('data-src');
+            }
+
+            // 修复链接
+            var links = doc.querySelectorAll('a');
+            for (var li = 0; li < links.length; li++) {
+                var href = links[li].getAttribute('href');
+                if (href) {
+                    try {
+                        links[li].href = new URL(href, baseUrl).href;
+                    } catch(e) {}
+                }
+            }
+
+            // ===== 核心算法：找到文本密度最高的容器 =====
+            var candidates = [
+                doc.querySelector('article'),
+                doc.querySelector('[role="main"]'),
+                doc.querySelector('main'),
+                doc.querySelector('#content'),
+                doc.querySelector('#article'),
+                doc.querySelector('#article-content'),
+                doc.querySelector('.article'),
+                doc.querySelector('.article-content'),
+                doc.querySelector('.post-content'),
+                doc.querySelector('.entry-content'),
+                doc.querySelector('.content'),
+                doc.querySelector('.post-body'),
+                doc.querySelector('.article-body'),
+                doc.querySelector('.story-body'),
+                doc.querySelector('.markdown-body')
+            ];
+
+            var bestElement = null;
+            var bestScore = 0;
+
+            // 先检查语义化标签
+            for (var ci = 0; ci < candidates.length; ci++) {
+                if (candidates[ci]) {
+                    var score = readerScoreElement(candidates[ci]);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestElement = candidates[ci];
+                    }
+                }
+            }
+
+            // 如果语义化标签没找到好的，扫描所有 div
+            if (!bestElement || bestScore < 100) {
+                var divs = doc.querySelectorAll('div, section');
+                for (var di = 0; di < divs.length; di++) {
+                    var score = readerScoreElement(divs[di]);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestElement = divs[di];
+                    }
+                }
+            }
+
+            // 如果还是没找到，用 body
+            if (!bestElement) {
+                bestElement = doc.body;
+            }
+
+            // 清理 bestElement 内的空元素
+            readerCleanEmpty(bestElement);
+
+            // 清理后的文本检查
+            var text = bestElement.textContent || '';
+            if (text.trim().length < 50) {
+                return null;
+            }
+
+            return bestElement;
+        }
+
+        // 评分：文本密度
+        function readerScoreElement(el) {
+            if (!el) return 0;
+            var text = el.textContent || '';
+            var textLen = text.trim().length;
+            if (textLen < 50) return 0;
+
+            var paragraphs = el.querySelectorAll('p').length;
+            var links = el.querySelectorAll('a').length;
+            var imgs = el.querySelectorAll('img').length;
+            var tagCount = el.querySelectorAll('*').length;
+
+            // 文本长度为主，段落加分，链接扣分
+            var score = textLen;
+            score += paragraphs * 30;
+            score -= links * 20;
+            score += imgs * 10;
+
+            // class/id 包含 content/article/post 加分
+            var cls = (el.className || '').toLowerCase();
+            var id = (el.id || '').toLowerCase();
+            if (cls.indexOf('content') >= 0 || id.indexOf('content') >= 0) score += 200;
+            if (cls.indexOf('article') >= 0 || id.indexOf('article') >= 0) score += 200;
+            if (cls.indexOf('post') >= 0 || id.indexOf('post') >= 0) score += 150;
+            if (cls.indexOf('sidebar') >= 0 || id.indexOf('sidebar') >= 0) score -= 300;
+            if (cls.indexOf('comment') >= 0 || id.indexOf('comment') >= 0) score -= 200;
+            if (cls.indexOf('footer') >= 0 || id.indexOf('footer') >= 0) score -= 200;
+            if (cls.indexOf('menu') >= 0 || id.indexOf('menu') >= 0) score -= 200;
+
+            // 标签密度（文本/标签比）
+            if (tagCount > 0) {
+                var density = textLen / tagCount;
+                if (density > 20) score += 100; // 高文本密度
+            }
+
+            return score;
+        }
+
+        // 递归清理空元素
+        function readerCleanEmpty(el) {
+            var children = el.children;
+            for (var i = children.length - 1; i >= 0; i--) {
+                var child = children[i];
+                readerCleanEmpty(child);
+                var tag = child.tagName.toLowerCase();
+                if (['div', 'span', 'p', 'section', 'ul', 'ol'].indexOf(tag) >= 0) {
+                    if (!child.textContent.trim() && !child.querySelector('img')) {
+                        if (child.parentNode) child.parentNode.removeChild(child);
+                    }
+                }
+            }
+        }
+
+        // ===== 显示文章 =====
+        function readerDisplayArticle(contentEl) {
+            var article = document.getElementById('readerArticle');
+            article.innerHTML = '';
+
+            // 标题
+            var h1 = document.createElement('h1');
+            h1.textContent = readerState.title;
+            article.appendChild(h1);
+
+            // 正文
+            var content = contentEl.cloneNode(true);
+            while (content.firstChild) {
+                article.appendChild(content.firstChild);
+            }
+
+            // 恢复阅读设置
+            article.style.fontSize = readerState.fontSize + 'px';
+            article.style.lineHeight = readerState.lineHeight;
+            readerApplyTheme(readerState.theme);
+            readerUpdateFontSizeDisplay();
+
+            // 显示
+            document.getElementById('readerContent').classList.add('show');
+            document.getElementById('readerEmpty').style.display = 'none';
+
+            // 滚动到阅读区
+            setTimeout(function() {
+                document.getElementById('readerContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+
+            readerShowToast('已提取正文内容');
+        }
+
+        // ===== UI 控制 =====
+        function readerAdjustFont(delta) {
+            readerState.fontSize = Math.max(12, Math.min(32, readerState.fontSize + delta));
+            document.getElementById('readerArticle').style.fontSize = readerState.fontSize + 'px';
+            readerUpdateFontSizeDisplay();
+        }
+
+        function readerAdjustLineHeight(delta) {
+            readerState.lineHeight = Math.max(1.2, Math.min(3.0, Math.round((readerState.lineHeight + delta) * 10) / 10));
+            document.getElementById('readerArticle').style.lineHeight = readerState.lineHeight;
+        }
+
+        function readerUpdateFontSizeDisplay() {
+            document.getElementById('fontSizeDisplay').textContent = readerState.fontSize + 'px';
+        }
+
+        function readerSetTheme(theme) {
+            readerState.theme = theme;
+            readerApplyTheme(theme);
+            // 更新按钮状态
+            var btns = document.querySelectorAll('.reader-tool-btn[data-theme]');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.toggle('active', btns[i].getAttribute('data-theme') === theme);
+            }
+        }
+
+        function readerApplyTheme(theme) {
+            var article = document.getElementById('readerArticle');
+            article.className = 'reader-article theme-' + theme;
+        }
+
+        function readerCopyUrl() {
+            if (readerState.currentUrl) {
+                navigator.clipboard.writeText(readerState.currentUrl).then(function() {
+                    readerShowToast('链接已复制');
+                }).catch(function() {
+                    readerShowToast('复制失败');
+                });
+            }
+        }
+
+        function readerPrint() {
+            window.print();
+        }
+
+        function readerClose() {
+            document.getElementById('readerContent').classList.remove('show');
+            document.getElementById('readerEmpty').style.display = 'block';
+            document.getElementById('featuresGrid').style.display = 'grid';
+            document.getElementById('urlInput').value = '';
+            document.getElementById('readerArticle').innerHTML = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===== 辅助函数 =====
+        function readerShowLoading(text) {
+            document.getElementById('readerLoading').classList.add('show');
+            if (text) document.getElementById('loadingText').textContent = text;
+            document.getElementById('readBtn').disabled = true;
+        }
+
+        function readerHideLoading() {
+            document.getElementById('readerLoading').classList.remove('show');
+            document.getElementById('readBtn').disabled = false;
+        }
+
+        function readerShowError(msg) {
+            var errEl = document.getElementById('readerError');
+            document.getElementById('errorText').innerHTML = msg;
+            errEl.classList.add('show');
+            document.getElementById('readerEmpty').style.display = 'block';
+            document.getElementById('featuresGrid').style.display = 'grid';
+        }
+
+        function readerHideError() {
+            document.getElementById('readerError').classList.remove('show');
+        }
+
+        var toastTimer = null;
+        function readerShowToast(msg) {
+            var toast = document.getElementById('readerToast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // 回车键触发
+        document.getElementById('urlInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                readerRead();
+            }
+        });
+
+        // 初始化图标
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

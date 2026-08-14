@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线翻译 - 中英互译</title>
+    <meta name="description" content="免费在线翻译工具，支持中文、英文等语言互译，自动检测语言方向，浏览器直接调用，无需安装">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .tr-hero { padding: 7rem 0 2rem; text-align: center; }
+    .tr-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(217, 119, 6, 0.1); color: #D97706; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .tr-hero .hero-badge i { width: 16px; height: 16px; }
+    .tr-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .tr-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .tr-section { padding: 1rem 0 2rem; }
+    .tr-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-lg); }
+    .tr-langs { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tr-select { flex: 1; min-width: 140px; padding: 0.65rem 0.85rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.9rem; cursor: pointer; }
+    .tr-swap { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s; flex-shrink: 0; }
+    .tr-swap:hover { transform: rotate(180deg); color: var(--primary-light); }
+    .tr-swap i { width: 18px; height: 18px; }
+    .tr-area { position: relative; }
+    .tr-textarea { width: 100%; min-height: 180px; border: 1px solid var(--border); border-radius: 14px; padding: 0.9rem 1rem; font-family: inherit; font-size: 0.95rem; line-height: 1.8; resize: vertical; background: var(--bg); color: var(--text); box-sizing: border-box; }
+    .tr-textarea:focus { outline: none; border-color: var(--primary-light); }
+    .tr-actions { display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; align-items: center; }
+    .tr-btn { padding: 0.65rem 1.25rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s; }
+    .tr-btn i { width: 16px; height: 16px; }
+    .tr-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .tr-btn-primary { background: linear-gradient(135deg, #D97706, #F59E0B); color: #fff; border: none; }
+    .tr-btn-primary:hover { box-shadow: 0 6px 16px rgba(217, 119, 6, 0.3); }
+    .tr-hint { font-size: 0.8rem; color: var(--text-secondary); margin-left: auto; }
+    .tr-loading { color: var(--text-secondary); font-size: 0.85rem; display: none; align-items: center; gap: 0.5rem; }
+    .tr-loading i { width: 15px; height: 15px; animation: tbSpin 1s linear infinite; }
+    @keyframes tbSpin { to { transform: rotate(360deg); } }
+    .tr-output { margin-top: 1.25rem; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.25rem; display: none; }
+    .tr-output.show { display: block; animation: tbFadeIn .2s ease; }
+    @keyframes tbFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .tr-output h4 { margin: 0 0 0.5rem; font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem; }
+    .tr-output h4 i { width: 15px; height: 15px; }
+    .tr-output p { margin: 0; font-size: 1.05rem; line-height: 1.9; }
+
+    .tr-tips { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.85rem; }
+    .tr-tip { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1rem 1.1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+    .tr-tip i { width: 18px; height: 18px; color: var(--primary-light); flex-shrink: 0; margin-top: 2px; }
+    .tr-tip b { display: block; font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .tr-tip p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; }
+
+    @media (max-width: 768px) {
+        .tr-hero { padding: 6rem 0 1.5rem; }
+        .tr-hero h1 { font-size: 1.85rem; }
+        .tr-card { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="languages"></i>
+                </div>
+                <span class="logo-text">在线翻译</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#translate" class="nav-link active">在线翻译</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="tr-hero">
+            <div class="hero-badge"><i data-lucide="languages"></i><span>中英互译 · 即时翻译</span></div>
+            <h1 class="hero-title">在线<span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">翻译</span></h1>
+            <p class="hero-description">输入文本自动检测语言方向，支持中、英、日、韩等 10 余种语言互译。</p>
+        </section>
+
+        <section id="translate" class="tr-section">
+            <div class="container">
+                <div class="tr-card">
+                    <div class="tr-langs">
+                        <select id="fromLang" class="tr-select" title="源语言"></select>
+                        <button type="button" class="tr-swap" id="swapBtn" title="交换语言"><i data-lucide="arrow-left-right"></i></button>
+                        <select id="toLang" class="tr-select" title="目标语言"></select>
+                    </div>
+                    <div class="tr-area">
+                        <textarea id="inputText" class="tr-textarea" placeholder="输入要翻译的文本，如：你好，世界！"></textarea>
+                        <div class="tr-actions">
+                            <button type="button" class="tr-btn tr-btn-primary" id="btnTranslate"><i data-lucide="sparkles"></i>翻译</button>
+                            <button type="button" class="tr-btn" id="btnClear"><i data-lucide="trash-2"></i>清空</button>
+                            <button type="button" class="tr-btn" id="btnCopy"><i data-lucide="copy"></i>复制结果</button>
+                            <span class="tr-loading" id="loading"><i data-lucide="loader-2"></i>翻译中…</span>
+                            <span class="tr-hint">支持 Ctrl+Enter 快捷翻译</span>
+                        </div>
+                    </div>
+                    <div class="tr-output" id="outputBox">
+                        <h4><i data-lucide="check-circle"></i>翻译结果</h4>
+                        <p id="outputText"></p>
+                    </div>
+                </div>
+
+                <div class="tr-tips">
+                    <div class="tr-tip"><i data-lucide="zap"></i><div><b>快速上手</b><p>粘贴或输入文本后点击"翻译"，或直接按 Ctrl+Enter。</p></div></div>
+                    <div class="tr-tip"><i data-lucide="refresh-cw"></i><div><b>自动检测</b><p>选择"自动检测"作为源语言，系统会自动识别输入语言。</p></div></div>
+                    <div class="tr-tip"><i data-lucide="shield-check"></i><div><b>隐私说明</b><p>翻译请求由公共翻译服务完成，请勿输入敏感或机密信息。</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="languages"></i>
+                </div>
+                <span>在线翻译</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        var LANGS = [
+            { code: 'auto', name: '自动检测' },
+            { code: 'zh-CN', name: '中文' },
+            { code: 'en', name: '英语' },
+            { code: 'ja', name: '日语' },
+            { code: 'ko', name: '韩语' },
+            { code: 'fr', name: '法语' },
+            { code: 'de', name: '德语' },
+            { code: 'es', name: '西班牙语' },
+            { code: 'ru', name: '俄语' },
+            { code: 'it', name: '意大利语' },
+            { code: 'pt', name: '葡萄牙语' },
+            { code: 'ar', name: '阿拉伯语' },
+            { code: 'th', name: '泰语' },
+            { code: 'vi', name: '越南语' }
+        ];
+
+        function fillSelects() {
+            var from = document.getElementById('fromLang');
+            var to = document.getElementById('toLang');
+            LANGS.forEach(function(l, i) {
+                from.innerHTML += '<option value="' + l.code + '">' + l.name + '</option>';
+                to.innerHTML += '<option value="' + l.code + '">' + l.name + '</option>';
+            });
+            from.value = 'auto';
+            to.value = 'en';
+        }
+
+        function translate() {
+            var text = document.getElementById('inputText').value.trim();
+            if (!text) { showToast('请先输入要翻译的文本', 'error'); return; }
+            var from = document.getElementById('fromLang').value;
+            var to = document.getElementById('toLang').value;
+            if (from === 'auto') {
+                // MyMemory 不支持 auto 参数：根据字符集简单检测（默认按中文处理）
+                from = /[\u4e00-\u9fff]/.test(text) ? 'zh-CN' : 'en';
+            }
+            if (from === to) { showToast('源语言与目标语言相同，请更换', 'error'); return; }
+
+            var loading = document.getElementById('loading');
+            loading.style.display = 'flex';
+            var url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) +
+                '&langpair=' + encodeURIComponent(from + '|' + to);
+
+            fetch(url)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    loading.style.display = 'none';
+                    var translated = data && data.responseData && data.responseData.translatedText;
+                    if (!translated || (data.responseStatus && data.responseStatus !== 200)) {
+                        showToast('翻译失败，请检查网络或稍后重试', 'error');
+                        return;
+                    }
+                    document.getElementById('outputText').textContent = translated;
+                    document.getElementById('outputBox').classList.add('show');
+                })
+                .catch(function() {
+                    loading.style.display = 'none';
+                    showToast('翻译请求失败，请检查网络连接', 'error');
+                });
+        }
+
+        document.getElementById('btnTranslate').addEventListener('click', translate);
+        document.getElementById('btnClear').addEventListener('click', function() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputBox').classList.remove('show');
+        });
+        document.getElementById('btnCopy').addEventListener('click', function() {
+            var text = document.getElementById('outputText').textContent;
+            if (!text) { showToast('暂无翻译结果', 'error'); return; }
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function() { showToast('已复制到剪贴板', 'success'); });
+            } else {
+                var t = document.createElement('textarea');
+                t.value = text; document.body.appendChild(t); t.select();
+                document.execCommand('copy'); document.body.removeChild(t);
+                showToast('已复制到剪贴板', 'success');
+            }
+        });
+        document.getElementById('swapBtn').addEventListener('click', function() {
+            var from = document.getElementById('fromLang');
+            var to = document.getElementById('toLang');
+            var tmp = from.value; from.value = to.value; to.value = tmp;
+            if (from.value === 'auto') from.value = 'en';
+            if (to.value === 'auto') to.value = 'zh-CN';
+            // 交换输入输出文本
+            var input = document.getElementById('inputText').value;
+            var out = document.getElementById('outputText').textContent;
+            if (out && out !== '') {
+                document.getElementById('inputText').value = out;
+                document.getElementById('outputBox').classList.remove('show');
+            }
+        });
+        document.getElementById('inputText').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); translate(); }
+        });
+
+        fillSelects();
+    })();
+    </script>
+</body>
+</html>

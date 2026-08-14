@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单位换算器 - 长度重量温度数据存储换算</title>
+    <meta name="description" content="免费在线单位换算器，支持长度、重量、温度、数据存储、面积、速度等单位实时双向换算">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #F59E0B, #F97316);">
+                    <i data-lucide="ruler"></i>
+                </div>
+                <span class="logo-text">单位换算器</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#converter" class="nav-link active">换算</a>
+                <a href="#features" class="nav-link">特性</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="calculator"></i>
+                    <span>长度 · 重量 · 温度 · 数据存储 · 面积 · 速度</span>
+                </div>
+                <h1 class="hero-title">
+                    单位<span class="gradient-text" style="background:linear-gradient(135deg,#F59E0B,#F97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">换算器</span>
+                </h1>
+                <p class="hero-description">
+                    免费在线单位换算工具，支持长度、重量、温度、数据存储、面积、速度等多类单位实时双向换算，
+                    所有计算在浏览器本地完成，精准高效。
+                </p>
+            </div>
+        </section>
+
+        <section id="converter" class="converter-section">
+            <div class="converter-card" style="max-width: 920px;">
+                <!-- 分类标签栏 -->
+                <div class="unit-tabs" style="display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin-bottom:2rem;">
+                    <button type="button" class="unit-tab json-tool-btn active" data-category="length">长度</button>
+                    <button type="button" class="unit-tab json-tool-btn" data-category="weight">重量</button>
+                    <button type="button" class="unit-tab json-tool-btn" data-category="temperature">温度</button>
+                    <button type="button" class="unit-tab json-tool-btn" data-category="data">数据存储</button>
+                    <button type="button" class="unit-tab json-tool-btn" data-category="area">面积</button>
+                    <button type="button" class="unit-tab json-tool-btn" data-category="speed">速度</button>
+                </div>
+
+                <!-- 双向换算 -->
+                <div class="unit-converter-row" style="display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap;">
+                    <div class="unit-input-group" style="flex:1;min-width:200px;">
+                        <label style="display:block;font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.375rem;font-weight:500;" id="leftLabel">输入值</label>
+                        <input type="number" id="leftInput" value="1" step="any" style="width:100%;padding:0.75rem 1rem;border:1px solid var(--border);border-radius:12px;font-size:1rem;font-family:inherit;color:var(--text);background:var(--bg-card);outline:none;">
+                        <select id="leftUnit" class="json-select" style="width:100%;margin-top:0.5rem;padding:0.625rem 0.75rem;"></select>
+                    </div>
+
+                    <button type="button" id="swapBtn" title="交换单位" style="flex-shrink:0;width:44px;height:44px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(135deg,#F59E0B,#F97316);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:0;transition:transform 0.2s ease;">
+                        <i data-lucide="arrow-left-right" style="width:20px;height:20px;"></i>
+                    </button>
+
+                    <div class="unit-input-group" style="flex:1;min-width:200px;">
+                        <label style="display:block;font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.375rem;font-weight:500;" id="rightLabel">换算结果</label>
+                        <input type="number" id="rightInput" step="any" style="width:100%;padding:0.75rem 1rem;border:1px solid var(--border);border-radius:12px;font-size:1rem;font-family:inherit;color:var(--text);background:var(--bg-card);outline:none;">
+                        <select id="rightUnit" class="json-select" style="width:100%;margin-top:0.5rem;padding:0.625rem 0.75rem;"></select>
+                    </div>
+                </div>
+
+                <!-- 换算公式 -->
+                <div class="unit-formula" style="margin-top:1.5rem;padding:1rem 1.25rem;background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(249,115,22,0.08));border:1px solid rgba(245,158,11,0.2);border-radius:12px;display:flex;align-items:center;gap:0.625rem;">
+                    <i data-lucide="function-square" style="width:20px;height:20px;color:#F59E0B;flex-shrink:0;"></i>
+                    <div id="formulaDisplay" style="font-family:'Consolas','Monaco',monospace;font-size:0.9rem;color:var(--text);line-height:1.6;word-break:break-all;"></div>
+                </div>
+
+                <!-- 常用换算参考表 -->
+                <div class="unit-reference" style="margin-top:2rem;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+                        <i data-lucide="table" style="width:18px;height:18px;color:#F59E0B;"></i>
+                        <h4 style="font-size:1rem;color:var(--text);margin:0;">常用换算参考</h4>
+                    </div>
+                    <div id="referenceTable" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem;"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、精准、高效的单位换算工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.1)); color: #F59E0B;">
+                        <i data-lucide="ruler"></i>
+                    </div>
+                    <h3>六大类别</h3>
+                    <p>长度、重量、温度、数据存储、面积、速度全覆盖</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.1)); color: #F59E0B;">
+                        <i data-lucide="arrow-left-right"></i>
+                    </div>
+                    <h3>双向换算</h3>
+                    <p>支持任意单位双向实时换算，一键交换单位</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.1)); color: #F59E0B;">
+                        <i data-lucide="zap"></i>
+                    </div>
+                    <h3>实时计算</h3>
+                    <p>输入即时换算，无需点击按钮，结果秒出</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.1)); color: #F59E0B;">
+                        <i data-lucide="thermometer"></i>
+                    </div>
+                    <h3>温度特殊处理</h3>
+                    <p>摄氏度、华氏度、开尔文精准互转，非简单乘法</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.1)); color: #F59E0B;">
+                        <i data-lucide="table"></i>
+                    </div>
+                    <h3>参考表</h3>
+                    <p>提供常用换算参考表，快速查看常见数值</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.1)); color: #F59E0B;">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+                    <h3>隐私安全</h3>
+                    <p>所有换算在浏览器本地完成，不上传任何数据</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #F59E0B, #F97316);">
+                    <i data-lucide="ruler"></i>
+                </div>
+                <span>单位换算器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="json-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // 单位数据定义（基准单位因子）
+        var UNITS = {
+            length: {
+                name: '长度',
+                base: '米',
+                units: [
+                    { key: 'mm', name: '毫米', factor: 0.001 },
+                    { key: 'cm', name: '厘米', factor: 0.01 },
+                    { key: 'm', name: '米', factor: 1 },
+                    { key: 'km', name: '千米', factor: 1000 },
+                    { key: 'in', name: '英寸', factor: 0.0254 },
+                    { key: 'ft', name: '英尺', factor: 0.3048 },
+                    { key: 'yd', name: '码', factor: 0.9144 },
+                    { key: 'mi', name: '英里', factor: 1609.344 },
+                    { key: 'nmi', name: '海里', factor: 1852 }
+                ]
+            },
+            weight: {
+                name: '重量',
+                base: '千克',
+                units: [
+                    { key: 'mg', name: '毫克', factor: 0.000001 },
+                    { key: 'g', name: '克', factor: 0.001 },
+                    { key: 'kg', name: '千克', factor: 1 },
+                    { key: 't', name: '吨', factor: 1000 },
+                    { key: 'oz', name: '盎司', factor: 0.0283495 },
+                    { key: 'lb', name: '磅', factor: 0.453592 },
+                    { key: 'jin', name: '斤', factor: 0.5 },
+                    { key: 'liang', name: '两', factor: 0.05 }
+                ]
+            },
+            temperature: {
+                name: '温度',
+                base: '摄氏度',
+                units: [
+                    { key: 'C', name: '摄氏度' },
+                    { key: 'F', name: '华氏度' },
+                    { key: 'K', name: '开尔文' }
+                ]
+            },
+            data: {
+                name: '数据存储',
+                base: 'Byte',
+                units: [
+                    { key: 'bit', name: 'bit', factor: 0.125 },
+                    { key: 'B', name: 'Byte', factor: 1 },
+                    { key: 'KB', name: 'KB', factor: 1024 },
+                    { key: 'MB', name: 'MB', factor: 1048576 },
+                    { key: 'GB', name: 'GB', factor: 1073741824 },
+                    { key: 'TB', name: 'TB', factor: 1099511627776 },
+                    { key: 'PB', name: 'PB', factor: 1125899906842624 }
+                ]
+            },
+            area: {
+                name: '面积',
+                base: '平方米',
+                units: [
+                    { key: 'm2', name: '平方米', factor: 1 },
+                    { key: 'km2', name: '平方千米', factor: 1000000 },
+                    { key: 'ha', name: '公顷', factor: 10000 },
+                    { key: 'mu', name: '亩', factor: 666.6666667 },
+                    { key: 'ft2', name: '平方英尺', factor: 0.09290304 },
+                    { key: 'acre', name: '英亩', factor: 4046.86 }
+                ]
+            },
+            speed: {
+                name: '速度',
+                base: 'm/s',
+                units: [
+                    { key: 'ms', name: 'm/s', factor: 1 },
+                    { key: 'kmh', name: 'km/h', factor: 0.277777778 },
+                    { key: 'mph', name: 'mph', factor: 0.44704 },
+                    { key: 'knot', name: '节', factor: 0.514444444 }
+                ]
+            }
+        };
+
+        // 常用换算参考（每个类别的参考值，基于基准单位）
+        var REFERENCES = {
+            length: [
+                { value: 1, from: 'm', desc: '1 米 = 3.2808 英尺' },
+                { value: 1, from: 'km', desc: '1 千米 = 0.6214 英里' },
+                { value: 1, from: 'in', desc: '1 英寸 = 2.54 厘米' },
+                { value: 1, from: 'ft', desc: '1 英尺 = 0.3048 米' },
+                { value: 1, from: 'mi', desc: '1 英里 = 1.6093 千米' },
+                { value: 1, from: 'nmi', desc: '1 海里 = 1.852 千米' }
+            ],
+            weight: [
+                { value: 1, from: 'kg', desc: '1 千克 = 2.2046 磅' },
+                { value: 1, from: 'lb', desc: '1 磅 = 0.4536 千克' },
+                { value: 1, from: 'jin', desc: '1 斤 = 0.5 千克' },
+                { value: 1, from: 'oz', desc: '1 盎司 = 28.3495 克' },
+                { value: 1, from: 't', desc: '1 吨 = 1000 千克' },
+                { value: 500, from: 'g', desc: '500 克 = 1 斤' }
+            ],
+            temperature: [
+                { value: 0, from: 'C', desc: '0°C = 32°F (冰点)' },
+                { value: 100, from: 'C', desc: '100°C = 212°F (沸点)' },
+                { value: 37, from: 'C', desc: '37°C = 98.6°F (体温)' },
+                { value: 25, from: 'C', desc: '25°C = 298.15 K (常温)' },
+                { value: -40, from: 'C', desc: '-40°C = -40°F (相等点)' },
+                { value: 273.15, from: 'K', desc: '273.15 K = 0°C' }
+            ],
+            data: [
+                { value: 1, from: 'KB', desc: '1 KB = 1024 Byte' },
+                { value: 1, from: 'MB', desc: '1 MB = 1024 KB' },
+                { value: 1, from: 'GB', desc: '1 GB = 1024 MB' },
+                { value: 1, from: 'TB', desc: '1 TB = 1024 GB' },
+                { value: 1, from: 'B', desc: '1 Byte = 8 bit' },
+                { value: 1, from: 'PB', desc: '1 PB = 1024 TB' }
+            ],
+            area: [
+                { value: 1, from: 'ha', desc: '1 公顷 = 10000 平方米' },
+                { value: 1, from: 'mu', desc: '1 亩 = 666.67 平方米' },
+                { value: 1, from: 'km2', desc: '1 平方千米 = 100 公顷' },
+                { value: 1, from: 'acre', desc: '1 英亩 = 4046.86 平方米' },
+                { value: 1, from: 'ft2', desc: '1 平方英尺 = 0.0929 平方米' },
+                { value: 15, from: 'mu', desc: '15 亩 = 1 公顷' }
+            ],
+            speed: [
+                { value: 1, from: 'kmh', desc: '1 km/h = 0.2778 m/s' },
+                { value: 1, from: 'mph', desc: '1 mph = 1.6093 km/h' },
+                { value: 1, from: 'knot', desc: '1 节 = 1.852 km/h' },
+                { value: 100, from: 'kmh', desc: '100 km/h = 27.78 m/s' },
+                { value: 60, from: 'mph', desc: '60 mph = 96.56 km/h' },
+                { value: 30, from: 'knot', desc: '30 节 = 55.56 km/h' }
+            ]
+        };
+
+        var els = {
+            tabs: document.querySelectorAll('.unit-tab'),
+            leftInput: document.getElementById('leftInput'),
+            rightInput: document.getElementById('rightInput'),
+            leftUnit: document.getElementById('leftUnit'),
+            rightUnit: document.getElementById('rightUnit'),
+            swapBtn: document.getElementById('swapBtn'),
+            formulaDisplay: document.getElementById('formulaDisplay'),
+            referenceTable: document.getElementById('referenceTable'),
+            toast: document.getElementById('toast'),
+            toastMessage: document.getElementById('toastMessage')
+        };
+
+        var currentCategory = 'length';
+        var lastEdited = 'left'; // 记录最后编辑的是哪一边
+
+        function showToast(msg) {
+            els.toastMessage.textContent = msg;
+            els.toast.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+            setTimeout(function() {
+                els.toast.classList.add('hidden');
+            }, 2000);
+        }
+
+        // 获取当前类别的单位列表
+        function getCategoryUnits() {
+            return UNITS[currentCategory].units;
+        }
+
+        function findUnit(key) {
+            var units = getCategoryUnits();
+            for (var i = 0; i < units.length; i++) {
+                if (units[i].key === key) return units[i];
+            }
+            return null;
+        }
+
+        // 填充单位下拉框
+        function populateUnits() {
+            var units = getCategoryUnits();
+            els.leftUnit.innerHTML = '';
+            els.rightUnit.innerHTML = '';
+            units.forEach(function(u, idx) {
+                var opt1 = document.createElement('option');
+                opt1.value = u.key;
+                opt1.textContent = u.name;
+                els.leftUnit.appendChild(opt1);
+
+                var opt2 = document.createElement('option');
+                opt2.value = u.key;
+                opt2.textContent = u.name;
+                els.rightUnit.appendChild(opt2);
+            });
+            // 默认选择：左第一个，右第二个（或基准单位）
+            els.leftUnit.selectedIndex = 0;
+            els.rightUnit.selectedIndex = units.length > 1 ? 1 : 0;
+        }
+
+        // 温度换算：将任意温度转为基准(摄氏度)
+        function tempToCelsius(value, fromKey) {
+            if (fromKey === 'C') return value;
+            if (fromKey === 'F') return (value - 32) * 5 / 9;
+            if (fromKey === 'K') return value - 273.15;
+            return value;
+        }
+
+        // 温度换算：从摄氏度转为目标单位
+        function celsiusToTemp(celsius, toKey) {
+            if (toKey === 'C') return celsius;
+            if (toKey === 'F') return celsius * 9 / 5 + 32;
+            if (toKey === 'K') return celsius + 273.15;
+            return celsius;
+        }
+
+        // 通用换算：值 -> 基准单位 -> 目标单位
+        function convert(value, fromKey, toKey) {
+            if (currentCategory === 'temperature') {
+                var celsius = tempToCelsius(value, fromKey);
+                return celsiusToTemp(celsius, toKey);
+            }
+            var fromUnit = findUnit(fromKey);
+            var toUnit = findUnit(toKey);
+            if (!fromUnit || !toUnit) return 0;
+            var baseValue = value * fromUnit.factor;
+            return baseValue / toUnit.factor;
+        }
+
+        // 数字格式化：避免过长小数
+        function formatNumber(num) {
+            if (!isFinite(num)) return '';
+            if (num === 0) return '0';
+            var absNum = Math.abs(num);
+            // 很大或很小的数用科学计数法
+            if (absNum !== 0 && (absNum < 0.000001 || absNum >= 1e15)) {
+                return num.toExponential(6);
+            }
+            // 保留适当小数位
+            var str = num.toFixed(10);
+            // 去掉末尾的0
+            str = str.replace(/\.?0+$/, '');
+            return str;
+        }
+
+        // 计算换算因子（用于公式显示）
+        function getFactor(fromKey, toKey) {
+            var dummy = convert(1, fromKey, toKey);
+            return dummy;
+        }
+
+        function updateFormula() {
+            var fromKey = els.leftUnit.value;
+            var toKey = els.rightUnit.value;
+            var fromUnit = findUnit(fromKey);
+            var toUnit = findUnit(toKey);
+            if (!fromUnit || !toUnit) return;
+
+            var factor = getFactor(fromKey, toKey);
+            var fromName = fromUnit.name;
+            var toName = toUnit.name;
+
+            if (currentCategory === 'temperature') {
+                // 显示温度换算公式
+                var formula = '';
+                if (fromKey === 'C' && toKey === 'F') {
+                    formula = '°F = °C × 9/5 + 32';
+                } else if (fromKey === 'C' && toKey === 'K') {
+                    formula = 'K = °C + 273.15';
+                } else if (fromKey === 'F' && toKey === 'C') {
+                    formula = '°C = (°F - 32) × 5/9';
+                } else if (fromKey === 'F' && toKey === 'K') {
+                    formula = 'K = (°F - 32) × 5/9 + 273.15';
+                } else if (fromKey === 'K' && toKey === 'C') {
+                    formula = '°C = K - 273.15';
+                } else if (fromKey === 'K' && toKey === 'F') {
+                    formula = '°F = (K - 273.15) × 9/5 + 32';
+                } else {
+                    formula = '1 ' + fromName + ' = 1 ' + toName;
+                }
+                els.formulaDisplay.innerHTML = '<strong>换算公式：</strong>' + formula;
+            } else {
+                els.formulaDisplay.innerHTML =
+                    '<strong>换算公式：</strong>1 ' + fromName + ' = ' + formatNumber(factor) + ' ' + toName;
+            }
+        }
+
+        function renderReference() {
+            var refs = REFERENCES[currentCategory];
+            els.referenceTable.innerHTML = '';
+            refs.forEach(function(ref) {
+                var card = document.createElement('div');
+                card.style.cssText = 'padding:0.75rem 1rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;font-size:0.875rem;color:var(--text);display:flex;align-items:center;gap:0.5rem;cursor:pointer;transition:all 0.2s ease;';
+                card.innerHTML =
+                    '<i data-lucide="chevron-right" style="width:14px;height:14px;color:#F59E0B;flex-shrink:0;"></i>' +
+                    '<span>' + ref.desc + '</span>';
+                card.addEventListener('mouseenter', function() {
+                    card.style.borderColor = '#F59E0B';
+                    card.style.background = 'rgba(245,158,11,0.05)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    card.style.borderColor = 'var(--border)';
+                    card.style.background = 'var(--bg)';
+                });
+                // 点击参考项：应用该换算
+                card.addEventListener('click', function() {
+                    els.leftInput.value = ref.value;
+                    els.leftUnit.value = ref.from;
+                    lastEdited = 'left';
+                    convertLeft();
+                    showToast('已应用参考换算');
+                });
+                els.referenceTable.appendChild(card);
+            });
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // 从左输入框换算到右
+        function convertLeft() {
+            var value = parseFloat(els.leftInput.value);
+            if (isNaN(value)) {
+                els.rightInput.value = '';
+                return;
+            }
+            var result = convert(value, els.leftUnit.value, els.rightUnit.value);
+            els.rightInput.value = formatNumber(result);
+            updateFormula();
+        }
+
+        // 从右输入框换算到左
+        function convertRight() {
+            var value = parseFloat(els.rightInput.value);
+            if (isNaN(value)) {
+                els.leftInput.value = '';
+                return;
+            }
+            var result = convert(value, els.rightUnit.value, els.leftUnit.value);
+            els.leftInput.value = formatNumber(result);
+            updateFormula();
+        }
+
+        // 切换分类
+        function switchCategory(category) {
+            currentCategory = category;
+            els.tabs.forEach(function(tab) {
+                tab.classList.toggle('active', tab.getAttribute('data-category') === category);
+            });
+            populateUnits();
+            els.leftInput.value = '1';
+            convertLeft();
+            renderReference();
+        }
+
+        // 交换单位
+        function swapUnits() {
+            var leftVal = els.leftUnit.value;
+            els.leftUnit.value = els.rightUnit.value;
+            els.rightUnit.value = leftVal;
+            // 交换后重新计算
+            if (lastEdited === 'left') {
+                convertLeft();
+            } else {
+                convertRight();
+            }
+            // 旋转动画
+            els.swapBtn.style.transform = 'rotate(180deg)';
+            setTimeout(function() {
+                els.swapBtn.style.transform = 'rotate(0deg)';
+            }, 200);
+        }
+
+        function setupEvents() {
+            // 分类切换
+            els.tabs.forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    switchCategory(this.getAttribute('data-category'));
+                });
+            });
+
+            // 左输入框
+            els.leftInput.addEventListener('input', function() {
+                lastEdited = 'left';
+                convertLeft();
+            });
+
+            // 右输入框
+            els.rightInput.addEventListener('input', function() {
+                lastEdited = 'right';
+                convertRight();
+            });
+
+            // 单位选择变化
+            els.leftUnit.addEventListener('change', function() {
+                if (lastEdited === 'left') convertLeft(); else convertRight();
+            });
+            els.rightUnit.addEventListener('change', function() {
+                if (lastEdited === 'left') convertLeft(); else convertRight();
+            });
+
+            // 交换按钮
+            els.swapBtn.addEventListener('click', swapUnits);
+        }
+
+        function init() {
+            setupEvents();
+            switchCategory('length');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

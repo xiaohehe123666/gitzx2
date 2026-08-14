@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>身份证号码解析 - 校验与信息提取</title>
+    <meta name="description" content="在线身份证号码解析工具：18/15位身份证校验码验证、出生日期、性别、年龄、星座、生肖、户籍省份地区提取，全部浏览器本地计算">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .id-hero { padding: 7rem 0 2rem; text-align: center; }
+    .id-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(217, 119, 6, 0.1); color: #D97706; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .id-hero .hero-badge i { width: 16px; height: 16px; }
+    .id-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .id-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .id-section { padding: 1rem 0 2rem; }
+    .id-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-lg); max-width: 680px; margin: 0 auto; }
+    .id-input { width: 100%; padding: 0.85rem 1rem; border: 1px solid var(--border); border-radius: 14px; font-family: inherit; font-size: 1.05rem; letter-spacing: 1px; background: var(--bg); color: var(--text); box-sizing: border-box; text-align: center; }
+    .id-input:focus { outline: none; border-color: var(--primary-light); }
+    .id-actions { display: flex; gap: 0.75rem; margin-top: 1rem; justify-content: center; flex-wrap: wrap; }
+    .id-btn { padding: 0.65rem 1.4rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s; }
+    .id-btn i { width: 16px; height: 16px; }
+    .id-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .id-btn-primary { background: linear-gradient(135deg, #D97706, #F59E0B); color: #fff; border: none; }
+    .id-btn-primary:hover { box-shadow: 0 6px 16px rgba(217, 119, 6, 0.3); }
+
+    .id-result { display: none; margin-top: 1.5rem; }
+    .id-result.show { display: block; animation: idFadeIn .25s ease; }
+    @keyframes idFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .id-status { padding: 0.85rem 1.1rem; border-radius: 14px; font-size: 0.95rem; font-weight: 600; margin-bottom: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .id-status.valid { background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .id-status.invalid { background: rgba(239, 68, 68, 0.1); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .id-status i { width: 18px; height: 18px; }
+
+    .id-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.7rem; }
+    .id-item { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 0.8rem 0.95rem; }
+    .id-item span { font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem; }
+    .id-item b { font-size: 1rem; }
+    .id-privacy { margin-top: 1.2rem; font-size: 0.75rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem; justify-content: center; }
+    .id-privacy i { width: 14px; height: 14px; }
+
+    @media (max-width: 768px) {
+        .id-hero { padding: 6rem 0 1.5rem; }
+        .id-hero h1 { font-size: 1.85rem; }
+        .id-card { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="id-card"></i>
+                </div>
+                <span class="logo-text">身份证解析</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#id-parser" class="nav-link active">身份证解析</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="id-hero">
+            <div class="hero-badge"><i data-lucide="id-card"></i><span>18/15 位身份证校验与解析</span></div>
+            <h1 class="hero-title">身份证号码<span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">解析</span></h1>
+            <p class="hero-description">输入身份证号，自动校验真伪并提取出生日期、性别、年龄、地区等信息。</p>
+        </section>
+
+        <section id="id-parser" class="id-section">
+            <div class="container">
+                <div class="id-card">
+                    <input type="text" id="idInput" class="id-input" placeholder="请输入18位或15位身份证号码" maxlength="18">
+                    <div class="id-actions">
+                        <button type="button" class="id-btn id-btn-primary" id="btnParse"><i data-lucide="search"></i>解析</button>
+                        <button type="button" class="id-btn" id="btnSample"><i data-lucide="flask-conical"></i>示例</button>
+                        <button type="button" class="id-btn" id="btnClear"><i data-lucide="trash-2"></i>清空</button>
+                    </div>
+                    <div class="id-result" id="resultBox">
+                        <div class="id-status" id="statusBox"></div>
+                        <div class="id-grid" id="infoGrid"></div>
+                    </div>
+                    <p class="id-privacy"><i data-lucide="shield-check"></i>所有计算均在浏览器本地完成，号码不会上传到任何服务器</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="id-card"></i>
+                </div>
+                <span>身份证解析</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        /* 身份证校验码权重与映射表 */
+        var WEIGHTS = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+        var CHECK_CODES = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+
+        var PROVINCES = {
+            '11': '北京市', '12': '天津市', '13': '河北省', '14': '山西省', '15': '内蒙古自治区',
+            '21': '辽宁省', '22': '吉林省', '23': '黑龙江省',
+            '31': '上海市', '32': '江苏省', '33': '浙江省', '34': '安徽省', '35': '福建省', '36': '江西省', '37': '山东省',
+            '41': '河南省', '42': '湖北省', '43': '湖南省', '44': '广东省', '45': '广西壮族自治区', '46': '海南省',
+            '50': '重庆市', '51': '四川省', '52': '贵州省', '53': '云南省', '54': '西藏自治区',
+            '61': '陕西省', '62': '甘肃省', '63': '青海省', '64': '宁夏回族自治区', '65': '新疆维吾尔自治区',
+            '71': '台湾省', '81': '香港特别行政区', '82': '澳门特别行政区'
+        };
+
+        var ZODIAC = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
+        var CONSTELLATIONS = [
+            { name: '摩羯座', start: [1, 1], end: [1, 19] }, { name: '水瓶座', start: [1, 20], end: [2, 18] },
+            { name: '双鱼座', start: [2, 19], end: [3, 20] }, { name: '白羊座', start: [3, 21], end: [4, 19] },
+            { name: '金牛座', start: [4, 20], end: [5, 20] }, { name: '双子座', start: [5, 21], end: [6, 21] },
+            { name: '巨蟹座', start: [6, 22], end: [7, 22] }, { name: '狮子座', start: [7, 23], end: [8, 22] },
+            { name: '处女座', start: [8, 23], end: [9, 22] }, { name: '天秤座', start: [9, 23], end: [10, 23] },
+            { name: '天蝎座', start: [10, 24], end: [11, 22] }, { name: '射手座', start: [11, 23], end: [12, 21] },
+            { name: '摩羯座', start: [12, 22], end: [12, 31] }
+        ];
+
+        function getConstellation(m, d) {
+            for (var i = 0; i < CONSTELLATIONS.length; i++) {
+                var c = CONSTELLATIONS[i];
+                var s = (m === c.start[0] && d >= c.start[1]) || (m === c.end[0] && d <= c.end[1]);
+                if (s) return c.name;
+            }
+            return '摩羯座';
+        }
+
+        function parseId(id) {
+            id = id.trim().toUpperCase();
+            var result = { valid: false, message: '', items: [] };
+
+            if (!/^\d{17}[\dX]$|^\d{15}$/.test(id)) {
+                result.message = '号码格式不正确：应为18位数字+校验位（X）或15位数字';
+                return result;
+            }
+
+            var birthStr, gender;
+            if (id.length === 18) {
+                birthStr = id.substring(6, 14);
+                gender = (parseInt(id.substring(16, 17), 10) % 2 === 1) ? '男' : '女';
+                var sum = 0;
+                for (var i = 0; i < 17; i++) sum += parseInt(id.charAt(i), 10) * WEIGHTS[i];
+                var expected = CHECK_CODES[sum % 11];
+                if (expected !== id.charAt(17)) {
+                    result.message = '校验位不正确，号码可能是伪造或录入错误（应为 ' + expected + '）';
+                    return result;
+                }
+            } else {
+                birthStr = '19' + id.substring(6, 12);
+                gender = (parseInt(id.substring(14, 15), 10) % 2 === 1) ? '男' : '女';
+            }
+
+            var y = parseInt(birthStr.substring(0, 4), 10);
+            var m = parseInt(birthStr.substring(4, 6), 10);
+            var d = parseInt(birthStr.substring(6, 8), 10);
+
+            if (m < 1 || m > 12 || d < 1 || d > 31) {
+                result.message = '出生日期不合法';
+                return result;
+            }
+            var birthDate = new Date(y, m - 1, d);
+            if (birthDate.getFullYear() !== y || birthDate.getMonth() !== m - 1 || birthDate.getDate() !== d) {
+                result.message = '出生日期不合法（如 2月30日 不存在）';
+                return result;
+            }
+            if (y < 1900 || y > new Date().getFullYear()) {
+                result.message = '出生年份超出合理范围';
+                return result;
+            }
+
+            result.valid = true;
+            result.message = '号码校验通过，信息解析如下';
+            result.items.push({ label: '出生日期', value: y + ' 年 ' + m + ' 月 ' + d + ' 日' });
+
+            var now = new Date();
+            var age = now.getFullYear() - y;
+            if (now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d)) age--;
+            result.items.push({ label: '年龄', value: (age < 0 ? 0 : age) + ' 岁' });
+
+            result.items.push({ label: '性别', value: gender });
+            result.items.push({ label: '星座', value: getConstellation(m, d) });
+            var zIdx = (y - 4) % 12; if (zIdx < 0) zIdx += 12;
+            result.items.push({ label: '生肖', value: ZODIAC[zIdx] });
+
+            var provCode = id.substring(0, 2);
+            result.items.push({ label: '所在省份', value: PROVINCES[provCode] || '未知地区' });
+            result.items.push({ label: '号码位数', value: id.length + ' 位' });
+            result.items.push({ label: '地区代码', value: id.substring(0, 6) });
+
+            return result;
+        }
+
+        function render(result) {
+            var box = document.getElementById('resultBox');
+            var status = document.getElementById('statusBox');
+            var grid = document.getElementById('infoGrid');
+            box.classList.add('show');
+            status.className = 'id-status ' + (result.valid ? 'valid' : 'invalid');
+            status.innerHTML = '<i data-lucide="' + (result.valid ? 'check-circle' : 'x-circle') + '"></i>' + result.message;
+            grid.innerHTML = '';
+            result.items.forEach(function(it) {
+                var d = document.createElement('div');
+                d.className = 'id-item';
+                d.innerHTML = '<span>' + it.label + '</span><b>' + it.value + '</b>';
+                grid.appendChild(d);
+            });
+            if (window.lucide) lucide.createIcons();
+        }
+
+        document.getElementById('btnParse').addEventListener('click', function() {
+            var val = document.getElementById('idInput').value;
+            if (!val) { showToast('请先输入身份证号码', 'error'); return; }
+            render(parseId(val));
+        });
+
+        document.getElementById('btnSample').addEventListener('click', function() {
+            // 使用公开示例号码 11010519491231002X（北京朝阳区示例）
+            document.getElementById('idInput').value = '11010519491231002X';
+            render(parseId('11010519491231002X'));
+            showToast('已填入示例号码', 'success');
+        });
+
+        document.getElementById('btnClear').addEventListener('click', function() {
+            document.getElementById('idInput').value = '';
+            document.getElementById('resultBox').classList.remove('show');
+        });
+
+        document.getElementById('idInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('btnParse').click();
+        });
+    })();
+    </script>
+</body>
+</html>

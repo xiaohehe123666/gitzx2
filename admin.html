@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 在线工具箱</title>
+    <meta name="description" content="工具箱管理后台：用户管理、工具使用统计、公告发布与反馈处理，一站式站点运营">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        :root {
+            --ad-bg: #0B1220;
+            --ad-bg-soft: #0F172A;
+            --ad-card: #151E31;
+            --ad-card-2: #1A2438;
+            --ad-border: rgba(148, 163, 184, 0.14);
+            --ad-border-strong: rgba(148, 163, 184, 0.24);
+            --ad-text: #F1F5F9;
+            --ad-text-2: #94A3B8;
+            --ad-text-3: #64748B;
+            --ad-primary: #6366F1;
+            --ad-primary-light: #818CF8;
+            --ad-violet: #8B5CF6;
+            --ad-success: #10B981;
+            --ad-warning: #F59E0B;
+            --ad-error: #EF4444;
+            --ad-radius: 14px;
+        }
+
+        body {
+            background: var(--ad-bg);
+            color: var(--ad-text);
+            font-family: 'Inter', sans-serif;
+        }
+        .bg-decoration { display: none; }
+
+        /* ========== 登录页 ========== */
+        .admin-login-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+            background:
+                radial-gradient(60% 50% at 15% 15%, rgba(99, 102, 241, 0.16), transparent 60%),
+                radial-gradient(50% 45% at 85% 80%, rgba(139, 92, 246, 0.14), transparent 60%),
+                var(--ad-bg);
+        }
+        .admin-login-card {
+            background: rgba(21, 30, 49, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--ad-border-strong);
+            border-radius: 24px;
+            padding: 2.75rem 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6);
+            animation: adFadeUp 0.5s ease both;
+        }
+        .admin-login-logo {
+            width: 68px;
+            height: 68px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--ad-primary), var(--ad-violet));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 12px 30px -8px rgba(99, 102, 241, 0.5);
+            position: relative;
+        }
+        .admin-login-logo::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 26px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+            filter: blur(18px);
+            z-index: -1;
+        }
+        .admin-login-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.625rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--ad-text);
+            margin-bottom: 0.5rem;
+        }
+        .admin-login-sub {
+            text-align: center;
+            color: var(--ad-text-2);
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+        .admin-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: rgba(11, 18, 32, 0.8);
+            border: 1px solid var(--ad-border-strong);
+            border-radius: 12px;
+            color: var(--ad-text);
+            font-size: 0.9375rem;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .admin-input:focus {
+            outline: none;
+            border-color: var(--ad-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .admin-btn {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .admin-btn-primary {
+            background: linear-gradient(135deg, var(--ad-primary), var(--ad-violet));
+            color: white;
+            width: 100%;
+            justify-content: center;
+            box-shadow: 0 8px 24px -8px rgba(99, 102, 241, 0.5);
+        }
+        .admin-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 30px -8px rgba(99, 102, 241, 0.6); }
+        .admin-btn-primary:active { transform: translateY(0); }
+        .admin-btn-sm {
+            padding: 0.5rem 0.875rem;
+            font-size: 0.8125rem;
+            border-radius: 10px;
+            border: 1px solid var(--ad-border-strong);
+            background: var(--ad-card-2);
+            color: var(--ad-text);
+        }
+        .admin-btn-sm:hover { background: #222E4A; border-color: rgba(148, 163, 184, 0.35); }
+        .admin-btn-danger { background: rgba(239, 68, 68, 0.12); color: #F87171; border-color: rgba(239, 68, 68, 0.3); }
+        .admin-btn-danger:hover { background: rgba(239, 68, 68, 0.22); }
+        .admin-login-error {
+            color: #F87171;
+            font-size: 0.8125rem;
+            text-align: center;
+            margin-top: 0.75rem;
+            min-height: 1.25rem;
+        }
+        .admin-login-hint {
+            text-align: center;
+            color: var(--ad-text-3);
+            font-size: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        /* ========== 后台布局 ========== */
+        .admin-layout { display: none; min-height: 100vh; }
+        .admin-layout.show { display: flex; }
+
+        .admin-sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #111A2E 0%, #0D1526 100%);
+            border-right: 1px solid var(--ad-border);
+            padding: 1.5rem 1rem;
+            flex-shrink: 0;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+        .admin-sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.25rem 0.5rem 1.5rem;
+            border-bottom: 1px solid var(--ad-border);
+            margin-bottom: 1.25rem;
+        }
+        .admin-sidebar-logo-icon {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--ad-primary), var(--ad-violet));
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            box-shadow: 0 8px 20px -6px rgba(99, 102, 241, 0.5);
+        }
+        .admin-sidebar-logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--ad-text);
+        }
+        .admin-sidebar-logo-sub {
+            font-size: 0.6875rem;
+            color: var(--ad-text-3);
+            letter-spacing: 0.05em;
+        }
+        .admin-nav-section {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: var(--ad-text-3);
+            text-transform: uppercase;
+            padding: 0.875rem 0.75rem 0.5rem;
+        }
+        .admin-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6875rem 0.875rem;
+            border-radius: 12px;
+            color: var(--ad-text-2);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            position: relative;
+        }
+        .admin-nav-item i { opacity: 0.8; }
+        .admin-nav-item:hover { background: rgba(148, 163, 184, 0.08); color: var(--ad-text); }
+        .admin-nav-item:hover i { opacity: 1; }
+        .admin-nav-item.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(139, 92, 246, 0.9));
+            color: white;
+            box-shadow: 0 8px 24px -8px rgba(99, 102, 241, 0.6);
+        }
+        .admin-nav-item.active i { opacity: 1; }
+        .admin-sidebar-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--ad-border);
+        }
+        .admin-sidebar-footer a.admin-nav-item { text-decoration: none; }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem 2.25rem;
+            min-width: 0;
+            position: relative;
+            background:
+                radial-gradient(45% 35% at 100% 0%, rgba(99, 102, 241, 0.07), transparent 60%),
+                radial-gradient(40% 30% at 0% 100%, rgba(139, 92, 246, 0.06), transparent 60%),
+                var(--ad-bg);
+        }
+
+        /* 顶栏 */
+        .admin-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+            gap: 1rem;
+        }
+        .admin-page-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.625rem;
+            font-weight: 700;
+            color: var(--ad-text);
+            margin: 0;
+        }
+        .admin-page-sub {
+            color: var(--ad-text-3);
+            font-size: 0.8125rem;
+            margin-top: 0.25rem;
+        }
+        .admin-header-actions { display: flex; align-items: center; gap: 0.625rem; }
+
+        .admin-panel { display: none; }
+        .admin-panel.show { display: block; animation: adFadeUp 0.35s ease both; }
+
+        @keyframes adFadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 卡片 */
+        .admin-card {
+            background: var(--ad-card);
+            border: 1px solid var(--ad-border);
+            border-radius: var(--ad-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .admin-card:hover { border-color: var(--ad-border-strong); }
+        .admin-card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.0625rem;
+            font-weight: 700;
+            color: var(--ad-text);
+            margin: 0 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .admin-card-title i { color: var(--ad-primary-light); }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.125rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--ad-card);
+            border: 1px solid var(--ad-border);
+            border-radius: var(--ad-radius);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--ad-border-strong);
+            box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.5);
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--stat-color, var(--ad-primary));
+        }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: var(--stat-color, var(--ad-primary));
+            opacity: 0.08;
+        }
+        .stat-icon {
+            width: 46px; height: 46px;
+            border-radius: 13px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 20px -6px var(--stat-color, var(--ad-primary));
+        }
+        .stat-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.125rem;
+            font-weight: 700;
+            color: var(--ad-text);
+            line-height: 1.15;
+        }
+        .stat-label {
+            color: var(--ad-text-2);
+            font-size: 0.8125rem;
+            margin-top: 0.375rem;
+        }
+
+        /* 工具排行 */
+        .rank-row {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 0.625rem 0.5rem;
+            border-radius: 10px;
+            transition: background 0.15s;
+        }
+        .rank-row:hover { background: rgba(148, 163, 184, 0.06); }
+        .rank-medal {
+            width: 30px; height: 30px;
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            flex-shrink: 0;
+        }
+        .rank-medal.gold { background: linear-gradient(135deg, #F59E0B, #FBBF24); color: #78350F; }
+        .rank-medal.silver { background: linear-gradient(135deg, #94A3B8, #CBD5E1); color: #1E293B; }
+        .rank-medal.bronze { background: linear-gradient(135deg, #D97706, #F59E0B); color: #431407; }
+        .rank-medal.plain { background: rgba(148, 163, 184, 0.12); color: var(--ad-text-2); }
+        .rank-info { flex: 1; min-width: 0; }
+        .rank-name {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--ad-text);
+            font-size: 0.875rem;
+            margin-bottom: 0.375rem;
+            gap: 0.75rem;
+        }
+        .rank-name b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rank-count { color: var(--ad-text-3); font-size: 0.75rem; flex-shrink: 0; }
+        .usage-bar {
+            height: 6px;
+            background: rgba(148, 163, 184, 0.12);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .usage-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--ad-primary), var(--ad-violet));
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        /* 表格 */
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            background: rgba(11, 18, 32, 0.6);
+            color: var(--ad-text-2);
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--ad-border);
+        }
+        .admin-table th:first-child { border-radius: 10px 0 0 0; }
+        .admin-table th:last-child { border-radius: 0 10px 0 0; }
+        .admin-table td {
+            padding: 0.8125rem 1rem;
+            border-bottom: 1px solid var(--ad-border);
+            color: var(--ad-text);
+            font-size: 0.875rem;
+        }
+        .admin-table tr:last-child td { border-bottom: none; }
+        .admin-table tr { transition: background 0.15s; }
+        .admin-table tbody tr:hover { background: rgba(99, 102, 241, 0.06); }
+        .admin-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--ad-border);
+            border-radius: 12px;
+            background: var(--ad-card);
+        }
+
+        /* 用户头像 */
+        .user-cell { display: flex; align-items: center; gap: 0.75rem; }
+        .user-avatar {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            flex-shrink: 0;
+        }
+        .user-cell .user-name { font-weight: 600; color: var(--ad-text); }
+        .user-cell .user-email { color: var(--ad-text-3); font-size: 0.75rem; }
+
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 999px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+        }
+        .admin-badge-warning { background: rgba(245, 158, 11, 0.14); color: #FBBF24; }
+        .admin-badge-success { background: rgba(16, 185, 129, 0.14); color: #34D399; }
+        .admin-badge-info { background: rgba(99, 102, 241, 0.14); color: #A5B4FC; }
+        .admin-badge-neutral { background: rgba(148, 163, 184, 0.12); color: var(--ad-text-2); }
+
+        /* 表单 */
+        .admin-form-group { margin-bottom: 1.125rem; }
+        .admin-form-label {
+            display: block;
+            color: var(--ad-text-2);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .admin-form-input,
+        .admin-form-textarea {
+            width: 100%;
+            padding: 0.75rem 0.875rem;
+            background: rgba(11, 18, 32, 0.7);
+            border: 1px solid var(--ad-border-strong);
+            border-radius: 10px;
+            color: var(--ad-text);
+            font-size: 0.875rem;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .admin-form-input:focus,
+        .admin-form-textarea:focus {
+            outline: none;
+            border-color: var(--ad-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+        }
+        .admin-form-input::placeholder,
+        .admin-form-textarea::placeholder { color: var(--ad-text-3); }
+        .admin-form-textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+        .admin-empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--ad-text-3);
+        }
+        .admin-empty i { margin-bottom: 0.75rem; opacity: 0.5; }
+        .admin-empty p { font-size: 0.875rem; }
+
+        /* 反馈卡片 */
+        .feedback-card {
+            background: var(--ad-card);
+            border: 1px solid var(--ad-border);
+            border-radius: var(--ad-radius);
+            padding: 1.25rem 1.375rem;
+            margin-bottom: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        .feedback-card:hover { border-color: var(--ad-border-strong); }
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.625rem;
+            flex-wrap: wrap;
+        }
+        .feedback-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .feedback-user { font-weight: 600; color: var(--ad-text); font-size: 0.875rem; }
+        .feedback-time { color: var(--ad-text-3); font-size: 0.75rem; }
+        .feedback-content {
+            color: var(--ad-text);
+            font-size: 0.875rem;
+            line-height: 1.7;
+            margin: 0.5rem 0;
+        }
+        .feedback-contact {
+            color: var(--ad-text-3);
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            background: rgba(148, 163, 184, 0.07);
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .feedback-actions { display: flex; gap: 0.5rem; margin-top: 0.875rem; }
+
+        /* 公告预览 */
+        .ann-preview {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.07), rgba(139, 92, 246, 0.05));
+            border: 1px dashed rgba(99, 102, 241, 0.35);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+        .ann-preview-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: var(--ad-text);
+            margin-bottom: 0.625rem;
+            font-size: 1.0625rem;
+        }
+        .ann-preview-content {
+            color: var(--ad-text-2);
+            font-size: 0.875rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+        .ann-preview-empty { color: var(--ad-text-3); font-size: 0.8125rem; }
+
+        /* Toast */
+        .admin-toast {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            padding: 0.8125rem 1.375rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            z-index: 9999;
+            transform: translateX(130%);
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .admin-toast.show { transform: translateX(0); }
+        .admin-toast-success { background: linear-gradient(135deg, #059669, #10B981); color: white; }
+        .admin-toast-error { background: linear-gradient(135deg, #DC2626, #EF4444); color: white; }
+
+        /* 确认弹窗 */
+        .admin-confirm-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(2, 6, 16, 0.7);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+        }
+        .admin-confirm-overlay.show { display: flex; animation: adFadeUp 0.25s ease both; }
+        .admin-confirm-box {
+            background: var(--ad-card);
+            border: 1px solid var(--ad-border-strong);
+            border-radius: 18px;
+            padding: 1.75rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6);
+        }
+        .admin-confirm-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--ad-text);
+            margin-bottom: 0.5rem;
+        }
+        .admin-confirm-desc {
+            color: var(--ad-text-2);
+            font-size: 0.875rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+        .admin-confirm-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        /* 设置页辅助 */
+        .admin-card-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
+        .admin-card-head-icon {
+            width: 40px; height: 40px;
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .admin-card-head-text h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.0625rem;
+            font-weight: 700;
+            color: var(--ad-text);
+            margin: 0;
+        }
+        .admin-card-head-text p { color: var(--ad-text-3); font-size: 0.75rem; margin-top: 0.125rem; }
+        .admin-form-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .admin-form-row .admin-form-group { flex: 1; min-width: 200px; }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+                z-index: 200;
+            }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 4.5rem 1rem 1.5rem; }
+            .admin-mobile-toggle { display: flex !important; }
+            .admin-header { flex-direction: column; }
+        }
+        .admin-mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem; left: 1rem;
+            z-index: 150;
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            background: var(--ad-card);
+            border: 1px solid var(--ad-border-strong);
+            color: var(--ad-text);
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+        }
+        .admin-mobile-toggle:hover { background: var(--ad-card-2); }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <!-- 后台布局 -->
+    <div id="adminLayout" class="admin-layout">
+        <button class="admin-mobile-toggle" id="mobileToggle" onclick="toggleSidebar()">
+            <i data-lucide="menu" style="width:20px;height:20px;"></i>
+        </button>
+
+        <!-- 侧边栏 -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="admin-sidebar-logo">
+                <div class="admin-sidebar-logo-icon">
+                    <i data-lucide="shield" style="width:20px;height:20px;"></i>
+                </div>
+                <div>
+                    <div class="admin-sidebar-logo-text">管理后台</div>
+                    <div class="admin-sidebar-logo-sub">在线工具箱</div>
+                </div>
+            </div>
+
+            <div class="admin-nav-section">内容管理</div>
+            <button class="admin-nav-item active" data-panel="dashboard" onclick="switchPanel('dashboard')">
+                <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i>
+                <span>数据概览</span>
+            </button>
+            <button class="admin-nav-item" data-panel="users" onclick="switchPanel('users')">
+                <i data-lucide="users" style="width:18px;height:18px;"></i>
+                <span>用户管理</span>
+            </button>
+            <button class="admin-nav-item" data-panel="announcement" onclick="switchPanel('announcement')">
+                <i data-lucide="megaphone" style="width:18px;height:18px;"></i>
+                <span>站点公告</span>
+            </button>
+            <button class="admin-nav-item" data-panel="feedback" onclick="switchPanel('feedback')">
+                <i data-lucide="message-square" style="width:18px;height:18px;"></i>
+                <span>反馈管理</span>
+            </button>
+
+            <div class="admin-nav-section">系统</div>
+            <button class="admin-nav-item" data-panel="settings" onclick="switchPanel('settings')">
+                <i data-lucide="settings" style="width:18px;height:18px;"></i>
+                <span>后台设置</span>
+            </button>
+
+            <div class="admin-sidebar-footer">
+                <a href="index.html" class="admin-nav-item">
+                    <i data-lucide="external-link" style="width:18px;height:18px;"></i>
+                    <span>访问前台</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- 主内容 -->
+        <div class="admin-main">
+            <!-- 数据概览 -->
+            <div id="panel-dashboard" class="admin-panel show">
+                <div class="admin-header">
+                    <div>
+                        <h1 class="admin-page-title">数据概览</h1>
+                        <p class="admin-page-sub">站点运营核心数据一览</p>
+                    </div>
+                    <div class="admin-header-actions">
+                        <button class="admin-btn admin-btn-sm" onclick="refreshDashboard()">
+                            <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
+                            <span>刷新数据</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="statsGrid" class="stats-grid"></div>
+
+                <div class="admin-card">
+                    <h3 class="admin-card-title">
+                        <i data-lucide="trophy" style="width:18px;height:18px;"></i>
+                        工具使用排行
+                    </h3>
+                    <div id="usageList"></div>
+                </div>
+
+                <div class="admin-card">
+                    <h3 class="admin-card-title">
+                        <i data-lucide="user-plus" style="width:18px;height:18px;"></i>
+                        最近注册用户
+                    </h3>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr><th>用户</th><th>注册时间</th></tr>
+                            </thead>
+                            <tbody id="recentUsersBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户管理 -->
+            <div id="panel-users" class="admin-panel">
+                <div class="admin-header">
+                    <div>
+                        <h1 class="admin-page-title">用户管理</h1>
+                        <p class="admin-page-sub">管理注册用户，支持重置密码与删除</p>
+                    </div>
+                    <div class="admin-header-actions">
+                        <button class="admin-btn admin-btn-sm" onclick="loadUsers()">
+                            <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
+                            <span>刷新</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>用户</th>
+                                <th>邮箱</th>
+                                <th>注册时间</th>
+                                <th style="text-align:right;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 站点公告 -->
+            <div id="panel-announcement" class="admin-panel">
+                <div class="admin-header">
+                    <div>
+                        <h1 class="admin-page-title">站点公告</h1>
+                        <p class="admin-page-sub">编辑公告内容，用户访问首页时将弹窗展示</p>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <div class="admin-card-head">
+                        <div class="admin-card-head-icon" style="background:rgba(99,102,241,0.14);color:#A5B4FC;">
+                            <i data-lucide="edit-3" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div class="admin-card-head-text">
+                            <h3>编辑公告</h3>
+                            <p>输入标题与内容，实时预览效果</p>
+                        </div>
+                    </div>
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">公告标题</label>
+                        <input type="text" id="annTitle" class="admin-form-input" placeholder="例如：欢迎访问在线工具箱">
+                    </div>
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">公告内容</label>
+                        <textarea id="annContent" class="admin-form-textarea" placeholder="输入公告内容，支持纯文本..." rows="5"></textarea>
+                    </div>
+                    <div class="admin-form-group">
+                        <label style="display:flex;align-items:center;gap:0.625rem;cursor:pointer;color:var(--ad-text);font-size:0.875rem;">
+                            <input type="checkbox" id="annActive" checked>
+                            <span>启用公告（用户访问首页时弹窗显示）</span>
+                        </label>
+                    </div>
+                    <div style="display:flex;gap:0.75rem;margin-top:1.125rem;flex-wrap:wrap;">
+                        <button class="admin-btn admin-btn-primary" style="width:auto;" onclick="saveAnnouncement()">
+                            <i data-lucide="save" style="width:16px;height:16px;"></i>
+                            <span>保存公告</span>
+                        </button>
+                        <button class="admin-btn admin-btn-sm admin-btn-danger" onclick="deleteAnnouncement()">
+                            <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                            <span>删除公告</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card" id="annCurrentCard" style="display:none;">
+                    <h3 class="admin-card-title">
+                        <i data-lucide="eye" style="width:18px;height:18px;"></i>
+                        当前公告预览
+                    </h3>
+                    <div class="ann-preview">
+                        <div id="annPreviewTitle" class="ann-preview-title"></div>
+                        <div id="annPreviewContent" class="ann-preview-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 反馈管理 -->
+            <div id="panel-feedback" class="admin-panel">
+                <div class="admin-header">
+                    <div>
+                        <h1 class="admin-page-title">反馈管理</h1>
+                        <p class="admin-page-sub">查看并处理用户提交的反馈意见</p>
+                    </div>
+                    <div class="admin-header-actions">
+                        <button class="admin-btn admin-btn-sm" onclick="loadFeedbacks()">
+                            <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
+                            <span>刷新</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="feedbackList"></div>
+            </div>
+
+            <!-- 后台设置 -->
+            <div id="panel-settings" class="admin-panel">
+                <div class="admin-header">
+                    <div>
+                        <h1 class="admin-page-title">后台设置</h1>
+                        <p class="admin-page-sub">安全管理后台账号与登录状态</p>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <div class="admin-card-head">
+                        <div class="admin-card-head-icon" style="background:rgba(245,158,11,0.14);color:#FBBF24;">
+                            <i data-lucide="key" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div class="admin-card-head-text">
+                            <h3>修改管理员密码</h3>
+                            <p>定期更换密码以保障后台安全</p>
+                        </div>
+                    </div>
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">原密码</label>
+                            <input type="password" id="oldAdminPwd" class="admin-form-input" placeholder="输入当前管理员密码">
+                        </div>
+                    </div>
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">新密码</label>
+                            <input type="password" id="newAdminPwd" class="admin-form-input" placeholder="至少 6 位">
+                        </div>
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">确认新密码</label>
+                            <input type="password" id="confirmAdminPwd" class="admin-form-input" placeholder="再次输入新密码">
+                        </div>
+                    </div>
+                    <button class="admin-btn admin-btn-primary" style="width:auto;" onclick="changeAdminPwd()">
+                        <i data-lucide="check" style="width:16px;height:16px;"></i>
+                        <span>确认修改</span>
+                    </button>
+                </div>
+                <div class="admin-card">
+                    <div class="admin-card-head">
+                        <div class="admin-card-head-icon" style="background:rgba(239,68,68,0.14);color:#F87171;">
+                            <i data-lucide="log-out" style="width:20px;height:20px;"></i>
+                        </div>
+                        <div class="admin-card-head-text">
+                            <h3>退出登录</h3>
+                            <p>退出后需要重新输入密码才能进入后台</p>
+                        </div>
+                    </div>
+                    <button class="admin-btn admin-btn-sm admin-btn-danger" onclick="adminLogout()">
+                        <i data-lucide="log-out" style="width:14px;height:14px;"></i>
+                        <span>退出后台</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="adminToast" class="admin-toast"></div>
+
+    <!-- 确认弹窗 -->
+    <div id="confirmOverlay" class="admin-confirm-overlay">
+        <div class="admin-confirm-box">
+            <div id="confirmTitle" class="admin-confirm-title"></div>
+            <div id="confirmDesc" class="admin-confirm-desc"></div>
+            <div class="admin-confirm-actions">
+                <button class="admin-btn admin-btn-sm" onclick="closeConfirm()">取消</button>
+                <button id="confirmOkBtn" class="admin-btn admin-btn-sm admin-btn-danger">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 依据用户名生成稳定的渐变色头像
+        var AVATAR_GRADIENTS = [
+            'linear-gradient(135deg,#6366F1,#8B5CF6)',
+            'linear-gradient(135deg,#0EA5E9,#6366F1)',
+            'linear-gradient(135deg,#10B981,#0EA5E9)',
+            'linear-gradient(135deg,#F59E0B,#F97316)',
+            'linear-gradient(135deg,#EC4899,#8B5CF6)',
+            'linear-gradient(135deg,#14B8A6,#10B981)'
+        ];
+        function avatarGradient(name) {
+            var s = String(name || 'U');
+            var h = 0;
+            for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+            return AVATAR_GRADIENTS[h % AVATAR_GRADIENTS.length];
+        }
+        function avatarInitial(name) {
+            var s = String(name || '?').trim();
+            return s ? s.charAt(0).toUpperCase() : '?';
+        }
+
+        function enterAdmin() {
+            document.getElementById('adminLayout').classList.add('show');
+            if (window.lucide) lucide.createIcons();
+            refreshDashboard();
+        }
+
+        function adminLogout() {
+            Auth.adminLogout();
+            // 登出后再次弹出统一模态框（管理员模式）
+            document.getElementById('adminLayout').classList.remove('show');
+            if (window.Auth && Auth.openAuthModal) {
+                Auth.openAuthModal('admin');
+                // 与首次进入后台保持一致：登录成功进入后台，关闭登录框时给出返回入口
+                watchAdminLogin();
+            } else {
+                location.reload();
+            }
+        }
+
+        // 切换面板
+        function switchPanel(name) {
+            var panels = document.querySelectorAll('.admin-panel');
+            for (var i = 0; i < panels.length; i++) panels[i].classList.remove('show');
+            var target = document.getElementById('panel-' + name);
+            if (target) target.classList.add('show');
+
+            var navs = document.querySelectorAll('.admin-nav-item');
+            for (var j = 0; j < navs.length; j++) navs[j].classList.remove('active');
+            var btn = document.querySelector('[data-panel="' + name + '"]');
+            if (btn) btn.classList.add('active');
+
+            // 关闭移动端侧边栏
+            document.getElementById('adminSidebar').classList.remove('open');
+
+            // 按需加载数据
+            if (name === 'dashboard') refreshDashboard();
+            else if (name === 'users') loadUsers();
+            else if (name === 'announcement') { loadAnnouncement(); setupAnnPreview(); }
+            else if (name === 'feedback') loadFeedbacks();
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('adminSidebar').classList.toggle('open');
+        }
+
+        // 数据概览
+        function refreshDashboard() {
+            var stats = Auth.getStats();
+            var grid = document.getElementById('statsGrid');
+            var cards = [
+                { num: stats.userCount, label: '注册用户', icon: 'users', color: '#6366F1' },
+                { num: stats.totalUsage, label: '工具使用总次数', icon: 'zap', color: '#10B981' },
+                { num: stats.feedbackCount, label: '用户反馈', icon: 'message-square', color: '#F59E0B' },
+                { num: stats.hasAnnouncement ? '已发布' : '未发布', label: '站点公告', icon: 'megaphone', color: '#EC4899' }
+            ];
+            grid.innerHTML = cards.map(function(c) {
+                return '<div class="stat-card" style="--stat-color:' + c.color + ';">' +
+                    '<div class="stat-icon" style="background:linear-gradient(135deg,' + c.color + ',' + c.color + 'CC);">' +
+                        '<i data-lucide="' + c.icon + '" style="width:22px;height:22px;"></i></div>' +
+                    '<div class="stat-num">' + c.num + '</div>' +
+                    '<div class="stat-label">' + c.label + '</div>' +
+                '</div>';
+            }).join('');
+
+            // 工具使用排行（前三名带奖牌徽章）
+            var usageList = document.getElementById('usageList');
+            if (stats.usageList.length === 0) {
+                usageList.innerHTML = '<div class="admin-empty"><i data-lucide="bar-chart" style="width:36px;height:36px;display:block;margin:0 auto 0.75rem;"></i><p>暂无使用记录</p></div>';
+            } else {
+                var maxCount = stats.usageList[0].count || 1;
+                usageList.innerHTML = stats.usageList.map(function(item, idx) {
+                    var pct = Math.round((item.count / maxCount) * 100);
+                    var medalCls = idx === 0 ? 'gold' : (idx === 1 ? 'silver' : (idx === 2 ? 'bronze' : 'plain'));
+                    var medal = idx < 3 ? (idx + 1) : (idx + 1);
+                    return '<div class="rank-row">' +
+                        '<div class="rank-medal ' + medalCls + '">' + medal + '</div>' +
+                        '<div class="rank-info">' +
+                            '<div class="rank-name"><b>' + escapeHtml(item.name) + '</b>' +
+                            '<span class="rank-count">' + item.count + ' 次</span></div>' +
+                            '<div class="usage-bar"><div class="usage-bar-fill" style="width:' + pct + '%;"></div></div>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+            }
+
+            // 最近注册用户
+            var tbody = document.getElementById('recentUsersBody');
+            if (stats.recentUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#64748B;padding:2rem;">暂无注册用户</td></tr>';
+            } else {
+                tbody.innerHTML = stats.recentUsers.map(function(u) {
+                    return '<tr><td><div class="user-cell">' +
+                            '<div class="user-avatar" style="background:' + avatarGradient(u.username) + ';">' + escapeHtml(avatarInitial(u.username)) + '</div>' +
+                            '<span class="user-name">' + escapeHtml(u.username) + '</span>' +
+                        '</div></td>' +
+                        '<td style="color:#94A3B8;">' + (u.createdAt ? new Date(u.createdAt).toLocaleString('zh-CN') : '-') + '</td></tr>';
+                }).join('');
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // 用户管理
+        function loadUsers() {
+            var users = Auth.getAllUsersInfo();
+            var tbody = document.getElementById('usersTableBody');
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#64748B;padding:2.5rem;">暂无注册用户</td></tr>';
+                return;
+            }
+            tbody.innerHTML = users.map(function(u) {
+                return '<tr>' +
+                    '<td><div class="user-cell">' +
+                        '<div class="user-avatar" style="background:' + avatarGradient(u.username) + ';">' + escapeHtml(avatarInitial(u.username)) + '</div>' +
+                        '<div><div class="user-name">' + escapeHtml(u.username) + '</div>' +
+                        '<div class="user-email">' + escapeHtml(u.email || '未设置邮箱') + '</div></div>' +
+                    '</div></td>' +
+                    '<td>' + escapeHtml(u.email || '未设置') + '</td>' +
+                    '<td style="color:#94A3B8;">' + u.createdAtStr + '</td>' +
+                    '<td><div style="display:flex;gap:0.375rem;justify-content:flex-end;">' +
+                        '<button class="admin-btn admin-btn-sm" onclick="resetPwd(\'' + escapeHtml(u.username) + '\')"><i data-lucide="key" style="width:12px;height:12px;"></i>重置密码</button>' +
+                        '<button class="admin-btn admin-btn-sm admin-btn-danger" onclick="deleteUser(\'' + escapeHtml(u.username) + '\')"><i data-lucide="trash-2" style="width:12px;height:12px;"></i>删除</button>' +
+                    '</div></td>' +
+                '</tr>';
+            }).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function resetPwd(username) {
+            showConfirm('重置密码', '确定将用户 "' + username + '" 的密码重置为 "123456" 吗？', function() {
+                Auth.resetUserPassword(username, '123456').then(function(r) {
+                    showToast(r.message, r.success ? 'success' : 'error');
+                });
+            });
+        }
+
+        function deleteUser(username) {
+            showConfirm('删除用户', '确定删除用户 "' + username + '" 吗？该用户的所有数据将被清除，此操作不可恢复。', function() {
+                var r = Auth.deleteUser(username);
+                showToast(r.message, r.success ? 'success' : 'error');
+                loadUsers();
+            });
+        }
+
+        // 公告
+        function loadAnnouncement() {
+            var ann = Auth.getAnnouncement();
+            var titleInput = document.getElementById('annTitle');
+            var contentInput = document.getElementById('annContent');
+            var activeInput = document.getElementById('annActive');
+            var currentCard = document.getElementById('annCurrentCard');
+
+            if (ann) {
+                titleInput.value = ann.title || '';
+                contentInput.value = ann.content || '';
+                activeInput.checked = ann.active !== false;
+                currentCard.style.display = '';
+                document.getElementById('annPreviewTitle').textContent = ann.title || '站点公告';
+                document.getElementById('annPreviewContent').textContent = ann.content || '';
+            } else {
+                titleInput.value = '';
+                contentInput.value = '';
+                activeInput.checked = true;
+                currentCard.style.display = 'none';
+            }
+        }
+
+        // 公告实时预览
+        function setupAnnPreview() {
+            var titleInput = document.getElementById('annTitle');
+            var contentInput = document.getElementById('annContent');
+            if (!titleInput || !contentInput) return;
+            function updatePreview() {
+                var card = document.getElementById('annCurrentCard');
+                if (!card) return;
+                card.style.display = '';
+                document.getElementById('annPreviewTitle').textContent = titleInput.value.trim() || '站点公告';
+                document.getElementById('annPreviewContent').textContent = contentInput.value || '（内容为空，保存后将只显示标题）';
+            }
+            titleInput.oninput = updatePreview;
+            contentInput.oninput = updatePreview;
+        }
+
+        function saveAnnouncement() {
+            var title = document.getElementById('annTitle').value.trim();
+            var content = document.getElementById('annContent').value.trim();
+            if (!content) { showToast('公告内容不能为空', 'error'); return; }
+            var active = document.getElementById('annActive').checked;
+            var r = Auth.setAnnouncement({ title: title, content: content, active: active });
+            showToast(r.message, 'success');
+            loadAnnouncement();
+        }
+
+        function deleteAnnouncement() {
+            showConfirm('删除公告', '确定删除当前公告吗？删除后用户将不再看到公告弹窗。', function() {
+                var r = Auth.deleteAnnouncement();
+                showToast(r.message, 'success');
+                loadAnnouncement();
+            });
+        }
+
+        // 反馈
+        function loadFeedbacks() {
+            var list = Auth.getAllFeedbacks();
+            var container = document.getElementById('feedbackList');
+            if (list.length === 0) {
+                container.innerHTML = '<div class="admin-empty"><i data-lucide="inbox" style="width:36px;height:36px;display:block;margin:0 auto 0.75rem;"></i><p>暂无用户反馈</p></div>';
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+            container.innerHTML = list.map(function(f) {
+                var badgeClass = f.status === 'read' ? 'admin-badge-success' : 'admin-badge-warning';
+                var badgeText = f.status === 'read' ? '已读' : '待处理';
+                return '<div class="feedback-card">' +
+                    '<div class="feedback-header">' +
+                        '<div class="feedback-meta">' +
+                            '<div class="user-avatar" style="width:28px;height:28px;border-radius:8px;font-size:0.6875rem;background:' + avatarGradient(f.username) + ';">' + escapeHtml(avatarInitial(f.username)) + '</div>' +
+                            '<span class="feedback-user">' + escapeHtml(f.username) + '</span>' +
+                            '<span class="admin-badge ' + badgeClass + '">' + badgeText + '</span>' +
+                            '<span class="admin-badge admin-badge-info">' + escapeHtml(f.category) + '</span>' +
+                        '</div>' +
+                        '<span class="feedback-time">' + f.createdAtStr + '</span>' +
+                    '</div>' +
+                    '<div class="feedback-content">' + escapeHtml(f.content) + '</div>' +
+                    (f.contact ? '<div class="feedback-contact">联系方式：' + escapeHtml(f.contact) + '</div>' : '') +
+                    '<div class="feedback-actions">' +
+                        (f.status !== 'read' ? '<button class="admin-btn admin-btn-sm" onclick="markFeedbackRead(\'' + f.id + '\')"><i data-lucide="check" style="width:12px;height:12px;"></i>标记已读</button>' : '') +
+                        '<button class="admin-btn admin-btn-sm admin-btn-danger" onclick="deleteFeedback(\'' + f.id + '\')"><i data-lucide="trash-2" style="width:12px;height:12px;"></i>删除</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function markFeedbackRead(id) {
+            Auth.markFeedbackRead(id);
+            loadFeedbacks();
+        }
+
+        function deleteFeedback(id) {
+            showConfirm('删除反馈', '确定删除这条反馈吗？', function() {
+                Auth.deleteFeedback(id);
+                showToast('已删除', 'success');
+                loadFeedbacks();
+            });
+        }
+
+        // 设置
+        async function changeAdminPwd() {
+            var oldPwd = document.getElementById('oldAdminPwd').value;
+            var newPwd = document.getElementById('newAdminPwd').value;
+            var confirmPwd = document.getElementById('confirmAdminPwd').value;
+            if (newPwd !== confirmPwd) { showToast('两次输入的新密码不一致', 'error'); return; }
+            var r = await Auth.changeAdminPassword(oldPwd, newPwd);
+            showToast(r.message, r.success ? 'success' : 'error');
+            if (r.success) {
+                document.getElementById('oldAdminPwd').value = '';
+                document.getElementById('newAdminPwd').value = '';
+                document.getElementById('confirmAdminPwd').value = '';
+            }
+        }
+
+        // Toast
+        var toastTimer = null;
+        function showToast(msg, type) {
+            var t = document.getElementById('adminToast');
+            t.innerHTML = '<i data-lucide="' + (type === 'error' ? 'alert-circle' : 'check-circle-2') + '" style="width:16px;height:16px;flex-shrink:0;"></i>' +
+                '<span>' + escapeHtml(msg) + '</span>';
+            t.className = 'admin-toast admin-toast-' + (type || 'success') + ' show';
+            if (window.lucide) lucide.createIcons();
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2500);
+        }
+
+        // 确认弹窗
+        var confirmCallback = null;
+        function showConfirm(title, desc, callback) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmDesc').textContent = desc;
+            confirmCallback = callback;
+            document.getElementById('confirmOverlay').classList.add('show');
+        }
+        function closeConfirm() {
+            document.getElementById('confirmOverlay').classList.remove('show');
+            confirmCallback = null;
+        }
+        document.getElementById('confirmOkBtn').addEventListener('click', function() {
+            if (confirmCallback) confirmCallback();
+            closeConfirm();
+        });
+        document.getElementById('confirmOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeConfirm();
+        });
+
+        function escapeHtml(str) {
+            if (str == null) return '';
+            var div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML;
+        }
+
+        // 监听管理员登录状态：登录成功进入后台；模态框被关闭且未登录时提供返回首页入口
+        function watchAdminLogin() {
+            var checkTimer = setInterval(function() {
+                if (Auth.isAdminLoggedIn()) {
+                    clearInterval(checkTimer);
+                    enterAdmin();
+                } else {
+                    var modal = document.getElementById('authModal');
+                    if (!modal && !Auth.isAdminLoggedIn()) {
+                        clearInterval(checkTimer);
+                        document.body.innerHTML =
+                            '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:#0B1220;color:#CBD5E1;font-family:Inter,sans-serif;">' +
+                            '<div style="text-align:center;max-width:360px;">' +
+                            '<div style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#6366F1,#8B5CF6);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;color:white;box-shadow:0 12px 30px -8px rgba(99,102,241,0.5);">🔒</div>' +
+                            '<h2 style="font-family:Space Grotesk,sans-serif;font-size:1.25rem;color:#F1F5F9;margin:0 0 0.5rem;">需要管理员权限</h2>' +
+                            '<p style="color:#94A3B8;font-size:0.875rem;margin-bottom:1.25rem;">只有管理员可以访问本页面</p>' +
+                            '<a href="index.html" style="display:inline-block;padding:0.625rem 1.25rem;border-radius:10px;background:#1A2438;border:1px solid rgba(148,163,184,0.24);color:#E2E8F0;text-decoration:none;font-size:0.875rem;font-weight:600;">返回首页</a>' +
+                            '　<button id="retryAdminLogin" style="padding:0.625rem 1.25rem;border-radius:10px;border:none;background:linear-gradient(135deg,#6366F1,#8B5CF6);color:white;font-size:0.875rem;font-weight:600;cursor:pointer;box-shadow:0 8px 24px -8px rgba(99,102,241,0.5);">重新登录</button>' +
+                            '</div></div>';
+                        var retryBtn = document.getElementById('retryAdminLogin');
+                        if (retryBtn) retryBtn.onclick = function() { location.reload(); };
+                    }
+                }
+            }, 300);
+            setTimeout(function() { clearInterval(checkTimer); }, 600000);
+        }
+
+        // 初始化
+        function tryEnterAdmin() {
+            if (window.Auth && Auth.isAdminLoggedIn && Auth.isAdminLoggedIn()) {
+                enterAdmin();
+                return true;
+            }
+            // 未登录 → 弹统一认证模态框（管理员模式）
+            if (window.Auth && Auth.openAuthModal) {
+                Auth.openAuthModal('admin');
+                watchAdminLogin();
+            }
+            return false;
+        }
+
+        if (!window.__adminAuthInitDone) {
+            window.__adminAuthInitDone = true;
+            if (window.Auth && Auth.openAuthModal) {
+                tryEnterAdmin();
+            } else {
+                // auth.js 尚未加载完（defer），等它
+                document.addEventListener('DOMContentLoaded', tryEnterAdmin);
+                if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                    // readyState 已经够了，但 defer 的脚本可能在 pending，再等一下
+                    window.addEventListener('load', tryEnterAdmin);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

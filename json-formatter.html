@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON格式化 - 在线JSON美化压缩校验工具</title>
+    <meta name="description" content="免费在线JSON格式化工具，支持JSON美化、压缩、校验、转义、键排序等功能">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #4338CA, #6366F1);">
+                    <i data-lucide="braces"></i>
+                </div>
+                <span class="logo-text">JSON格式化</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#editor" class="nav-link active">编辑器</a>
+                <a href="#features" class="nav-link">特性</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="shield-check"></i>
+                    <span>本地处理 · 实时校验</span>
+                </div>
+                <h1 class="hero-title">
+                    JSON<br>
+                    <span class="gradient-text">格式化工具</span>
+                </h1>
+                <p class="hero-description">
+                    免费在线JSON格式化工具，支持JSON美化、压缩、校验、转义、键排序，
+                    所有操作在您的浏览器本地完成，确保您的隐私安全。
+                </p>
+            </div>
+        </section>
+
+        <section id="editor" class="json-editor-section">
+            <div class="json-editor-card">
+                <div class="json-toolbar">
+                    <div class="json-toolbar-left">
+                        <button id="beautifyBtn" class="json-tool-btn active">
+                            <i data-lucide="sparkles"></i>
+                            <span>美化</span>
+                        </button>
+                        <button id="minifyBtn" class="json-tool-btn">
+                            <i data-lucide="minimize"></i>
+                            <span>压缩</span>
+                        </button>
+                        <button id="validateBtn" class="json-tool-btn">
+                            <i data-lucide="check-circle"></i>
+                            <span>校验</span>
+                        </button>
+                        <button id="escapeBtn" class="json-tool-btn">
+                            <i data-lucide="lock"></i>
+                            <span>转义</span>
+                        </button>
+                        <button id="unescapeBtn" class="json-tool-btn">
+                            <i data-lucide="unlock"></i>
+                            <span>反转义</span>
+                        </button>
+                        <button id="sortBtn" class="json-tool-btn">
+                            <i data-lucide="arrow-up-down"></i>
+                            <span>键排序</span>
+                        </button>
+                    </div>
+                    <div class="json-toolbar-right">
+                        <select id="indentSelect" class="json-select">
+                            <option value="2">2 空格缩进</option>
+                            <option value="4" selected>4 空格缩进</option>
+                            <option value="tab">Tab 缩进</option>
+                        </select>
+                        <button id="clearBtn" class="json-tool-btn-danger">
+                            <i data-lucide="trash-2"></i>
+                            <span>清空</span>
+                        </button>
+                        <button id="loadSampleBtn" class="json-tool-btn-secondary">
+                            <i data-lucide="file-json"></i>
+                            <span>示例</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="json-editor-body">
+                    <div class="json-input-panel">
+                        <div class="json-panel-header">
+                            <span class="json-panel-title">输入</span>
+                            <div class="json-panel-actions">
+                                <span id="inputStats" class="json-stats">0 字符 · 0 行</span>
+                                <button id="inputCopyBtn" class="json-mini-btn">
+                                    <i data-lucide="copy"></i>
+                                    <span>复制</span>
+                                </button>
+                                <label class="json-mini-btn">
+                                    <i data-lucide="upload"></i>
+                                    <span>上传</span>
+                                    <input type="file" id="fileInput" accept=".json,.txt" hidden>
+                                </label>
+                            </div>
+                        </div>
+                        <textarea id="jsonInput" class="json-textarea" spellcheck="false" placeholder="在此粘贴或输入JSON数据...">{"name":"张三","age":25,"email":"zhangsan@example.com","address":{"city":"北京","district":"朝阳区","street":"望京街道"},"hobbies":["读书","旅行","编程"],"skills":["JavaScript","Python","Java"],"isActive":true,"score":98.5,"tags":["developer","senior"]}</textarea>
+                    </div>
+
+                    <div class="json-output-panel">
+                        <div class="json-panel-header">
+                            <span class="json-panel-title">结果</span>
+                            <div class="json-panel-actions">
+                                <span id="outputStats" class="json-stats">0 字符 · 0 行</span>
+                                <button id="outputCopyBtn" class="json-mini-btn">
+                                    <i data-lucide="copy"></i>
+                                    <span>复制</span>
+                                </button>
+                                <button id="downloadBtn" class="json-mini-btn">
+                                    <i data-lucide="download"></i>
+                                    <span>下载</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="jsonOutput" class="json-textarea json-output" readonly></div>
+                    </div>
+                </div>
+
+                <div id="validationStatus" class="json-validation-status">
+                    <div class="status-icon status-valid">
+                        <i data-lucide="check-circle"></i>
+                    </div>
+                    <div class="status-content">
+                        <h4>JSON 有效</h4>
+                        <p>格式正确，已通过语法校验</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="json-stats-cards">
+                <div class="json-stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="hash"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">字符数</span>
+                        <span id="charCount" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="json-stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="rows-3"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">行数</span>
+                        <span id="lineCount" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="json-stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="database"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">键数量</span>
+                        <span id="keyCount" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="json-stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="file-code"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">文件大小</span>
+                        <span id="sizeCount" class="stat-value">0 B</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、高效、安全的JSON处理工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="sparkles"></i>
+                    </div>
+                    <h3>美化格式化</h3>
+                    <p>一键美化JSON，支持2空格、4空格、Tab缩进</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="minimize"></i>
+                    </div>
+                    <h3>压缩精简</h3>
+                    <p>移除所有空格和换行，生成最小体积的JSON</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="check-circle"></i>
+                    </div>
+                    <h3>实时校验</h3>
+                    <p>自动检测JSON格式错误，精确定位问题位置</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="arrow-up-down"></i>
+                    </div>
+                    <h3>键排序</h3>
+                    <p>按字母顺序排序JSON键名，便于对比和查找</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="lock"></i>
+                    </div>
+                    <h3>转义/反转义</h3>
+                    <p>支持JSON字符串转义和反转义操作</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="download"></i>
+                    </div>
+                    <h3>导入导出</h3>
+                    <p>支持上传JSON文件和下载处理后的结果</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #4338CA, #6366F1);">
+                    <i data-lucide="braces"></i>
+                </div>
+                <span>JSON格式化</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="json-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var els = {
+            jsonInput: document.getElementById('jsonInput'),
+            jsonOutput: document.getElementById('jsonOutput'),
+            beautifyBtn: document.getElementById('beautifyBtn'),
+            minifyBtn: document.getElementById('minifyBtn'),
+            validateBtn: document.getElementById('validateBtn'),
+            escapeBtn: document.getElementById('escapeBtn'),
+            unescapeBtn: document.getElementById('unescapeBtn'),
+            sortBtn: document.getElementById('sortBtn'),
+            indentSelect: document.getElementById('indentSelect'),
+            clearBtn: document.getElementById('clearBtn'),
+            loadSampleBtn: document.getElementById('loadSampleBtn'),
+            fileInput: document.getElementById('fileInput'),
+            inputCopyBtn: document.getElementById('inputCopyBtn'),
+            outputCopyBtn: document.getElementById('outputCopyBtn'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            inputStats: document.getElementById('inputStats'),
+            outputStats: document.getElementById('outputStats'),
+            charCount: document.getElementById('charCount'),
+            lineCount: document.getElementById('lineCount'),
+            keyCount: document.getElementById('keyCount'),
+            sizeCount: document.getElementById('sizeCount'),
+            validationStatus: document.getElementById('validationStatus'),
+            validationIcon: null,
+            validationContent: null,
+            toast: document.getElementById('toast'),
+            toastMessage: document.getElementById('toastMessage')
+        };
+
+        var SAMPLE_JSON = '{"name":"张三","age":25,"email":"zhangsan@example.com","address":{"city":"北京","district":"朝阳区","street":"望京街道"},"hobbies":["读书","旅行","编程"],"skills":["JavaScript","Python","Java"],"isActive":true,"score":98.5,"tags":["developer","senior"]}';
+
+        var currentMode = 'beautify';
+
+        function getIndent() {
+            var val = els.indentSelect.value;
+            if (val === 'tab') return '\t';
+            return parseInt(val, 10);
+        }
+
+        function showToast(msg) {
+            els.toastMessage.textContent = msg;
+            els.toast.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+            setTimeout(function() {
+                els.toast.classList.add('hidden');
+            }, 2000);
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        function updateStats(text) {
+            var chars = text.length;
+            var lines = text ? text.split('\n').length : 0;
+            var bytes = new Blob([text]).size;
+
+            els.charCount.textContent = chars.toLocaleString();
+            els.lineCount.textContent = lines.toLocaleString();
+            els.sizeCount.textContent = formatSize(bytes);
+
+            els.inputStats.textContent = chars.toLocaleString() + ' 字符 · ' + lines.toLocaleString() + ' 行';
+        }
+
+        function updateOutputStats(text) {
+            var chars = text.length;
+            var lines = text ? text.split('\n').length : 0;
+            els.outputStats.textContent = chars.toLocaleString() + ' 字符 · ' + lines.toLocaleString() + ' 行';
+        }
+
+        function updateKeyCount(text) {
+            try {
+                var parsed = JSON.parse(text);
+                var count = countKeys(parsed);
+                els.keyCount.textContent = count.toLocaleString();
+            } catch (e) {
+                els.keyCount.textContent = '-';
+            }
+        }
+
+        function countKeys(obj) {
+            var count = 0;
+            if (typeof obj === 'object' && obj !== null) {
+                if (Array.isArray(obj)) {
+                    obj.forEach(function(item) {
+                        count += countKeys(item);
+                    });
+                } else {
+                    for (var key in obj) {
+                        if (obj.hasOwnProperty(key)) {
+                            count++;
+                            count += countKeys(obj[key]);
+                        }
+                    }
+                }
+            }
+            return count;
+        }
+
+        function setValidation(valid, message) {
+            var icon = els.validationStatus.querySelector('.status-icon');
+            var h4 = els.validationStatus.querySelector('h4');
+            var p = els.validationStatus.querySelector('p');
+
+            icon.classList.remove('status-valid', 'status-invalid');
+            icon.querySelector('i').setAttribute('data-lucide', valid ? 'check-circle' : 'alert-circle');
+
+            if (valid) {
+                icon.classList.add('status-valid');
+                h4.textContent = 'JSON 有效';
+                p.textContent = '格式正确，已通过语法校验';
+            } else {
+                icon.classList.add('status-invalid');
+                h4.textContent = 'JSON 无效';
+                p.textContent = message || '格式错误，请检查JSON语法';
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function validateJSON(text) {
+            try {
+                JSON.parse(text);
+                return { valid: true };
+            } catch (e) {
+                var msg = e.message;
+                var posMatch = msg.match(/position (\d+)/);
+                if (posMatch) {
+                    var pos = parseInt(posMatch[1], 10);
+                    var before = text.substring(0, pos);
+                    var line = before.split('\n').length;
+                    var lineStart = before.lastIndexOf('\n') + 1;
+                    var col = pos - lineStart + 1;
+                    msg = '第 ' + line + ' 行，第 ' + col + ' 列附近出错：' + e.message;
+                }
+                return { valid: false, error: msg };
+            }
+        }
+
+        function highlightJSON(text) {
+            if (!text) return '';
+            var validation = validateJSON(text);
+            if (!validation.valid) {
+                return escapeHtml(text);
+            }
+
+            var html = escapeHtml(text);
+
+            html = html.replace(/("(?:\\.|[^"\\])*"\s*:)/g, '<span class="json-key">$1</span>');
+            html = html.replace(/("(?:\\.|[^"\\])*")(\s*[,}\]])/g, '<span class="json-string">$1</span>$2');
+            html = html.replace(/\b(true|false|null)\b/g, '<span class="json-boolean">$1</span>');
+            html = html.replace(/\b(-?\d+\.?\d*(?:[eE][+-]?\d+)?)\b/g, '<span class="json-number">$1</span>');
+
+            return html;
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function beautify() {
+            var text = els.jsonInput.value.trim();
+            if (!text) {
+                showToast('请输入JSON数据');
+                return;
+            }
+            try {
+                var parsed = JSON.parse(text);
+                var indent = getIndent();
+                var result = JSON.stringify(parsed, null, indent);
+                els.jsonOutput.textContent = result;
+                els.jsonOutput.innerHTML = highlightJSON(result);
+                updateOutputStats(result);
+                setValidation(true);
+                updateKeyCount(result);
+                setActiveBtn('beautify');
+                showToast('格式化成功');
+            } catch (e) {
+                setActiveBtn('beautify');
+                handleError(e);
+            }
+        }
+
+        function minify() {
+            var text = els.jsonInput.value.trim();
+            if (!text) {
+                showToast('请输入JSON数据');
+                return;
+            }
+            try {
+                var parsed = JSON.parse(text);
+                var result = JSON.stringify(parsed);
+                els.jsonOutput.textContent = result;
+                els.jsonOutput.innerHTML = highlightJSON(result);
+                updateOutputStats(result);
+                setValidation(true);
+                updateKeyCount(result);
+                setActiveBtn('minify');
+                showToast('压缩成功');
+            } catch (e) {
+                setActiveBtn('minify');
+                handleError(e);
+            }
+        }
+
+        function validate() {
+            var text = els.jsonInput.value.trim();
+            if (!text) {
+                showToast('请输入JSON数据');
+                return;
+            }
+            var result = validateJSON(text);
+            setActiveBtn('validate');
+            if (result.valid) {
+                setValidation(true);
+                showToast('JSON格式有效');
+            } else {
+                setValidation(false, result.error);
+                showToast('JSON格式无效');
+            }
+        }
+
+        function escape() {
+            var text = els.jsonInput.value;
+            if (!text) {
+                showToast('请输入JSON数据');
+                return;
+            }
+            var result = text
+                .replace(/\\/g, '\\\\')
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r')
+                .replace(/\t/g, '\\t');
+            els.jsonOutput.textContent = result;
+            els.jsonOutput.innerHTML = escapeHtml(result);
+            updateOutputStats(result);
+            setActiveBtn('escape');
+            showToast('转义成功');
+        }
+
+        function unescape() {
+            var text = els.jsonInput.value;
+            if (!text) {
+                showToast('请输入JSON数据');
+                return;
+            }
+            try {
+                var result = text
+                    .replace(/\\t/g, '\t')
+                    .replace(/\\r/g, '\r')
+                    .replace(/\\n/g, '\n')
+                    .replace(/\\"/g, '"')
+                    .replace(/\\\\/g, '\\');
+                els.jsonOutput.textContent = result;
+                els.jsonOutput.innerHTML = highlightJSON(result);
+                updateOutputStats(result);
+                setActiveBtn('unescape');
+                showToast('反转义成功');
+            } catch (e) {
+                handleError(e);
+            }
+        }
+
+        function sortKeys() {
+            var text = els.jsonInput.value.trim();
+            if (!text) {
+                showToast('请输入JSON数据');
+                return;
+            }
+            try {
+                var parsed = JSON.parse(text);
+                var sorted = sortObjectKeys(parsed);
+                var indent = getIndent();
+                var result = JSON.stringify(sorted, null, indent);
+                els.jsonOutput.textContent = result;
+                els.jsonOutput.innerHTML = highlightJSON(result);
+                updateOutputStats(result);
+                setValidation(true);
+                updateKeyCount(result);
+                setActiveBtn('sort');
+                showToast('键排序成功');
+            } catch (e) {
+                setActiveBtn('sort');
+                handleError(e);
+            }
+        }
+
+        function sortObjectKeys(obj) {
+            if (typeof obj !== 'object' || obj === null) return obj;
+            if (Array.isArray(obj)) {
+                return obj.map(function(item) { return sortObjectKeys(item); });
+            }
+            var sortedKeys = Object.keys(obj).sort();
+            var result = {};
+            sortedKeys.forEach(function(key) {
+                result[key] = sortObjectKeys(obj[key]);
+            });
+            return result;
+        }
+
+        function handleError(e) {
+            var msg = e.message || '未知错误';
+            setValidation(false, msg);
+            showToast('处理失败：' + msg);
+        }
+
+        function setActiveBtn(mode) {
+            currentMode = mode;
+            var buttons = [els.beautifyBtn, els.minifyBtn, els.validateBtn, els.escapeBtn, els.unescapeBtn, els.sortBtn];
+            buttons.forEach(function(btn) { btn.classList.remove('active'); });
+            var btnMap = {
+                beautify: els.beautifyBtn,
+                minify: els.minifyBtn,
+                validate: els.validateBtn,
+                escape: els.escapeBtn,
+                unescape: els.unescapeBtn,
+                sort: els.sortBtn
+            };
+            if (btnMap[mode]) btnMap[mode].classList.add('active');
+        }
+
+        function clearAll() {
+            els.jsonInput.value = '';
+            els.jsonOutput.textContent = '';
+            els.jsonOutput.innerHTML = '';
+            updateStats('');
+            updateOutputStats('');
+            els.keyCount.textContent = '0';
+            setValidation(true);
+            showToast('已清空');
+        }
+
+        function loadSample() {
+            els.jsonInput.value = SAMPLE_JSON;
+            updateStats(SAMPLE_JSON);
+            beautify();
+        }
+
+        function copyText(text) {
+            if (!text) return;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('已复制到剪贴板');
+                });
+            }
+        }
+
+        function setupEvents() {
+            els.jsonInput.addEventListener('input', function() {
+                var text = this.value;
+                updateStats(text);
+                updateKeyCount(text);
+
+                var validation = validateJSON(text.trim());
+                if (validation.valid && text.trim()) {
+                    var indent = getIndent();
+                    try {
+                        var parsed = JSON.parse(text.trim());
+                        var result = JSON.stringify(parsed, null, indent);
+                        els.jsonOutput.textContent = result;
+                        els.jsonOutput.innerHTML = highlightJSON(result);
+                        updateOutputStats(result);
+                        setValidation(true);
+                    } catch (e) {
+                        // Don't update output on invalid input
+                    }
+                } else if (text.trim()) {
+                    setValidation(false, validation.error);
+                } else {
+                    setValidation(true);
+                    els.jsonOutput.textContent = '';
+                    els.jsonOutput.innerHTML = '';
+                    updateOutputStats('');
+                }
+            });
+
+            els.indentSelect.addEventListener('change', function() {
+                if (currentMode === 'beautify' || currentMode === 'sort') {
+                    var text = els.jsonInput.value.trim();
+                    if (text) {
+                        try {
+                            var parsed = JSON.parse(text);
+                            var indent = getIndent();
+                            var result = JSON.stringify(parsed, null, indent);
+                            els.jsonOutput.textContent = result;
+                            els.jsonOutput.innerHTML = highlightJSON(result);
+                            updateOutputStats(result);
+                        } catch (e) { /* ignore */ }
+                    }
+                }
+            });
+
+            els.beautifyBtn.addEventListener('click', beautify);
+            els.minifyBtn.addEventListener('click', minify);
+            els.validateBtn.addEventListener('click', validate);
+            els.escapeBtn.addEventListener('click', escape);
+            els.unescapeBtn.addEventListener('click', unescape);
+            els.sortBtn.addEventListener('click', sortKeys);
+            els.clearBtn.addEventListener('click', clearAll);
+            els.loadSampleBtn.addEventListener('click', loadSample);
+
+            els.inputCopyBtn.addEventListener('click', function() {
+                copyText(els.jsonInput.value);
+            });
+
+            els.outputCopyBtn.addEventListener('click', function() {
+                copyText(els.jsonOutput.textContent);
+            });
+
+            els.downloadBtn.addEventListener('click', function() {
+                var text = els.jsonOutput.textContent;
+                if (!text) {
+                    showToast('没有可下载的内容');
+                    return;
+                }
+                var blob = new Blob([text], { type: 'application/json' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'formatted.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('下载成功');
+            });
+
+            els.fileInput.addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function(evt) {
+                    var text = evt.target.result;
+                    els.jsonInput.value = text;
+                    updateStats(text);
+                    beautify();
+                };
+                reader.readAsText(file);
+            });
+
+            els.jsonInput.addEventListener('paste', function(e) {
+                var pasted = (e.clipboardData || window.clipboardData).getData('text');
+                if (pasted) {
+                    e.preventDefault();
+                    var start = this.selectionStart;
+                    var end = this.selectionEnd;
+                    this.value = this.value.substring(0, start) + pasted + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + pasted.length;
+                    updateStats(this.value);
+                    // Auto format on paste
+                    setTimeout(function() {
+                        var text = els.jsonInput.value.trim();
+                        if (text) {
+                            try {
+                                var parsed = JSON.parse(text);
+                                var indent = getIndent();
+                                var result = JSON.stringify(parsed, null, indent);
+                                els.jsonOutput.textContent = result;
+                                els.jsonOutput.innerHTML = highlightJSON(result);
+                                updateOutputStats(result);
+                                setValidation(true);
+                                updateKeyCount(result);
+                            } catch (err) {
+                                var validation = validateJSON(text);
+                                setValidation(false, validation.error);
+                            }
+                        }
+                    }, 100);
+                }
+            });
+
+            // Tab key support in textarea
+            els.jsonInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    var start = this.selectionStart;
+                    var end = this.selectionEnd;
+                    var indent = els.indentSelect.value === 'tab' ? '\t' : '  ';
+                    this.value = this.value.substring(0, start) + indent + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + indent.length;
+                    updateStats(this.value);
+                }
+            });
+        }
+
+        function init() {
+            updateStats(els.jsonInput.value);
+            beautify();
+            setupEvents();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

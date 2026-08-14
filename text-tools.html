@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字工具箱 - 简繁转换 / 字符统计 / 年龄生肖</title>
+    <meta name="description" content="免费在线文字工具箱：简体繁体一键互转、字数统计与词频分析、生肖年龄计算，全自动浏览器本地处理">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .tt-hero { padding: 7rem 0 2rem; text-align: center; }
+    .tt-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(217, 119, 6, 0.1); color: #D97706; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .tt-hero .hero-badge i { width: 16px; height: 16px; }
+    .tt-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .tt-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .tt-section { padding: 1rem 0 2rem; }
+    .tt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-lg); }
+    .tt-tabs { display: flex; gap: 0.25rem; padding: 1rem 1.5rem 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .tt-tab { border: none; background: transparent; padding: 0.7rem 1.2rem; border-radius: 12px 12px 0 0; font-family: inherit; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+    .tt-tab i { width: 16px; height: 16px; }
+    .tt-tab:hover { color: var(--text); }
+    .tt-tab.active { color: #D97706; border-bottom-color: #D97706; background: rgba(217, 119, 6, 0.05); }
+    .tt-panel { padding: 1.5rem; display: none; }
+    .tt-panel.active { display: block; animation: tbFadeIn .25s ease; }
+
+    .tt-field label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem; font-weight: 600; }
+    .tt-textarea { width: 100%; min-height: 220px; border: 1px solid var(--border); border-radius: 14px; padding: 0.9rem 1rem; font-family: inherit; font-size: 0.95rem; line-height: 1.8; resize: vertical; background: var(--bg); color: var(--text); box-sizing: border-box; }
+    .tt-textarea:focus { outline: none; border-color: var(--primary-light); }
+
+    .tt-actions { display: flex; gap: 0.75rem; margin-top: 1.1rem; flex-wrap: wrap; }
+    .tt-btn { padding: 0.7rem 1.3rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s; }
+    .tt-btn i { width: 16px; height: 16px; }
+    .tt-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .tt-btn-primary { background: linear-gradient(135deg, #D97706, #F59E0B); color: #fff; border: none; }
+    .tt-btn-primary:hover { box-shadow: 0 6px 16px rgba(217, 119, 6, 0.3); }
+
+    .tt-switch-row { display: flex; gap: 1.25rem; margin-top: 0.9rem; flex-wrap: wrap; }
+    .tt-switch { display: flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; }
+    .tt-switch input { accent-color: #D97706; width: 16px; height: 16px; cursor: pointer; }
+
+    .tt-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.75rem; margin-bottom: 1.1rem; }
+    .tt-stat { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem 1rem; text-align: center; }
+    .tt-stat b { display: block; font-size: 1.35rem; color: var(--primary-light); line-height: 1.2; }
+    .tt-stat span { font-size: 0.78rem; color: var(--text-secondary); }
+
+    .tt-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tt-chip { padding: 0.35rem 0.9rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); font-size: 0.85rem; cursor: pointer; transition: all .2s; }
+    .tt-chip:hover { border-color: var(--primary-light); color: var(--primary-light); }
+
+    .tt-result { margin-top: 1.1rem; padding: 1rem 1.2rem; background: rgba(217, 119, 6, 0.06); border: 1px solid rgba(217, 119, 6, 0.25); border-radius: 14px; display: none; }
+    .tt-result.show { display: block; }
+    .tt-result h4 { margin: 0 0 0.5rem; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; }
+    .tt-result h4 i { width: 16px; height: 16px; color: #D97706; }
+    .tt-result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; }
+    .tt-result-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 0.65rem 0.9rem; }
+    .tt-result-item span { font-size: 0.78rem; color: var(--text-secondary); display: block; }
+    .tt-result-item b { font-size: 1.05rem; }
+
+    .tt-age-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    @media (max-width: 560px) { .tt-age-form { grid-template-columns: 1fr; } }
+
+    @media (max-width: 768px) {
+        .tt-hero { padding: 6rem 0 1.5rem; }
+        .tt-hero h1 { font-size: 1.85rem; }
+        .tt-tabs { padding: 0.75rem 1rem 0; }
+        .tt-panel { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="type"></i>
+                </div>
+                <span class="logo-text">文字工具箱</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#text-tools" class="nav-link active">文字工具箱</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="tt-hero">
+            <div class="hero-badge"><i data-lucide="type"></i><span>简繁互转 · 字数统计 · 年龄生肖</span></div>
+            <h1 class="hero-title">文字<span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">工具箱</span></h1>
+            <p class="hero-description">简体繁体一键互转、文本字数与词频统计、生肖年龄推算，全部在浏览器本地完成。</p>
+        </section>
+
+        <section id="text-tools" class="tt-section">
+            <div class="container">
+                <div class="tt-card">
+                    <div class="tt-tabs">
+                        <button type="button" class="tt-tab active" data-tab="conv"><i data-lucide="repeat"></i>简繁转换</button>
+                        <button type="button" class="tt-tab" data-tab="stat"><i data-lucide="bar-chart-3"></i>字符统计</button>
+                        <button type="button" class="tt-tab" data-tab="zodiac"><i data-lucide="calendar-heart"></i>年龄生肖</button>
+                    </div>
+
+                    <!-- 简繁转换 -->
+                    <div class="tt-panel active" id="panel-conv">
+                        <div class="tt-field">
+                            <label for="conv-input">输入文本</label>
+                            <textarea class="tt-textarea" id="conv-input" placeholder="粘贴要转换的文本，支持简体转繁体、繁体转简体…"></textarea>
+                        </div>
+                        <div class="tt-switch-row">
+                            <label class="tt-switch"><input type="radio" name="conv-mode" value="s2t" checked>简体 → 繁体</label>
+                            <label class="tt-switch"><input type="radio" name="conv-mode" value="t2s">繁体 → 简体</label>
+                        </div>
+                        <div class="tt-actions">
+                            <button type="button" class="tt-btn tt-btn-primary" id="btn-conv"><i data-lucide="repeat"></i>转换</button>
+                            <button type="button" class="tt-btn" id="btn-conv-copy"><i data-lucide="copy"></i>复制结果</button>
+                            <button type="button" class="tt-btn" id="btn-conv-clear"><i data-lucide="trash-2"></i>清空</button>
+                        </div>
+                        <div class="tt-field" style="margin-top:1.2rem;">
+                            <label for="conv-output">转换结果</label>
+                            <textarea class="tt-textarea" id="conv-output" readonly placeholder="转换结果将显示在这里…"></textarea>
+                        </div>
+                        <p style="font-size:0.78rem;color:var(--text-secondary);margin-top:0.6rem;">提示：内置约 200 个常用汉字对照，覆盖绝大多数日常使用场景。</p>
+                    </div>
+
+                    <!-- 字符统计 -->
+                    <div class="tt-panel" id="panel-stat">
+                        <div class="tt-stats" id="stat-box">
+                            <div class="tt-stat"><b id="stat-chars">0</b><span>总字符</span></div>
+                            <div class="tt-stat"><b id="stat-cjk">0</b><span>汉字</span></div>
+                            <div class="tt-stat"><b id="stat-letters">0</b><span>英文字母</span></div>
+                            <div class="tt-stat"><b id="stat-digits">0</b><span>数字</span></div>
+                            <div class="tt-stat"><b id="stat-spaces">0</b><span>空格</span></div>
+                            <div class="tt-stat"><b id="stat-punct">0</b><span>标点符号</span></div>
+                            <div class="tt-stat"><b id="stat-lines">0</b><span>行数</span></div>
+                            <div class="tt-stat"><b id="stat-unique">0</b><span>去重字符</span></div>
+                        </div>
+                        <div class="tt-field">
+                            <label for="stat-input">输入文本</label>
+                            <textarea class="tt-textarea" id="stat-input" placeholder="输入或粘贴文本，实时统计字数与词频…"></textarea>
+                        </div>
+                        <div class="tt-result" id="stat-freq">
+                            <h4><i data-lucide="trending-up"></i>高频字 TOP 10</h4>
+                            <div class="tt-result-grid" id="stat-freq-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- 年龄生肖 -->
+                    <div class="tt-panel" id="panel-zodiac">
+                        <div class="tt-age-form">
+                            <div class="tt-field">
+                                <label for="zodiac-year">出生年份（或公历年）</label>
+                                <input type="number" id="zodiac-year" class="tt-textarea" style="min-height:auto;padding:0.65rem 0.85rem;" placeholder="如 1998" min="1900" max="2100">
+                            </div>
+                            <div class="tt-field">
+                                <label for="zodiac-month">月份（可选，用于虚岁计算）</label>
+                                <input type="number" id="zodiac-month" class="tt-textarea" style="min-height:auto;padding:0.65rem 0.85rem;" placeholder="如 5" min="1" max="12">
+                            </div>
+                        </div>
+                        <div class="tt-actions">
+                            <button type="button" class="tt-btn tt-btn-primary" id="btn-zodiac"><i data-lucide="calendar-heart"></i>计算生肖</button>
+                        </div>
+                        <div class="tt-chips" style="margin-top:1rem;">
+                            <span style="font-size:0.8rem;color:var(--text-secondary);align-self:center;">快捷选择：</span>
+                            <button type="button" class="tt-chip" data-year="2026">2026 马</button>
+                            <button type="button" class="tt-chip" data-year="2000">2000 龙</button>
+                            <button type="button" class="tt-chip" data-year="1990">1990 马</button>
+                            <button type="button" class="tt-chip" data-year="1988">1988 龙</button>
+                            <button type="button" class="tt-chip" data-year="1980">1980 猴</button>
+                        </div>
+                        <div class="tt-result" id="zodiac-result"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="type"></i>
+                </div>
+                <span>文字工具箱</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        /* ===== Toast ===== */
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        /* ===== Tab 切换 ===== */
+        var tabs = document.querySelectorAll('.tt-tab');
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                tabs.forEach(function(t) { t.classList.remove('active'); });
+                tab.classList.add('active');
+                document.querySelectorAll('.tt-panel').forEach(function(p) { p.classList.remove('active'); });
+                document.getElementById('panel-' + tab.getAttribute('data-tab')).classList.add('active');
+            });
+        });
+
+        /* ===== 简繁转换（约 200 常用字对照表） ===== */
+        var S2T = {
+            '为':'為','们':'們','个':'個','车':'車','东':'東','发':'發','见':'見','说':'說','话':'話','这':'這','时':'時','间':'間','过':'過','还':'還','进':'進','来':'來','对':'對','没':'沒','后':'後','开':'開','关':'關','问':'問','题':'題','样':'樣','点':'點','现':'現','长':'長','处':'處','师':'師','学':'學','习':'習','门':'門','书':'書','电':'電','气':'氣','风':'風','云':'雲','马':'馬','鱼':'魚','鸟':'鳥','龙':'龍','鸡':'雞','欢':'歡','爱':'愛','兴':'興','乐':'樂','号':'號','声':'聲','认':'認','让':'讓','请':'請','计':'計','论':'論','设':'設','许':'許','记':'記','讲':'講','证':'證','评':'評','试':'試','词':'詞','语':'語','课':'課','读':'讀','谢':'謝','识':'識','义':'義','仪':'儀','亿':'億','兰':'蘭','冲':'衝','决':'決','减':'減','况':'況','准':'準','凉':'涼','凑':'湊','写':'寫','军':'軍','农':'農','刘':'劉','刚':'剛','创':'創','别':'別','剧':'劇','务':'務','动':'動','劳':'勞','区':'區','协':'協','单':'單','卫':'衛','厅':'廳','历':'歷','压':'壓','厌':'厭','县':'縣','双':'雙','变':'變','台':'臺','叶':'葉','叹':'嘆','听':'聽','启':'啟','吴':'吳','周':'週','呜':'嗚','响':'響','员':'員','吨':'噸','圆':'圓','图':'圖','团':'團','场':'場','坏':'壞','坚':'堅','块':'塊','备':'備','复':'復','够':'夠','头':'頭','实':'實','宠':'寵','宝':'寶','将':'將','导':'導','岁':'歲','岗':'崗','岛':'島','帐':'帳','币':'幣','布':'佈','帅':'帥','归':'歸','当':'當','录':'錄','忆':'憶','总':'總','惊':'驚','战':'戰','户':'戶','扑':'撲','执':'執','扩':'擴','扫':'掃','扬':'揚','护':'護','报':'報','拟':'擬','择':'擇','换':'換','拥':'擁','担':'擔','据':'據','损':'損','捡':'撿','摇':'搖','摆':'擺','数':'數','斗':'鬥','断':'斷','无':'無','旧':'舊','晒':'曬','晓':'曉','暂':'暫','术':'術','机':'機','杀':'殺','杂':'雜','权':'權','极':'極','杨':'楊','标':'標','树':'樹','档':'檔','桥':'橋','梦':'夢','楼':'樓','检':'檢','汇':'匯','汉':'漢','汤':'湯','沟':'溝','测':'測','济':'濟','涛':'濤','润':'潤','满':'滿','渔':'漁','炉':'爐','热':'熱','炼':'煉','烂':'爛','烧':'燒','烛':'燭','烟':'煙','烦':'煩','爷':'爺','牵':'牽','独':'獨','猪':'豬','猎':'獵','猫':'貓','献':'獻','环':'環','画':'畫','畅':'暢','疗':'療','痒':'癢','疯':'瘋','痴':'癡','盐':'鹽','监':'監','盘':'盤','众':'眾','优':'優','会':'會','伟':'偉','传':'傳','伤':'傷','伦':'倫','价':'價','华':'華','伙':'夥','伪':'偽','伞':'傘','余':'餘','体':'體','兑':'兌','儿':'兒','孙':'孫','责':'責','厂':'廠','广':'廣','张':'張','强':'強','弹':'彈','弯':'彎','征':'徵','彻':'徹','志':'誌','恒':'恆','恋':'戀','恶':'惡','恼':'惱','惧':'懼','愿':'願','惯':'慣','怜':'憐','怀':'懷','忧':'憂','愤':'憤','敌':'敵','掷':'擲','斩':'斬','晕':'暈','朴':'樸','歼':'殲','残':'殘','毕':'畢','毙':'斃','氢':'氫','涌':'湧','滤':'濾','潜':'潛','错':'錯','链':'鏈','镜':'鏡','闻':'聞','阔':'闊','闪':'閃','闹':'鬧','闭':'閉','闲':'閒','队':'隊','阳':'陽','阴':'陰','阶':'階','陆':'陸','险':'險','随':'隨','际':'際','陈':'陳','阵':'陣','隐':'隱','颜':'顏','颗':'顆','额':'額','飘':'飄','飞':'飛','饭':'飯','饮':'飲','饱':'飽','饼':'餅','饥':'飢','饲':'飼','馆':'館','验':'驗','骑':'騎','骄':'驕','驱':'驅','驳':'駁','骂':'罵','驴':'驢','鲁':'魯','鲜':'鮮','鸭':'鴨','鸥':'鷗','鹏':'鵬','鹰':'鷹','麦':'麥','黄':'黃','齐':'齊','齿':'齒','龄':'齡','龟':'龜','变':'變','贝':'貝','币':'幣','货':'貨','质':'質','资':'資','贵':'貴','赔':'賠','赏':'賞','赞':'贊','赠':'贈','赚':'賺','购':'購','购':'購','财':'財','账':'賬','则':'則','负':'負','贡':'貢','责':'責','贤':'賢','败':'敗','账':'賬','贪':'貪','贫':'貧','贬':'貶','购':'購','贮':'貯','贯':'貫','贰':'貳','贱':'賤','贴':'貼','贵':'貴','贷':'貸','贸':'貿','费':'費','贺':'賀','贼':'賊','贾':'賈','资':'資','赈':'賑','贤':'賢','贱':'賤','购':'購','贮':'貯','贯':'貫','贰':'貳','贱':'賤','贴':'貼','贵':'貴','贷':'貸','贸':'貿','费':'費','贺':'賀','贼':'賊','贾':'賈','资':'資','赈':'賑','贤':'賢','贱':'賤'
+        };
+        var T2S = {};
+        Object.keys(S2T).forEach(function(k) { T2S[S2T[k]] = k; });
+
+        function convert(text, map) {
+            var out = '';
+            for (var i = 0; i < text.length; i++) {
+                out += map[text[i]] || text[i];
+            }
+            return out;
+        }
+
+        document.getElementById('btn-conv').addEventListener('click', function() {
+            var input = document.getElementById('conv-input').value;
+            if (!input) { showToast('请先输入要转换的文本', 'error'); return; }
+            var mode = document.querySelector('input[name="conv-mode"]:checked').value;
+            var map = mode === 's2t' ? S2T : T2S;
+            document.getElementById('conv-output').value = convert(input, map);
+            showToast('转换完成', 'success');
+        });
+        document.getElementById('btn-conv-clear').addEventListener('click', function() {
+            document.getElementById('conv-input').value = '';
+            document.getElementById('conv-output').value = '';
+        });
+        document.getElementById('btn-conv-copy').addEventListener('click', function() {
+            var out = document.getElementById('conv-output').value;
+            if (!out) { showToast('暂无转换结果', 'error'); return; }
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(out).then(function() { showToast('已复制到剪贴板', 'success'); });
+            } else {
+                var t = document.createElement('textarea');
+                t.value = out; document.body.appendChild(t); t.select();
+                document.execCommand('copy'); document.body.removeChild(t);
+                showToast('已复制到剪贴板', 'success');
+            }
+        });
+
+        /* ===== 字符统计 ===== */
+        var statInput = document.getElementById('stat-input');
+        function updateStat() {
+            var text = statInput.value;
+            var cjk = 0, letters = 0, digits = 0, spaces = 0, punct = 0, lines = text ? text.split('\n').length : 0;
+            var freq = {}, chars = 0;
+            for (var i = 0; i < text.length; i++) {
+                var ch = text[i];
+                chars++;
+                if (ch === '\n') continue;
+                if (/[\u4e00-\u9fa5]/.test(ch)) { cjk++; freq[ch] = (freq[ch] || 0) + 1; }
+                else if (/[a-zA-Z]/.test(ch)) letters++;
+                else if (/[0-9]/.test(ch)) digits++;
+                else if (/\s/.test(ch)) spaces++;
+                else if (/[，。！？；：""''、（）《》【】,.!?;:"'()<>\[\]{}…—-]/.test(ch)) punct++;
+            }
+            document.getElementById('stat-chars').textContent = chars;
+            document.getElementById('stat-cjk').textContent = cjk;
+            document.getElementById('stat-letters').textContent = letters;
+            document.getElementById('stat-digits').textContent = digits;
+            document.getElementById('stat-spaces').textContent = spaces;
+            document.getElementById('stat-punct').textContent = punct;
+            document.getElementById('stat-lines').textContent = lines;
+            document.getElementById('stat-unique').textContent = Object.keys(freq).length;
+
+            var sorted = Object.keys(freq).sort(function(a, b) { return freq[b] - freq[a]; }).slice(0, 10);
+            var box = document.getElementById('stat-freq');
+            var list = document.getElementById('stat-freq-list');
+            list.innerHTML = '';
+            if (sorted.length === 0) { box.classList.remove('show'); return; }
+            sorted.forEach(function(k, idx) {
+                var d = document.createElement('div');
+                d.className = 'tt-result-item';
+                d.innerHTML = '<span>第 ' + (idx + 1) + ' 名 · ' + k + '</span><b>' + freq[k] + ' 次</b>';
+                list.appendChild(d);
+            });
+            box.classList.add('show');
+        }
+        statInput.addEventListener('input', updateStat);
+        updateStat();
+
+        /* ===== 年龄生肖 ===== */
+        var ZODIAC = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
+        var STEM = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+        var BRANCH = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+        var FIVE = ['木', '木', '火', '火', '土', '土', '金', '金', '水', '水'];
+
+        function calcZodiac(year) {
+            var idx = (year - 4) % 12;
+            if (idx < 0) idx += 12;
+            return ZODIAC[idx];
+        }
+        function calcGanzhi(year) {
+            var s = (year - 4) % 10; if (s < 0) s += 10;
+            var b = (year - 4) % 12; if (b < 0) b += 12;
+            return STEM[s] + BRANCH[b] + '（' + FIVE[s] + '）';
+        }
+
+        document.getElementById('btn-zodiac').addEventListener('click', function() {
+            var year = parseInt(document.getElementById('zodiac-year').value, 10);
+            if (!year || year < 1900 || year > 2100) { showToast('请输入有效的出生年份（1900-2100）', 'error'); return; }
+            var month = parseInt(document.getElementById('zodiac-month').value, 10) || 0;
+            var now = new Date();
+            var curYear = now.getFullYear();
+            var birthdayPassed = !month || month <= now.getMonth() + 1;
+            var sui = curYear - year + (birthdayPassed ? 1 : 0);
+            var age = curYear - year - (birthdayPassed ? 0 : 1);
+            var box = document.getElementById('zodiac-result');
+            box.innerHTML = '<h4><i data-lucide="calendar-heart"></i>' + year + ' 年生肖分析</h4>' +
+                '<div class="tt-result-grid">' +
+                '<div class="tt-result-item"><span>生肖</span><b>' + calcZodiac(year) + '</b></div>' +
+                '<div class="tt-result-item"><span>天干地支</span><b>' + calcGanzhi(year) + '</b></div>' +
+                '<div class="tt-result-item"><span>周岁</span><b>' + age + ' 岁</b></div>' +
+                '<div class="tt-result-item"><span>虚岁</span><b>' + sui + ' 岁</b></div>' +
+                '<div class="tt-result-item"><span>性格关键词</span><b>' + {
+                    '鼠':'机敏','牛':'勤恳','虎':'果敢','兔':'温和','龙':'自信','蛇':'睿智','马':'奔放','羊':'温顺','猴':'灵动','鸡':'敏锐','狗':'忠诚','猪':'豁达'
+                }[calcZodiac(year)] + '</b></div>' +
+                '</div>';
+            box.classList.add('show');
+            if (window.lucide) lucide.createIcons();
+            showToast('计算完成', 'success');
+        });
+
+        document.querySelectorAll('.tt-chip[data-year]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.getElementById('zodiac-year').value = btn.getAttribute('data-year');
+                document.getElementById('zodiac-month').value = '';
+                document.getElementById('btn-zodiac').click();
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

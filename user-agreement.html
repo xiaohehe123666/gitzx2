@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户协议 - 在线工具箱</title>
+    <meta name="description" content="在线工具箱用户协议：使用本站服务前请阅读并同意本协议，所有工具免费且本地处理">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .doc-hero {
+            padding: 4rem 1.5rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+        .doc-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+        .doc-hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        .doc-hero-desc {
+            max-width: 640px;
+            margin: 0 auto;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+        .doc-updated {
+            display: inline-block;
+            margin-top: 1.25rem;
+            padding: 0.375rem 0.875rem;
+            border-radius: 999px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+        }
+
+        .doc-body {
+            padding: 2rem 1.5rem 3rem;
+            max-width: 860px;
+            margin: 0 auto;
+        }
+        .doc-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem 2.25rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+        .doc-clause {
+            margin-bottom: 2rem;
+        }
+        .doc-clause:last-child {
+            margin-bottom: 0;
+        }
+        .doc-clause-title {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+        }
+        .doc-clause-title i {
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        .doc-clause p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.85;
+            margin: 0 0 0.625rem;
+        }
+        .doc-clause p:last-child {
+            margin-bottom: 0;
+        }
+        .doc-clause ul {
+            margin: 0.25rem 0 0.5rem;
+            padding-left: 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.85;
+        }
+        .doc-clause li {
+            margin-bottom: 0.375rem;
+        }
+        .doc-tip {
+            margin-top: 1.25rem;
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.7;
+        }
+        .doc-tip strong {
+            color: var(--primary);
+        }
+
+        @media (max-width: 640px) {
+            .doc-card { padding: 1.5rem 1.25rem; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <span class="logo-text">在线工具箱</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="doc-hero">
+            <div class="doc-hero-badge">
+                <i data-lucide="file-text" style="width:14px;height:14px;"></i>
+                <span>用户协议</span>
+            </div>
+            <h1 class="doc-hero-title">在线工具箱用户协议</h1>
+            <p class="doc-hero-desc">
+                欢迎使用在线工具箱。在使用本站提供的各项服务前，请仔细阅读并充分理解本协议的全部内容。
+                一旦您开始使用本站服务，即视为您已阅读、同意并接受本协议的全部条款。
+            </p>
+            <div class="doc-updated">
+                <i data-lucide="calendar" style="width:13px;height:13px;vertical-align:-2px;"></i>
+                更新日期：2026 年 8 月
+            </div>
+        </section>
+
+        <section class="doc-body">
+            <div class="doc-card">
+                <div class="doc-clause">
+                    <div class="doc-clause-title">
+                        <i data-lucide="info" style="width:20px;height:20px;"></i>
+                        第一条 协议说明
+                    </div>
+                    <p>
+                        1.1 本协议是您与「在线工具箱」（以下简称"本站"）之间就使用本站服务所订立的协议。
+                        "本站"指 GIT 团队运营的在线工具集合平台，包括但不限于当前网页及其后续版本。
+                    </p>
+                    <p>
+                        1.2 本站所有工具均为免费服务，不收取任何费用，也不提供付费会员服务。如未来服务方式发生调整，
+                        将以页面公示等方式提前告知。
+                    </p>
+                    <p>
+                        1.3 若您未满 18 周岁，请在监护人的陪同下阅读本协议，并在监护人同意后使用本站服务。
+                    </p>
+                </div>
+
+                <div class="doc-clause">
+                    <div class="doc-clause-title">
+                        <i data-lucide="layers" style="width:20px;height:20px;"></i>
+                        第二条 服务内容与方式
+                    </div>
+                    <p>
+                        2.1 本站提供 PDF 处理、图片处理、格式转换、文本工具、开发工具等在线工具服务，
+                        具体以页面实际展示为准。
+                    </p>
+                    <p>
+                        2.2 本站绝大部分工具均为<strong>纯前端本地运行</strong>：您上传或输入的文件、文本、数据
+                        仅在您的浏览器本地处理，不会被上传至本站服务器。
+                    </p>
+                    <p>
+                        2.3 部分工具（如 AI 对话、翻译等）可能依赖第三方在线服务。使用此类工具时，
+                        相关数据将按照工具页面的提示发送至对应第三方服务，请您在使用前仔细阅读相关提示。
+                    </p>
+                    <p>
+                        2.4 本站保留根据实际情况调整、暂停或终止部分服务内容的权利，但会尽量提前在站内公告。
+                    </p>
+                </div>
+
+                <div class="doc-clause">
+                    <div class="doc-clause-title">
+                        <i data-lucide="shield-check" style="width:20px;height:20px;"></i>
+                        第三条 用户行为规范
+                    </div>
+                    <p>您在使用本站服务时，不得从事以下行为：</p>
+                    <ul>
+                        <li>利用本站服务从事任何违反法律法规、损害国家利益、社会公共利益或他人合法权益的活动；</li>
+                        <li>上传、处理或传播含有违法、暴力、色情、侵权、虚假等内容的数据；</li>
+                        <li>利用本站工具进行非法破解、攻击、入侵他人系统等行为；</li>
+                        <li>恶意攻击本站系统、干扰网站正常运行或窃取他人数据；</li>
+                        <li>以任何方式侵犯本站及他人的知识产权、商业秘密或其他合法权益。</li>
+                    </ul>
+                    <p>
+                        如发现上述行为，本站有权采取警告、限制使用、永久封禁等措施，并保留追究法律责任的权利。
+                    </p>
+                </div>
+
+                <div class="doc-clause">
+                    <div class="doc-clause-title">
+                        <i data-lucide="alert-triangle" style="width:20px;height:20px;"></i>
+                        第四条 免责声明
+                    </div>
+                    <p>
+                        4.1 本站所有工具按"现状"提供，不保证服务完全不中断、不出现错误，也不对工具输出的结果
+                        的准确性、完整性或适用性作任何明示或默示的担保。
+                    </p>
+                    <p>
+                        4.2 您应自行判断使用工具结果的风险，并对其使用行为（包括对结果的依赖、保存、传播等）负全部责任。
+                        因使用或无法使用本站服务而导致的任何直接或间接损失，本站不承担赔偿责任，除非法律法规另有强制性规定。
+                    </p>
+                    <p>
+                        4.3 本站页面中可能包含指向第三方网站的链接，第三方网站的内容、隐私政策及安全状况由该网站自行负责，
+                        本站不对其承担责任。
+                    </p>
+                </div>
+
+                <div class="doc-clause">
+                    <div class="doc-clause-title">
+                        <i data-lucide="copyright" style="width:20px;height:20px;"></i>
+                        第五条 知识产权
+                    </div>
+                    <p>
+                        5.1 本站页面设计、界面布局、代码、文案、标识等知识产权归 GIT 团队所有，未经书面许可不得复制、修改、传播。
+                    </p>
+                    <p>
+                        5.2 本站部分图标、字体、第三方库（如 Lucide、highlight.js 等）遵循其各自的开源协议，权利归原作者所有。
+                    </p>
+                    <p>
+                        5.3 您通过本站工具生成的结果，其知识产权归您本人所有。本站不会主张对您生成内容的权利。
+                    </p>
+                </div>
+
+                <div class="doc-clause">
+                    <div class="doc-clause-title">
+                        <i data-lucide="refresh-cw" style="width:20px;height:20px;"></i>
+                        第六条 协议变更
+                    </div>
+                    <p>
+                        本站有权根据法律法规、服务内容或运营需要对本协议进行修订。修订后的协议将在本站页面公示，
+                        自公示之日起生效。若您继续使用本站服务，即视为接受修订后的协议。
+                    </p>
+                </div>
+
+                <div class="doc-clause">
+                    <div class="doc-clause-title">
+                        <i data-lucide="message-circle" style="width:20px;height:20px;"></i>
+                        第七条 联系我们
+                    </div>
+                    <p>
+                        如您对本协议或本站服务有任何疑问、意见或建议，欢迎通过以下方式联系我们：
+                        <a href="customer-service.html" style="color:var(--primary);text-decoration:none;">客服中心</a>
+                        或访问 GitHub 主页 <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;">github.com/xiaohehe123666</a>。
+                    </p>
+                </div>
+
+                <div class="doc-tip">
+                    <strong>提示：</strong>请妥善保管您的账号信息与本地数据。本站为纯前端网站，账号与偏好数据
+                    保存在您的浏览器本地，清除浏览器数据可能导致这些信息丢失。
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+        <div class="bf-top">
+            <div class="bf-wrap">
+                <div class="bf-top-grid">
+                    <div class="bf-col">
+                        <h4 class="bf-title">在线工具箱</h4>
+                        <ul class="bf-links">
+                            <li><a href="about-us.html">关于我们</a></li>
+                            <li><a href="customer-service.html">联系我们</a></li>
+                            <li><a href="user-agreement.html">用户协议</a></li>
+                            <li><a href="privacy.html">隐私协议</a></li>
+                        </ul>
+                    </div>
+                    <div class="bf-col">
+                        <h4 class="bf-title">传送门</h4>
+                        <ul class="bf-links">
+                            <li><a href="dev-tools.html">开发者工具</a></li>
+                            <li><a href="text-tools.html">文本工具</a></li>
+                            <li><a href="image-compress.html">图片处理</a></li>
+                            <li><a href="pdf-merge.html">PDF 工具</a></li>
+                            <li><a href="index.html">全部工具 &rarr;</a></li>
+                        </ul>
+                    </div>
+                    <div class="bf-col bf-col-social">
+                        <div class="bf-social-grid">
+                            <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                            <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                            <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                            <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bf-mid">
+            <div class="bf-wrap bf-mid-inner">
+                <div class="bf-tool">
+                    <div class="bf-tool-icon" style="background: linear-gradient(135deg, #1D4ED8, #0284C7);">
+                        <i data-lucide="wrench"></i>
+                    </div>
+                    <span>在线工具箱</span>
+                </div>
+                <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+            </div>
+        </div>
+        <div class="bf-bottom">
+            <div class="bf-wrap">
+                <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+                <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+                <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) lucide.createIcons();
+            if (window.Auth && Auth.updateNavUserState) Auth.updateNavUserState();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS渐变生成器 - 可视化生成渐变代码</title>
+    <meta name="description" content="免费在线CSS渐变生成器，支持线性渐变、径向渐变，实时预览，颜色停止点拖拽，一键复制CSS代码">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #EC4899, #F43F5E);">
+                    <i data-lucide="palette"></i>
+                </div>
+                <span class="logo-text">CSS渐变生成器</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#generator" class="nav-link active">生成器</a>
+                <a href="#features" class="nav-link">特性</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="gradient"></i>
+                    <span>线性渐变 · 径向渐变 · 实时预览 · 一键复制</span>
+                </div>
+                <h1 class="hero-title">
+                    CSS渐变<span class="gradient-text" style="background:linear-gradient(135deg,#EC4899,#F43F5E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">生成器</span>
+                </h1>
+                <p class="hero-description">
+                    可视化生成 CSS 渐变代码，支持线性渐变和径向渐变，
+                    自由调整颜色停止点，实时预览效果，一键复制代码，所有操作在浏览器本地完成。
+                </p>
+            </div>
+        </section>
+
+        <section id="generator" class="converter-section">
+            <div class="converter-card" style="max-width: 920px;">
+                <!-- 大预览区域 -->
+                <div id="gradientPreview" style="width:100%;height:200px;border-radius:16px;background:linear-gradient(135deg, #EC4899 0%, #F43F5E 100%);box-shadow:0 8px 24px rgba(236, 72, 153, 0.25);transition:background 0.2s ease;margin-bottom:1.5rem;border:1px solid rgba(0,0,0,0.05);"></div>
+
+                <!-- 渐变类型 + 角度 -->
+                <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-bottom:1.5rem;">
+                    <div style="display:flex;gap:0.5rem;">
+                        <button type="button" class="grad-type-btn json-tool-btn active" data-type="linear">
+                            <i data-lucide="move-horizontal" style="width:16px;height:16px;"></i>
+                            <span>线性渐变</span>
+                        </button>
+                        <button type="button" class="grad-type-btn json-tool-btn" data-type="radial">
+                            <i data-lucide="circle" style="width:16px;height:16px;"></i>
+                            <span>径向渐变</span>
+                        </button>
+                    </div>
+                    <div id="angleWrap" style="flex:1;min-width:220px;display:flex;align-items:center;gap:0.75rem;">
+                        <label style="font-size:0.85rem;color:var(--text-secondary);font-weight:500;white-space:nowrap;">角度</label>
+                        <input type="range" id="angleSlider" min="0" max="360" value="135" style="flex:1;accent-color:#EC4899;">
+                        <span id="angleValue" style="font-family:'Consolas',monospace;font-size:0.875rem;color:var(--text);min-width:48px;text-align:right;">135°</span>
+                    </div>
+                    <button type="button" id="randomBtn" class="json-tool-btn json-tool-btn-secondary" title="随机生成">
+                        <i data-lucide="shuffle" style="width:16px;height:16px;"></i>
+                        <span>随机</span>
+                    </button>
+                </div>
+
+                <!-- 颜色停止点列表 -->
+                <div style="margin-bottom:1.5rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <i data-lucide="pipette" style="width:18px;height:18px;color:#EC4899;"></i>
+                            <h4 style="font-size:1rem;color:var(--text);margin:0;">颜色停止点</h4>
+                            <span id="stopsCount" style="font-size:0.8rem;color:var(--text-secondary);">（2/10）</span>
+                        </div>
+                        <button type="button" id="addStopBtn" class="json-tool-btn json-tool-btn-secondary">
+                            <i data-lucide="plus" style="width:16px;height:16px;"></i>
+                            <span>添加停止点</span>
+                        </button>
+                    </div>
+                    <div id="stopsList" style="display:flex;flex-direction:column;gap:0.625rem;"></div>
+                </div>
+
+                <!-- CSS代码框 -->
+                <div style="margin-bottom:1.5rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <i data-lucide="code" style="width:18px;height:18px;color:#EC4899;"></i>
+                            <h4 style="font-size:1rem;color:var(--text);margin:0;">CSS 代码</h4>
+                        </div>
+                        <button type="button" id="copyCodeBtn" class="json-tool-btn json-tool-btn-secondary">
+                            <i data-lucide="copy" style="width:16px;height:16px;"></i>
+                            <span>复制代码</span>
+                        </button>
+                    </div>
+                    <div id="cssCodeBox" style="padding:1rem 1.25rem;background:#0F172A;color:#E2E8F0;border-radius:12px;font-family:'Consolas','Monaco','Courier New',monospace;font-size:0.875rem;line-height:1.6;word-break:break-all;white-space:pre-wrap;min-height:48px;"></div>
+                </div>
+
+                <!-- 预设渐变 -->
+                <div>
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+                        <i data-lucide="sparkles" style="width:18px;height:18px;color:#EC4899;"></i>
+                        <h4 style="font-size:1rem;color:var(--text);margin:0;">预设渐变</h4>
+                    </div>
+                    <div id="presetGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、直观、强大的渐变生成工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 63, 94, 0.1)); color: #EC4899;">
+                        <i data-lucide="move-horizontal"></i>
+                    </div>
+                    <h3>双渐变类型</h3>
+                    <p>支持线性渐变和径向渐变，自由切换</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 63, 94, 0.1)); color: #EC4899;">
+                        <i data-lucide="rotate-cw"></i>
+                    </div>
+                    <h3>角度调节</h3>
+                    <p>0-360度自由调节渐变方向，实时预览</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 63, 94, 0.1)); color: #EC4899;">
+                        <i data-lucide="pipette"></i>
+                    </div>
+                    <h3>颜色停止点</h3>
+                    <p>最多10个停止点，拖拽调整位置，自由配色</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 63, 94, 0.1)); color: #EC4899;">
+                        <i data-lucide="shuffle"></i>
+                    </div>
+                    <h3>随机生成</h3>
+                    <p>一键随机生成渐变配色，激发设计灵感</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 63, 94, 0.1)); color: #EC4899;">
+                        <i data-lucide="palette"></i>
+                    </div>
+                    <h3>预设方案</h3>
+                    <p>内置8种精美预设渐变，点击即用</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 63, 94, 0.1)); color: #EC4899;">
+                        <i data-lucide="copy"></i>
+                    </div>
+                    <h3>一键复制</h3>
+                    <p>生成标准CSS代码，一键复制到剪贴板</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #EC4899, #F43F5E);">
+                    <i data-lucide="palette"></i>
+                </div>
+                <span>CSS渐变生成器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="json-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // 预设渐变列表
+        var PRESETS = [
+            { name: '日落', type: 'linear', angle: 45, stops: [{ color: '#FF512F', pos: 0 }, { color: '#F09819', pos: 100 }] },
+            { name: '海洋', type: 'linear', angle: 135, stops: [{ color: '#2E3192', pos: 0 }, { color: '#1BFFFF', pos: 100 }] },
+            { name: '森林', type: 'linear', angle: 135, stops: [{ color: '#134E5E', pos: 0 }, { color: '#71B280', pos: 100 }] },
+            { name: '紫罗兰', type: 'linear', angle: 135, stops: [{ color: '#8E2DE2', pos: 0 }, { color: '#4A00E0', pos: 100 }] },
+            { name: '火焰', type: 'linear', angle: 135, stops: [{ color: '#F12711', pos: 0 }, { color: '#F5AF19', pos: 100 }] },
+            { name: '极光', type: 'linear', angle: 135, stops: [{ color: '#00C9FF', pos: 0 }, { color: '#92FE9D', pos: 100 }] },
+            { name: '桃花', type: 'linear', angle: 135, stops: [{ color: '#ED4264', pos: 0 }, { color: '#FFEDBC', pos: 100 }] },
+            { name: '深海', type: 'radial', angle: 0, stops: [{ color: '#000046', pos: 0 }, { color: '#1CB5E0', pos: 100 }] }
+        ];
+
+        // 随机颜色池
+        var RANDOM_COLORS = ['#EF4444', '#F59E0B', '#EAB308', '#22C55E', '#14B8A6', '#06B6D4', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#EC4899', '#F43F5E', '#10B981', '#0EA5E9', '#F97316'];
+
+        var els = {
+            preview: document.getElementById('gradientPreview'),
+            typeBtns: document.querySelectorAll('.grad-type-btn'),
+            angleWrap: document.getElementById('angleWrap'),
+            angleSlider: document.getElementById('angleSlider'),
+            angleValue: document.getElementById('angleValue'),
+            randomBtn: document.getElementById('randomBtn'),
+            stopsList: document.getElementById('stopsList'),
+            stopsCount: document.getElementById('stopsCount'),
+            addStopBtn: document.getElementById('addStopBtn'),
+            cssCodeBox: document.getElementById('cssCodeBox'),
+            copyCodeBtn: document.getElementById('copyCodeBtn'),
+            presetGrid: document.getElementById('presetGrid'),
+            toast: document.getElementById('toast'),
+            toastMessage: document.getElementById('toastMessage')
+        };
+
+        var MAX_STOPS = 10;
+        var state = {
+            type: 'linear',
+            angle: 135,
+            stops: [
+                { color: '#EC4899', pos: 0 },
+                { color: '#F43F5E', pos: 100 }
+            ]
+        };
+
+        function showToast(msg) {
+            els.toastMessage.textContent = msg;
+            els.toast.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+            setTimeout(function() {
+                els.toast.classList.add('hidden');
+            }, 2000);
+        }
+
+        // 生成 CSS 渐变代码
+        function generateCSS() {
+            // 按位置排序停止点
+            var sorted = state.stops.slice().sort(function(a, b) {
+                return a.pos - b.pos;
+            });
+            var stopsStr = sorted.map(function(s) {
+                return s.color + ' ' + s.pos + '%';
+            }).join(', ');
+
+            if (state.type === 'linear') {
+                return 'linear-gradient(' + state.angle + 'deg, ' + stopsStr + ')';
+            } else {
+                return 'radial-gradient(circle, ' + stopsStr + ')';
+            }
+        }
+
+        // 更新预览和代码
+        function render() {
+            var css = generateCSS();
+            els.preview.style.background = css;
+            els.cssCodeBox.textContent = 'background: ' + css + ';';
+            els.angleValue.textContent = state.angle + '°';
+            els.angleSlider.value = state.angle;
+            // 角度滑块显隐
+            els.angleWrap.style.display = state.type === 'linear' ? 'flex' : 'none';
+            // 类型按钮状态
+            els.typeBtns.forEach(function(btn) {
+                btn.classList.toggle('active', btn.getAttribute('data-type') === state.type);
+            });
+            // 停止点计数
+            els.stopsCount.textContent = '（' + state.stops.length + '/' + MAX_STOPS + '）';
+            // 添加按钮禁用状态
+            els.addStopBtn.disabled = state.stops.length >= MAX_STOPS;
+            els.addStopBtn.style.opacity = state.stops.length >= MAX_STOPS ? '0.5' : '1';
+            els.addStopBtn.style.cursor = state.stops.length >= MAX_STOPS ? 'not-allowed' : 'pointer';
+        }
+
+        // 渲染颜色停止点列表
+        function renderStops() {
+            els.stopsList.innerHTML = '';
+            state.stops.forEach(function(stop, index) {
+                var row = document.createElement('div');
+                row.style.cssText = 'display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0.875rem;background:var(--bg);border:1px solid var(--border);border-radius:12px;';
+
+                // 序号
+                var idx = document.createElement('span');
+                idx.style.cssText = 'font-size:0.75rem;color:var(--text-light);font-weight:600;min-width:20px;';
+                idx.textContent = (index + 1);
+                row.appendChild(idx);
+
+                // 颜色选择器
+                var colorWrap = document.createElement('div');
+                colorWrap.style.cssText = 'position:relative;width:40px;height:40px;flex-shrink:0;';
+                var colorInput = document.createElement('input');
+                colorInput.type = 'color';
+                colorInput.value = stop.color;
+                colorInput.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:10px;cursor:pointer;background:transparent;padding:0;';
+                colorInput.title = '选择颜色';
+                colorInput.addEventListener('input', function() {
+                    state.stops[index].color = this.value;
+                    render();
+                });
+                colorWrap.appendChild(colorInput);
+                // 颜色预览框
+                var colorPreview = document.createElement('div');
+                colorPreview.style.cssText = 'position:absolute;inset:0;border-radius:10px;background:' + stop.color + ';border:1px solid rgba(0,0,0,0.1);pointer-events:none;';
+                colorWrap.appendChild(colorPreview);
+                // 同步预览框颜色
+                colorInput.addEventListener('input', function() {
+                    colorPreview.style.background = this.value;
+                });
+                row.appendChild(colorWrap);
+
+                // 颜色值显示
+                var colorLabel = document.createElement('span');
+                colorLabel.style.cssText = 'font-family:Consolas,monospace;font-size:0.8rem;color:var(--text);min-width:72px;';
+                colorLabel.textContent = stop.color.toUpperCase();
+                colorInput.addEventListener('input', function() {
+                    colorLabel.textContent = this.value.toUpperCase();
+                });
+                row.appendChild(colorLabel);
+
+                // 位置滑块
+                var posSlider = document.createElement('input');
+                posSlider.type = 'range';
+                posSlider.min = 0;
+                posSlider.max = 100;
+                posSlider.value = stop.pos;
+                posSlider.style.cssText = 'flex:1;accent-color:#EC4899;';
+                posSlider.title = '位置';
+                var posValue = document.createElement('span');
+                posValue.style.cssText = 'font-family:Consolas,monospace;font-size:0.8rem;color:var(--text-secondary);min-width:40px;text-align:right;';
+                posValue.textContent = stop.pos + '%';
+                posSlider.addEventListener('input', function() {
+                    state.stops[index].pos = parseInt(this.value, 10);
+                    posValue.textContent = state.stops[index].pos + '%';
+                    render();
+                });
+                row.appendChild(posSlider);
+                row.appendChild(posValue);
+
+                // 删除按钮
+                var delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.title = '删除此停止点';
+                delBtn.style.cssText = 'flex-shrink:0;width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;';
+                delBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>';
+                delBtn.addEventListener('mouseenter', function() {
+                    delBtn.style.borderColor = '#FECACA';
+                    delBtn.style.color = '#EF4444';
+                    delBtn.style.background = '#FEF2F2';
+                });
+                delBtn.addEventListener('mouseleave', function() {
+                    delBtn.style.borderColor = 'var(--border)';
+                    delBtn.style.color = 'var(--text-secondary)';
+                    delBtn.style.background = 'var(--bg-card)';
+                });
+                delBtn.addEventListener('click', function() {
+                    if (state.stops.length <= 2) {
+                        showToast('至少需要保留2个颜色停止点');
+                        return;
+                    }
+                    state.stops.splice(index, 1);
+                    renderStops();
+                    render();
+                });
+                row.appendChild(delBtn);
+
+                els.stopsList.appendChild(row);
+            });
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // 渲染预设
+        function renderPresets() {
+            els.presetGrid.innerHTML = '';
+            PRESETS.forEach(function(preset) {
+                var card = document.createElement('button');
+                card.type = 'button';
+                var stopsStr = preset.stops.map(function(s) {
+                    return s.color + ' ' + s.pos + '%';
+                }).join(', ');
+                var bg = preset.type === 'linear'
+                    ? 'linear-gradient(' + preset.angle + 'deg, ' + stopsStr + ')'
+                    : 'radial-gradient(circle, ' + stopsStr + ')';
+                card.style.cssText = 'padding:0;border:none;background:none;cursor:pointer;display:flex;flex-direction:column;gap:0.375rem;';
+                var swatch = document.createElement('div');
+                swatch.style.cssText = 'width:100%;height:64px;border-radius:12px;background:' + bg + ';box-shadow:0 4px 12px rgba(0,0,0,0.08);transition:transform 0.2s ease;';
+                card.appendChild(swatch);
+                var label = document.createElement('span');
+                label.style.cssText = 'font-size:0.8rem;color:var(--text);font-weight:500;text-align:center;';
+                label.textContent = preset.name;
+                card.appendChild(label);
+                card.addEventListener('mouseenter', function() {
+                    swatch.style.transform = 'translateY(-2px) scale(1.02)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    swatch.style.transform = 'translateY(0) scale(1)';
+                });
+                card.addEventListener('click', function() {
+                    applyPreset(preset);
+                });
+                els.presetGrid.appendChild(card);
+            });
+        }
+
+        // 应用预设
+        function applyPreset(preset) {
+            state.type = preset.type;
+            state.angle = preset.angle;
+            state.stops = preset.stops.map(function(s) {
+                return { color: s.color, pos: s.pos };
+            });
+            renderStops();
+            render();
+            showToast('已应用「' + preset.name + '」渐变');
+        }
+
+        // 随机生成
+        function randomGradient() {
+            var count = 2 + Math.floor(Math.random() * 3); // 2-4个停止点
+            var newStops = [];
+            var usedColors = RANDOM_COLORS.slice();
+            // 打乱颜色池
+            for (var i = usedColors.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var tmp = usedColors[i];
+                usedColors[i] = usedColors[j];
+                usedColors[j] = tmp;
+            }
+            for (var k = 0; k < count; k++) {
+                var pos = count === 1 ? 0 : Math.round(k * 100 / (count - 1));
+                newStops.push({
+                    color: usedColors[k % usedColors.length],
+                    pos: pos
+                });
+            }
+            state.stops = newStops;
+            state.angle = Math.floor(Math.random() * 36) * 10; // 0-360 每10度
+            renderStops();
+            render();
+            showToast('已生成随机渐变');
+        }
+
+        // 添加颜色停止点
+        function addStop() {
+            if (state.stops.length >= MAX_STOPS) {
+                showToast('最多只能添加 ' + MAX_STOPS + ' 个颜色停止点');
+                return;
+            }
+            // 在末尾添加，位置在最大值+一些，颜色随机
+            var maxPos = 0;
+            state.stops.forEach(function(s) {
+                if (s.pos > maxPos) maxPos = s.pos;
+            });
+            var newPos = Math.min(100, maxPos + 20);
+            if (state.stops.length === 1) newPos = 100;
+            var newColor = RANDOM_COLORS[Math.floor(Math.random() * RANDOM_COLORS.length)];
+            state.stops.push({ color: newColor, pos: newPos });
+            renderStops();
+            render();
+        }
+
+        function setupEvents() {
+            // 渐变类型切换
+            els.typeBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    state.type = this.getAttribute('data-type');
+                    render();
+                });
+            });
+
+            // 角度滑块
+            els.angleSlider.addEventListener('input', function() {
+                state.angle = parseInt(this.value, 10);
+                render();
+            });
+
+            // 随机按钮
+            els.randomBtn.addEventListener('click', randomGradient);
+
+            // 添加停止点
+            els.addStopBtn.addEventListener('click', addStop);
+
+            // 复制代码
+            els.copyCodeBtn.addEventListener('click', function() {
+                var css = 'background: ' + generateCSS() + ';';
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(css).then(function() {
+                        showToast('CSS代码已复制到剪贴板');
+                    }).catch(function() {
+                        fallbackCopy(css);
+                    });
+                } else {
+                    fallbackCopy(css);
+                }
+            });
+        }
+
+        function fallbackCopy(text) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('CSS代码已复制到剪贴板');
+            } catch (e) {
+                showToast('复制失败，请手动复制');
+            }
+            document.body.removeChild(ta);
+        }
+
+        function init() {
+            setupEvents();
+            renderPresets();
+            renderStops();
+            render();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

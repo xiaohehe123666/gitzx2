@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>识图提取线稿 - 在线图片转线稿工具</title>
+    <meta name="description" content="免费在线识图提取线稿，上传图片自动生成素描线稿，支持线条粗细、强度调节，灰度/纯黑白风格切换，浏览器本地处理，隐私安全不上传">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #7C3AED, #A855F7);">
+                    <i data-lucide="pen-tool"></i>
+                </div>
+                <span class="logo-text">识图提取线稿</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#extractor" class="nav-link active">提取线稿</a>
+                <a href="#features" class="nav-link">特性</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="shield-check"></i>
+                    <span>本地处理 · 隐私安全</span>
+                </div>
+                <h1 class="hero-title">
+                    识图提取线稿<br>
+                    <span class="gradient-text">一键生成素描线稿</span>
+                </h1>
+                <p class="hero-description">
+                    上传图片自动提取线稿，支持调节线条粗细、强度，切换灰度或纯黑白风格，
+                    所有处理均在浏览器本地完成，图片不会上传到任何服务器。
+                </p>
+            </div>
+        </section>
+
+        <section id="extractor" class="converter-section">
+            <div class="converter-card">
+                <div class="converter-header">
+                    <h2>上传图片</h2>
+                    <p>支持 PNG、JPG、WebP、BMP，最大20MB</p>
+                </div>
+
+                <div id="uploadZone" class="upload-zone">
+                    <div class="upload-content">
+                        <div class="upload-icon" style="background: linear-gradient(135deg, #7C3AED, #A855F7);">
+                            <i data-lucide="image-plus"></i>
+                        </div>
+                        <h3>拖拽图片到此处</h3>
+                        <p>或者点击按钮选择文件</p>
+                        <button id="selectBtn" class="btn-select" style="background: linear-gradient(135deg, #7C3AED, #A855F7);">
+                            <i data-lucide="folder-open"></i>
+                            选择图片
+                        </button>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                    </div>
+                </div>
+
+                <div id="extractPanel" class="compress-panel hidden">
+                    <div class="preview-container">
+                        <div class="preview-box">
+                            <div class="preview-label">
+                                <span class="preview-tag original-tag">原图</span>
+                                <span id="originalInfo" class="preview-size">0×0</span>
+                            </div>
+                            <div class="preview-image-wrapper">
+                                <img id="originalPreview" alt="原图预览">
+                            </div>
+                        </div>
+                        <div class="preview-box">
+                            <div class="preview-label">
+                                <span class="preview-tag compressed-tag">线稿</span>
+                                <span id="resultInfo" class="preview-size">0×0</span>
+                            </div>
+                            <div class="preview-image-wrapper">
+                                <img id="resultPreview" alt="线稿预览">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="compress-controls">
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>线条粗细</span>
+                                <span id="blurValue" class="control-value">3</span>
+                            </label>
+                            <input type="range" id="blurSlider" min="1" max="15" value="3" class="slider">
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>线条强度</span>
+                                <span id="strengthValue" class="control-value">60</span>
+                            </label>
+                            <input type="range" id="strengthSlider" min="5" max="100" value="60" class="slider">
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>线条颜色</span>
+                            </label>
+                            <div class="format-options" id="modeOptions">
+                                <button class="format-btn active" data-mode="dark">深色线条（白底）</button>
+                                <button class="format-btn" data-mode="light">浅色线条（黑底）</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>线稿风格</span>
+                            </label>
+                            <div class="format-options" id="styleOptions">
+                                <button class="format-btn active" data-style="gray">灰度线稿</button>
+                                <button class="format-btn" data-style="bw">纯黑白线稿</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="compress-actions">
+                        <button id="downloadBtn" class="btn-download" style="background: linear-gradient(135deg, #7C3AED, #A855F7);">
+                            <i data-lucide="download"></i>
+                            下载线稿
+                        </button>
+                        <button id="resetBtn" class="btn-secondary">
+                            <i data-lucide="refresh-cw"></i>
+                            重新选择
+                        </button>
+                    </div>
+                </div>
+
+                <div id="errorSection" class="error-section hidden">
+                    <div class="error-icon">
+                        <i data-lucide="alert-circle"></i>
+                    </div>
+                    <h3>处理失败</h3>
+                    <p id="errorMessage">请重试或更换文件</p>
+                    <button id="retryBtn" class="btn-secondary">
+                        <i data-lucide="rotate-ccw"></i>
+                        重新尝试
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、高效、安全的线稿提取工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="lock"></i>
+                    </div>
+                    <h3>隐私保护</h3>
+                    <p>所有处理在浏览器本地完成，图片不会上传到任何服务器</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="pen-line"></i>
+                    </div>
+                    <h3>线稿清晰</h3>
+                    <p>采用灰度反相加颜色减淡算法，自动保留轮廓与明暗线条</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="sliders"></i>
+                    </div>
+                    <h3>参数可调</h3>
+                    <p>自由调节线条粗细与强度，满足漫画描线、手绘临摹等场景</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="palette"></i>
+                    </div>
+                    <h3>风格多样</h3>
+                    <p>支持灰度线稿与纯黑白线稿，可切换深色线条或浅色线条</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="zap"></i>
+                    </div>
+                    <h3>快速高效</h3>
+                    <p>基于 Canvas 像素级处理，实时预览效果，无需上传等待</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="download"></i>
+                    </div>
+                    <h3>一键导出</h3>
+                    <p>线稿一键导出为高清 PNG 图片，方便后续描边上色使用</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #7C3AED, #A855F7);">
+                    <i data-lucide="pen-tool"></i>
+                </div>
+                <span>识图提取线稿</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var state = {
+            img: null,
+            file: null,
+            canvas: null,
+            blurR: 3,
+            strength: 60,
+            mode: 'dark',
+            style: 'gray',
+            resultUrl: null,
+            processing: false
+        };
+
+        var MAX_SIDE = 1400;
+
+        var els = {
+            uploadZone: document.getElementById('uploadZone'),
+            fileInput: document.getElementById('fileInput'),
+            selectBtn: document.getElementById('selectBtn'),
+            extractPanel: document.getElementById('extractPanel'),
+            originalPreview: document.getElementById('originalPreview'),
+            resultPreview: document.getElementById('resultPreview'),
+            originalInfo: document.getElementById('originalInfo'),
+            resultInfo: document.getElementById('resultInfo'),
+            blurSlider: document.getElementById('blurSlider'),
+            blurValue: document.getElementById('blurValue'),
+            strengthSlider: document.getElementById('strengthSlider'),
+            strengthValue: document.getElementById('strengthValue'),
+            modeOptions: document.getElementById('modeOptions'),
+            styleOptions: document.getElementById('styleOptions'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            errorSection: document.getElementById('errorSection'),
+            errorMessage: document.getElementById('errorMessage'),
+            retryBtn: document.getElementById('retryBtn')
+        };
+
+        function show(el) { el.classList.remove('hidden'); }
+        function hide(el) { el.classList.add('hidden'); }
+
+        function showError(msg) {
+            els.errorMessage.textContent = msg;
+            show(els.errorSection);
+            hide(els.extractPanel);
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+
+            if (!file.type.match(/^image\//) && !/\.(png|jpe?g|webp|bmp|gif)$/i.test(file.name)) {
+                showError('请选择图片文件');
+                return;
+            }
+
+            if (file.size > 20 * 1048576) {
+                showError('文件大小超过20MB限制');
+                return;
+            }
+
+            hide(els.errorSection);
+            state.file = file;
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    state.img = img;
+                    els.originalPreview.src = e.target.result;
+                    els.originalInfo.textContent = img.width + '×' + img.height;
+                    show(els.extractPanel);
+                    extract();
+                };
+                img.onerror = function() {
+                    showError('图片加载失败，请检查文件是否损坏');
+                };
+                img.src = e.target.result;
+            };
+            reader.onerror = function() {
+                showError('文件读取失败');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 分离式盒式模糊，迭代 3 次逼近高斯模糊
+        function boxBlurChannel(src, dst, w, h, r) {
+            var i, x, y;
+            var win = 2 * r + 1;
+
+            for (y = 0; y < h; y++) {
+                var row = y * w;
+                var sum = 0;
+                for (x = 0; x < w; x++) {
+                    if (x === 0) {
+                        sum = 0;
+                        for (i = 0; i <= r && i < w; i++) sum += src[row + i];
+                        dst[row] = sum / Math.min(win, w);
+                    } else {
+                        if (x - r - 1 >= 0) sum -= src[row + x - r - 1];
+                        if (x + r < w) sum += src[row + x + r];
+                        dst[row + x] = sum / win;
+                    }
+                }
+            }
+
+            for (x = 0; x < w; x++) {
+                var sum = 0;
+                for (y = 0; y < h; y++) {
+                    var idx = y * w + x;
+                    if (y === 0) {
+                        sum = 0;
+                        for (i = 0; i <= r && i < h; i++) sum += src[i * w + x];
+                        dst[idx] = sum / Math.min(win, h);
+                    } else {
+                        if (y - r - 1 >= 0) sum -= src[(y - r - 1) * w + x];
+                        if (y + r < h) sum += src[(y + r) * w + x];
+                        dst[idx] = sum / win;
+                    }
+                }
+            }
+        }
+
+        function extract() {
+            if (!state.img || state.processing) return;
+            state.processing = true;
+
+            // 使用 setTimeout 让浏览器先渲染 loading 状态
+            setTimeout(function() {
+                try {
+                    var img = state.img;
+                    var scale = Math.min(1, MAX_SIDE / Math.max(img.width, img.height));
+                    var w = Math.max(1, Math.round(img.width * scale));
+                    var h = Math.max(1, Math.round(img.height * scale));
+
+                    if (!state.canvas) state.canvas = document.createElement('canvas');
+                    state.canvas.width = w;
+                    state.canvas.height = h;
+
+                    var ctx = state.canvas.getContext('2d');
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    var imageData = ctx.getImageData(0, 0, w, h);
+                    var px = imageData.data;
+                    var n = w * h;
+
+                    var gray = new Float32Array(n);
+                    var inv = new Float32Array(n);
+                    for (var i = 0; i < n; i++) {
+                        var v = 0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2];
+                        gray[i] = v;
+                        inv[i] = 255 - v;
+                    }
+
+                    var tmp = new Float32Array(n);
+                    var r = Math.max(1, Math.round(state.blurR));
+                    boxBlurChannel(inv, tmp, w, h, r);
+                    boxBlurChannel(tmp, gray, w, h, r);   // 复用 gray 作中间缓冲
+                    boxBlurChannel(gray, tmp, w, h, r);   // tmp 为最终模糊
+
+                    var gamma = 3.0 - 2.6 * (state.strength / 100);
+                    var threshold = 255 - state.strength * 2.2;
+
+                    for (var j = 0; j < n; j++) {
+                        var bl = tmp[j];
+                        var denom = 255 - bl;
+                        var out = denom < 1 ? 255 : (gray[j] * 255 / denom);
+                        if (out > 255) out = 255;
+
+                        if (state.style === 'bw') {
+                            out = out < threshold ? 0 : 255;
+                        } else {
+                            out = 255 * Math.pow(out / 255, gamma);
+                        }
+
+                        if (state.mode === 'light') out = 255 - out;
+
+                        px[j * 4] = out;
+                        px[j * 4 + 1] = out;
+                        px[j * 4 + 2] = out;
+                        px[j * 4 + 3] = 255;
+                    }
+
+                    ctx.putImageData(imageData, 0, 0);
+                    state.resultUrl = state.canvas.toDataURL('image/png');
+                    els.resultPreview.src = state.resultUrl;
+                    els.resultInfo.textContent = w + '×' + h;
+                } catch (err) {
+                    console.error('线稿提取错误:', err);
+                    showError('线稿提取失败，请更换图片或调整参数');
+                } finally {
+                    state.processing = false;
+                }
+            }, 30);
+        }
+
+        function download() {
+            if (!state.resultUrl) return;
+            var baseName = state.file ? state.file.name.replace(/\.[^/.]+$/, '') : 'image';
+            var link = document.createElement('a');
+            link.href = state.resultUrl;
+            link.download = baseName + '_lineart.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function reset() {
+            state.img = null;
+            state.file = null;
+            state.canvas = null;
+            state.resultUrl = null;
+            els.fileInput.value = '';
+            els.originalPreview.src = '';
+            els.resultPreview.src = '';
+            hide(els.extractPanel);
+            hide(els.errorSection);
+        }
+
+        els.selectBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            els.fileInput.click();
+        });
+
+        els.uploadZone.addEventListener('click', function(e) {
+            if (e.target === els.selectBtn || e.target.closest('.btn-select')) return;
+            els.fileInput.click();
+        });
+
+        els.fileInput.addEventListener('change', function(e) {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
+
+        els.uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        els.uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        els.uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        });
+
+        var processTimer = null;
+        function scheduleExtract() {
+            if (processTimer) clearTimeout(processTimer);
+            processTimer = setTimeout(extract, 250);
+        }
+
+        els.blurSlider.addEventListener('input', function() {
+            var val = parseInt(this.value, 10);
+            state.blurR = val;
+            els.blurValue.textContent = val;
+            scheduleExtract();
+        });
+
+        els.strengthSlider.addEventListener('input', function() {
+            var val = parseInt(this.value, 10);
+            state.strength = val;
+            els.strengthValue.textContent = val;
+            scheduleExtract();
+        });
+
+        els.modeOptions.querySelectorAll('.format-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                els.modeOptions.querySelectorAll('.format-btn').forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                state.mode = this.getAttribute('data-mode');
+                extract();
+            });
+        });
+
+        els.styleOptions.querySelectorAll('.format-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                els.styleOptions.querySelectorAll('.format-btn').forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                state.style = this.getAttribute('data-style');
+                extract();
+            });
+        });
+
+        els.downloadBtn.addEventListener('click', download);
+        els.resetBtn.addEventListener('click', reset);
+        els.retryBtn.addEventListener('click', reset);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) lucide.createIcons();
+        });
+    })();
+    </script>
+</body>
+</html>

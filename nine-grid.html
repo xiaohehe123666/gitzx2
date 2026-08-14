@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>九宫格切图 - 朋友圈九宫格图片切割工具</title>
+    <meta name="description" content="免费在线九宫格切图工具：把一张大图切成 3x3 九张，发朋友圈专用，支持单张下载和一键打包 zip 下载，图片本地处理不上传">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .ng-hero { padding: 7rem 0 2rem; text-align: center; }
+    .ng-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(147, 51, 234, 0.1); color: #9333EA; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .ng-hero .hero-badge i { width: 16px; height: 16px; }
+    .ng-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .ng-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .ng-section { padding: 1rem 0 2rem; }
+    .ng-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.25rem; box-shadow: var(--shadow-lg); max-width: 760px; margin: 0 auto; }
+    .ng-dropzone { border: 2px dashed var(--border); border-radius: 16px; padding: 2.2rem 1.25rem; text-align: center; cursor: pointer; transition: all .25s ease; background: var(--bg); }
+    .ng-dropzone:hover, .ng-dropzone.drag { border-color: #9333EA; background: rgba(147, 51, 234, 0.05); }
+    .ng-dropzone i { width: 40px; height: 40px; color: var(--text-light); margin-bottom: 0.65rem; }
+    .ng-dropzone p { color: var(--text-secondary); font-size: 0.9rem; }
+    .ng-dropzone strong { color: #9333EA; }
+
+    .ng-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 1.25rem; }
+    .ng-cell { position: relative; border-radius: 10px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); aspect-ratio: 1; }
+    .ng-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ng-cell .ng-num { position: absolute; top: 6px; left: 6px; background: rgba(15, 23, 42, 0.7); color: #fff; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; }
+
+    .ng-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .ng-btn { padding: 0.7rem 1.3rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s ease; }
+    .ng-btn i { width: 16px; height: 16px; }
+    .ng-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .ng-btn-primary { background: linear-gradient(135deg, #9333EA, #A855F7); color: #fff; border: none; }
+    .ng-btn-primary:hover { box-shadow: 0 6px 16px rgba(147, 51, 234, 0.3); }
+    .ng-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+    .ng-hint { font-size: 0.8rem; color: var(--text-light); margin-top: 1rem; line-height: 1.7; }
+
+    @media (max-width: 768px) {
+        .ng-hero { padding: 6rem 0 1.5rem; }
+        .ng-hero h1 { font-size: 1.85rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #9333EA, #A855F7);">
+                    <i data-lucide="grid-3x3"></i>
+                </div>
+                <span class="logo-text">九宫格切图</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#nine-grid" class="nav-link active">九宫格切图</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="ng-hero">
+            <div class="hero-badge"><i data-lucide="grid-3x3"></i><span>一张大图 · 切成九张 · 朋友圈神器</span></div>
+            <h1 class="hero-title">九宫格<span class="gradient-text" style="background:linear-gradient(135deg,#9333EA,#A855F7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">切图</span></h1>
+            <p class="hero-description">把一张图片平均切成 3×3 九张小图，发朋友圈、小红书必备。支持单张下载或一键打包 ZIP，图片本地处理不上传。</p>
+        </section>
+
+        <section id="nine-grid" class="ng-section">
+            <div class="container">
+                <div class="ng-card">
+                    <div class="ng-dropzone" id="dz-nine">
+                        <i data-lucide="image-plus"></i>
+                        <p><strong>点击上传图片</strong> 或拖拽到此处</p>
+                        <p style="margin-top:0.3rem;font-size:0.8rem;">建议使用正方形或接近正方形的图片效果最佳</p>
+                    </div>
+                    <input type="file" id="file-nine" accept="image/*" hidden>
+                    <div class="ng-grid" id="nine-grid"></div>
+                    <div class="ng-actions" id="nine-actions" style="display:none;">
+                        <button type="button" class="ng-btn ng-btn-primary" id="btn-nine-zip"><i data-lucide="folder-archive"></i>一键打包下载 ZIP</button>
+                        <button type="button" class="ng-btn" id="btn-nine-all"><i data-lucide="download"></i>全部单张下载</button>
+                    </div>
+                    <p class="ng-hint">提示：切割后每张小图保持原图对应区域，朋友圈展示时顺序为左上到右下。打包下载为 ZIP 压缩包，需联网加载打包库（首次使用）。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #9333EA, #A855F7);">
+                    <i data-lucide="grid-3x3"></i>
+                </div>
+                <span>九宫格切图</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+        var chunks = [];
+        var baseName = 'image';
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        var dz = document.getElementById('dz-nine');
+        var input = document.getElementById('file-nine');
+        dz.addEventListener('click', function() { input.click(); });
+        dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag'); });
+        dz.addEventListener('dragleave', function() { dz.classList.remove('drag'); });
+        dz.addEventListener('drop', function(e) {
+            e.preventDefault(); dz.classList.remove('drag');
+            if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); }
+        });
+        input.addEventListener('change', function() {
+            if (!this.files.length) return;
+            var f = this.files[0];
+            baseName = f.name.replace(/\.[^.]+$/, '');
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var im = new Image();
+                im.onload = function() { doSplit(im); };
+                im.src = e.target.result;
+            };
+            reader.readAsDataURL(f);
+        });
+
+        function doSplit(img) {
+            var cols = 3, rows = 3;
+            var cellW = img.width / cols;
+            var cellH = img.height / rows;
+            var grid = document.getElementById('nine-grid');
+            grid.innerHTML = '';
+            chunks = [];
+            for (var r = 0; r < rows; r++) {
+                for (var c = 0; c < cols; c++) {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = Math.floor(cellW);
+                    canvas.height = Math.floor(cellH);
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, Math.floor(c * cellW), Math.floor(r * cellH), Math.floor(cellW), Math.floor(cellH), 0, 0, Math.floor(cellW), Math.floor(cellH));
+                    var dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+                    var cell = document.createElement('div');
+                    cell.className = 'ng-cell';
+                    cell.innerHTML = '<img src="' + dataUrl + '" alt="第' + (r * 3 + c + 1) + '张"><span class="ng-num">' + (r * 3 + c + 1) + '/9</span>';
+                    grid.appendChild(cell);
+                    chunks.push({ dataUrl: dataUrl, idx: r * 3 + c + 1 });
+                }
+            }
+            document.getElementById('nine-actions').style.display = 'flex';
+            showToast('切图完成，共 9 张', 'success');
+        }
+
+        function downloadBlob(dataUrl, name) {
+            var a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        document.getElementById('btn-nine-all').addEventListener('click', function() {
+            if (!chunks.length) { showToast('请先上传图片', 'error'); return; }
+            var delay = 0;
+            chunks.forEach(function(ch) {
+                setTimeout(function() { downloadBlob(ch.dataUrl, baseName + '_' + ch.idx + '.jpg'); }, delay);
+                delay += 300;
+            });
+        });
+
+        document.getElementById('btn-nine-zip').addEventListener('click', function() {
+            if (!chunks.length) { showToast('请先上传图片', 'error'); return; }
+            if (typeof JSZip === 'undefined') { showToast('打包库加载中，请稍后重试', 'error'); return; }
+            var btn = this;
+            btn.disabled = true;
+            var zip = new JSZip();
+            chunks.forEach(function(ch) {
+                var b64 = ch.dataUrl.split(',')[1];
+                zip.file(baseName + '_' + ch.idx + '.jpg', b64, { base64: true });
+            });
+            zip.generateAsync({ type: 'blob' }).then(function(blob) {
+                var u = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = u;
+                a.download = baseName + '_九宫格.zip';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                btn.disabled = false;
+                showToast('已打包下载', 'success');
+            }).catch(function() {
+                btn.disabled = false;
+                showToast('打包失败，请重试', 'error');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

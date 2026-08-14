@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代码格式化 - 在线工具箱</title>
+    <meta name="description" content="免费在线代码格式化工具，支持 SQL、HTML、CSS、JavaScript 代码美化与压缩，所有处理在浏览器本地完成。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        /* ============ 代码格式化页面样式 ============ */
+        .cf-section {
+            padding: 2rem 0;
+        }
+
+        .cf-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* 语言切换 Tab */
+        .cf-tabs {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .cf-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 0.875rem;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .cf-tab:hover {
+            background: var(--bg-card);
+            color: var(--text);
+            border-color: var(--border);
+        }
+
+        .cf-tab i {
+            width: 16px;
+            height: 16px;
+        }
+
+        .cf-tab.active {
+            background: linear-gradient(135deg, #4338CA, #6366F1);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(67, 56, 202, 0.25);
+        }
+
+        body.dark-mode .cf-tab.active {
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        /* 工具栏 */
+        .cf-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.875rem 1rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 0.625rem;
+        }
+
+        .cf-toolbar-left,
+        .cf-toolbar-right {
+            display: flex;
+            gap: 0.375rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .cf-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 0.875rem;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .cf-btn:hover {
+            background: var(--bg);
+            color: var(--text);
+            border-color: var(--border);
+        }
+
+        .cf-btn i {
+            width: 16px;
+            height: 16px;
+        }
+
+        .cf-btn-primary {
+            background: linear-gradient(135deg, #4338CA, #6366F1);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(67, 56, 202, 0.25);
+        }
+
+        .cf-btn-primary:hover {
+            color: white;
+            border-color: transparent;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(67, 56, 202, 0.35);
+        }
+
+        .cf-btn-secondary {
+            background: var(--bg);
+            border-color: var(--border);
+            color: var(--text-secondary);
+        }
+
+        .cf-btn-secondary:hover {
+            color: #6366F1;
+            border-color: #6366F1;
+        }
+
+        .cf-btn-danger {
+            background: var(--bg);
+            border-color: var(--border);
+            color: var(--text-secondary);
+        }
+
+        .cf-btn-danger:hover {
+            background: #FEF2F2;
+            border-color: #FECACA;
+            color: #DC2626;
+        }
+
+        body.dark-mode .cf-btn-danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .cf-select {
+            padding: 0.5rem 0.625rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.8rem;
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .cf-select:focus {
+            border-color: #6366F1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* 输入/输出面板 */
+        .cf-body {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: 0;
+            min-height: 560px;
+        }
+
+        .cf-panel {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .cf-panel:first-child {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cf-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.625rem 1rem;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cf-panel-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .cf-panel-title i {
+            width: 16px;
+            height: 16px;
+            color: var(--text-secondary);
+        }
+
+        .cf-panel-meta {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+
+        .cf-textarea {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.65;
+            color: var(--text);
+            background: var(--bg-card);
+            min-height: 240px;
+            tab-size: 4;
+            width: 100%;
+        }
+
+        .cf-textarea::placeholder {
+            color: var(--text-light);
+        }
+
+        .cf-output {
+            background: var(--bg);
+            color: var(--text);
+            cursor: text;
+        }
+
+        .cf-output::-webkit-scrollbar,
+        .cf-textarea::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .cf-output::-webkit-scrollbar-track,
+        .cf-textarea::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        .cf-output::-webkit-scrollbar-thumb,
+        .cf-textarea::-webkit-scrollbar-thumb {
+            background: var(--text-light);
+            border-radius: 4px;
+        }
+
+        .cf-output::-webkit-scrollbar-thumb:hover,
+        .cf-textarea::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* 状态提示条 */
+        .cf-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .cf-status i {
+            width: 16px;
+            height: 16px;
+        }
+
+        .cf-status.success {
+            color: #10B981;
+        }
+
+        .cf-status.error {
+            color: #EF4444;
+        }
+
+        /* 统计卡片 */
+        .cf-stats-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .cf-stat-card {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 1rem 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .cf-stat-card .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1));
+            color: #4338CA;
+        }
+
+        body.dark-mode .cf-stat-card .stat-icon {
+            color: #818CF8;
+        }
+
+        .cf-stat-card .stat-icon i {
+            width: 22px;
+            height: 22px;
+        }
+
+        .cf-stat-card .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cf-stat-card .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.125rem;
+        }
+
+        .cf-stat-card .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .cf-tabs {
+                padding: 0.625rem 0.75rem;
+            }
+            .cf-tab {
+                padding: 0.45rem 0.625rem;
+                font-size: 0.8rem;
+            }
+            .cf-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .cf-toolbar-left,
+            .cf-toolbar-right {
+                justify-content: center;
+            }
+            .cf-body {
+                min-height: 480px;
+            }
+            .cf-textarea {
+                min-height: 180px;
+            }
+            .cf-stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cf-stats-cards {
+                grid-template-columns: 1fr;
+            }
+            .cf-tab span {
+                display: none;
+            }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon"><i data-lucide="wrench"></i></div>
+                <span class="logo-text">在线工具箱</span>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="code"></i>
+                    <span>本地处理 · 多语言支持</span>
+                </div>
+                <h1 class="hero-title">
+                    代码<br>
+                    <span class="gradient-text">格式化工具</span>
+                </h1>
+                <p class="hero-description">
+                    支持 SQL、HTML、CSS、JavaScript 四种语言的代码美化与压缩，
+                    关键字大写、标签嵌套缩进、子查询缩进，所有处理在浏览器本地完成，安全无忧。
+                </p>
+            </div>
+        </section>
+
+        <section id="editor" class="cf-section">
+            <div class="cf-card">
+                <div class="cf-tabs">
+                    <button class="cf-tab active" data-lang="sql">
+                        <i data-lucide="database"></i><span>SQL</span>
+                    </button>
+                    <button class="cf-tab" data-lang="html">
+                        <i data-lucide="file-code"></i><span>HTML</span>
+                    </button>
+                    <button class="cf-tab" data-lang="css">
+                        <i data-lucide="palette"></i><span>CSS</span>
+                    </button>
+                    <button class="cf-tab" data-lang="js">
+                        <i data-lucide="braces"></i><span>JavaScript</span>
+                    </button>
+                </div>
+
+                <div class="cf-toolbar">
+                    <div class="cf-toolbar-left">
+                        <button id="formatBtn" class="cf-btn cf-btn-primary">
+                            <i data-lucide="sparkles"></i>
+                            <span>格式化</span>
+                        </button>
+                        <button id="minifyBtn" class="cf-btn">
+                            <i data-lucide="minimize"></i>
+                            <span>压缩</span>
+                        </button>
+                    </div>
+                    <div class="cf-toolbar-right">
+                        <select id="indentSelect" class="cf-select">
+                            <option value="2">2 空格缩进</option>
+                            <option value="4" selected>4 空格缩进</option>
+                            <option value="tab">Tab 缩进</option>
+                        </select>
+                        <button id="sampleBtn" class="cf-btn cf-btn-secondary">
+                            <i data-lucide="file-text"></i>
+                            <span>示例</span>
+                        </button>
+                        <button id="copyBtn" class="cf-btn cf-btn-secondary">
+                            <i data-lucide="copy"></i>
+                            <span>复制结果</span>
+                        </button>
+                        <button id="clearBtn" class="cf-btn cf-btn-danger">
+                            <i data-lucide="trash-2"></i>
+                            <span>清空</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cf-body">
+                    <div class="cf-panel">
+                        <div class="cf-panel-header">
+                            <span class="cf-panel-title">
+                                <i data-lucide="file-text"></i>
+                                输入
+                            </span>
+                            <span id="inputMeta" class="cf-panel-meta">0 字符 · 0 行</span>
+                        </div>
+                        <textarea id="codeInput" class="cf-textarea" spellcheck="false" placeholder="在此输入要格式化的代码..."></textarea>
+                    </div>
+
+                    <div class="cf-panel">
+                        <div class="cf-panel-header">
+                            <span class="cf-panel-title">
+                                <i data-lucide="check-circle"></i>
+                                结果
+                            </span>
+                            <span id="outputMeta" class="cf-panel-meta">0 字符 · 0 行</span>
+                        </div>
+                        <textarea id="codeOutput" class="cf-textarea cf-output" readonly spellcheck="false" placeholder="格式化结果将显示在此处..."></textarea>
+                    </div>
+                </div>
+
+                <div id="cfStatus" class="cf-status">
+                    <i data-lucide="info"></i>
+                    <span id="cfStatusMsg">选择语言并输入代码后，点击「格式化」或「压缩」按钮</span>
+                </div>
+            </div>
+
+            <div class="cf-stats-cards">
+                <div class="cf-stat-card">
+                    <div class="stat-icon"><i data-lucide="hash"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">输入字符</span>
+                        <span id="inputChars" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="cf-stat-card">
+                    <div class="stat-icon"><i data-lucide="rows-3"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">输入行数</span>
+                        <span id="inputLines" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="cf-stat-card">
+                    <div class="stat-icon"><i data-lucide="file-code"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">输出字符</span>
+                        <span id="outputChars" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="cf-stat-card">
+                    <div class="stat-icon"><i data-lucide="trending-down"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">体积变化</span>
+                        <span id="sizeDelta" class="stat-value">0 B</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简洁、高效的多语言代码格式化工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="database"></i>
+                    </div>
+                    <h3>SQL 美化</h3>
+                    <p>关键字大写，SELECT/FROM/WHERE 等子句换行，子查询自动缩进</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.1)); color: #10B981;">
+                        <i data-lucide="file-code"></i>
+                    </div>
+                    <h3>HTML 缩进</h3>
+                    <p>标签正确嵌套缩进，自闭合标签与空元素智能识别</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.1)); color: #F59E0B;">
+                        <i data-lucide="palette"></i>
+                    </div>
+                    <h3>CSS 规整</h3>
+                    <p>选择器后换行，每个属性独立一行，大括号正确嵌套</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.1)); color: #6366F1;">
+                        <i data-lucide="braces"></i>
+                    </div>
+                    <h3>JS 美化</h3>
+                    <p>基于大括号与分号控制缩进层级，代码结构一目了然</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.1)); color: #EF4444;">
+                        <i data-lucide="minimize"></i>
+                    </div>
+                    <h3>一键压缩</h3>
+                    <p>移除多余空白与换行，生成最小体积代码，便于上线部署</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(67, 56, 202, 0.1), rgba(99, 102, 241, 0.1)); color: #4338CA;">
+                        <i data-lucide="moon"></i>
+                    </div>
+                    <h3>暗色模式</h3>
+                    <p>完整适配明暗两种主题，长时间编码不伤眼</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #4338CA, #6366F1);">
+                    <i data-lucide="code"></i>
+                </div>
+                <span>代码格式化</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="json-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var els = {
+            tabs: document.querySelectorAll('.cf-tab'),
+            codeInput: document.getElementById('codeInput'),
+            codeOutput: document.getElementById('codeOutput'),
+            formatBtn: document.getElementById('formatBtn'),
+            minifyBtn: document.getElementById('minifyBtn'),
+            indentSelect: document.getElementById('indentSelect'),
+            sampleBtn: document.getElementById('sampleBtn'),
+            copyBtn: document.getElementById('copyBtn'),
+            clearBtn: document.getElementById('clearBtn'),
+            inputMeta: document.getElementById('inputMeta'),
+            outputMeta: document.getElementById('outputMeta'),
+            inputChars: document.getElementById('inputChars'),
+            inputLines: document.getElementById('inputLines'),
+            outputChars: document.getElementById('outputChars'),
+            sizeDelta: document.getElementById('sizeDelta'),
+            cfStatus: document.getElementById('cfStatus'),
+            cfStatusMsg: document.getElementById('cfStatusMsg'),
+            toast: document.getElementById('toast'),
+            toastMessage: document.getElementById('toastMessage')
+        };
+
+        var currentLang = 'sql';
+
+        /* ============ 各语言示例代码 ============ */
+        var SAMPLES = {
+            sql: "select u.id,u.name,u.email,count(o.id) as order_count from users u left join orders o on u.id=o.user_id where u.status='active' and o.created_at>='2024-01-01' group by u.id,u.name having count(o.id)>5 order by order_count desc limit 10",
+            html: '<!DOCTYPE html><html><head><title>示例页面</title></head><body><div class="container"><header><h1>欢迎</h1></header><main><p>这是一段示例文本。</p><ul><li>项目一</li><li>项目二</li><li>项目三</li></ul></main><footer><a href="/about">关于</a></footer></div></body></html>',
+            css: 'body{margin:0;padding:0;font-family:sans-serif}.container{max-width:1200px;margin:0 auto;padding:20px}.container h1{color:#333;font-size:24px;margin-bottom:10px}.container p{line-height:1.6;color:#666}@media(max-width:768px){.container{padding:10px}.container h1{font-size:18px}}',
+            js: 'function calculate(a,b){const result=a+b;if(result>100){return result*2}else{return result}}const items=[1,2,3,4,5];const squared=items.map(function(x){return x*x});console.log(squared);class Counter{constructor(){this.count=0}inc(){this.count++;return this.count}}'
+        };
+
+        /* ============ 工具函数 ============ */
+        function repeat(str, n) {
+            var s = '';
+            for (var i = 0; i < n; i++) s += str;
+            return s;
+        }
+
+        function getIndent() {
+            var v = els.indentSelect.value;
+            return v === 'tab' ? '\t' : repeat(' ', parseInt(v, 10));
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        function showToast(msg) {
+            els.toastMessage.textContent = msg;
+            els.toast.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+            setTimeout(function() {
+                els.toast.classList.add('hidden');
+            }, 2000);
+        }
+
+        function setStatus(type, msg) {
+            els.cfStatus.classList.remove('success', 'error');
+            var icon = 'info';
+            if (type === 'success') { els.cfStatus.classList.add('success'); icon = 'check-circle'; }
+            else if (type === 'error') { els.cfStatus.classList.add('error'); icon = 'alert-circle'; }
+            els.cfStatus.querySelector('i').setAttribute('data-lucide', icon);
+            els.cfStatusMsg.textContent = msg;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function updateStats() {
+            var input = els.codeInput.value;
+            var output = els.codeOutput.value;
+            var inChars = input.length;
+            var inLines = input ? input.split('\n').length : 0;
+            var outChars = output.length;
+            var outLines = output ? output.split('\n').length : 0;
+            els.inputMeta.textContent = inChars.toLocaleString() + ' 字符 · ' + inLines.toLocaleString() + ' 行';
+            els.outputMeta.textContent = outChars.toLocaleString() + ' 字符 · ' + outLines.toLocaleString() + ' 行';
+            els.inputChars.textContent = inChars.toLocaleString();
+            els.inputLines.textContent = inLines.toLocaleString();
+            els.outputChars.textContent = outChars.toLocaleString();
+            var delta = outChars - inChars;
+            var sign = delta >= 0 ? '+' : '';
+            els.sizeDelta.textContent = sign + delta.toLocaleString() + ' B';
+        }
+
+        function copyToClipboard(text) {
+            if (!text) { showToast('没有可复制的内容'); return; }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('已复制到剪贴板');
+                }).catch(function() { fallbackCopy(text); });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); showToast('已复制到剪贴板'); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+
+        /* ============================================================
+         *  SQL 格式化
+         * ============================================================ */
+        var SQL_KEYWORDS = [
+            'GROUP BY', 'ORDER BY', 'INSERT INTO', 'UNION ALL', 'LEFT JOIN',
+            'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN', 'FULL JOIN', 'CROSS JOIN',
+            'IS NOT NULL', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE',
+            'CREATE INDEX', 'DROP INDEX', 'DELETE FROM', 'TRUNCATE TABLE',
+            'CREATE VIEW', 'CREATE DATABASE',
+            'SELECT', 'DISTINCT', 'FROM', 'WHERE', 'HAVING', 'LIMIT', 'OFFSET',
+            'JOIN', 'ON', 'AND', 'OR', 'NOT', 'UNION', 'INTERSECT', 'EXCEPT',
+            'VALUES', 'UPDATE', 'SET', 'DELETE', 'INSERT', 'TRUNCATE',
+            'AS', 'IN', 'EXISTS', 'BETWEEN', 'LIKE', 'IS NULL',
+            'ASC', 'DESC', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END',
+            'CREATE', 'ALTER', 'DROP', 'TABLE', 'INDEX', 'VIEW', 'INTO',
+            'DATABASE', 'NULL', 'TRUE', 'FALSE', 'BY'
+        ];
+
+        var SQL_BREAK_BEFORE = [
+            'SELECT', 'DISTINCT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY',
+            'HAVING', 'LIMIT', 'OFFSET', 'UNION ALL', 'UNION', 'INTERSECT',
+            'EXCEPT', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM',
+            'DELETE', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN',
+            'FULL JOIN', 'CROSS JOIN', 'JOIN', 'ON', 'CREATE TABLE',
+            'ALTER TABLE', 'DROP TABLE', 'CREATE INDEX', 'DROP INDEX',
+            'TRUNCATE TABLE', 'CREATE VIEW', 'CREATE DATABASE'
+        ];
+
+        function sqlProtect(text, store) {
+            text = text.replace(/'(?:[^']|'')*'/g, function(m) { store.push(m); return '\u0000' + (store.length - 1) + '\u0000'; });
+            text = text.replace(/"(?:[^"]|"")*"/g, function(m) { store.push(m); return '\u0000' + (store.length - 1) + '\u0000'; });
+            text = text.replace(/`[^`]*`/g, function(m) { store.push(m); return '\u0000' + (store.length - 1) + '\u0000'; });
+            text = text.replace(/--[^\n]*/g, function(m) { store.push(m); return '\u0000' + (store.length - 1) + '\u0000'; });
+            text = text.replace(/\/\*[\s\S]*?\*\//g, function(m) { store.push(m); return '\u0000' + (store.length - 1) + '\u0000'; });
+            return text;
+        }
+
+        function sqlRestore(text, store) {
+            return text.replace(/\u0000(\d+)\u0000/g, function(_, n) {
+                return store[parseInt(n, 10)];
+            });
+        }
+
+        function splitTopLevelCommas(str) {
+            var parts = [];
+            var current = '';
+            var d = 0;
+            for (var i = 0; i < str.length; i++) {
+                var ch = str[i];
+                if (ch === '(') d++;
+                else if (ch === ')') d--;
+                if (ch === ',' && d === 0) {
+                    parts.push(current.trim());
+                    current = '';
+                } else {
+                    current += ch;
+                }
+            }
+            if (current.trim()) parts.push(current.trim());
+            return parts;
+        }
+
+        function hasTopLevelComma(str) {
+            var d = 0;
+            for (var i = 0; i < str.length; i++) {
+                var ch = str[i];
+                if (ch === '(') d++;
+                else if (ch === ')') d--;
+                else if (ch === ',' && d === 0) return true;
+            }
+            return false;
+        }
+
+        function formatSQL(input, indent) {
+            if (!input || !input.trim()) return '';
+            var store = [];
+            var text = sqlProtect(input, store);
+
+            // 规整空白
+            text = text.replace(/\s+/g, ' ').trim();
+
+            // 关键字大写（长词优先）
+            var kws = SQL_KEYWORDS.slice().sort(function(a, b) { return b.length - a.length; });
+            for (var i = 0; i < kws.length; i++) {
+                var kw = kws[i];
+                var pat = '\\b' + kw.replace(/ /g, '\\s+') + '\\b';
+                text = text.replace(new RegExp(pat, 'gi'), kw);
+            }
+
+            // 在主关键字前换行
+            var bks = SQL_BREAK_BEFORE.slice().sort(function(a, b) { return b.length - a.length; });
+            for (var j = 0; j < bks.length; j++) {
+                var bk = bks[j];
+                var bpat = '\\s*\\b' + bk.replace(/ /g, '\\s+') + '\\b';
+                text = text.replace(new RegExp(bpat, 'g'), '\n' + bk);
+            }
+            text = text.replace(/^\n+/, '');
+
+            // 逐行处理：按外层闭合括号拆分，并按括号深度缩进
+            var lines = text.split('\n');
+            var output = [];
+            var depth = 0;
+
+            for (var k = 0; k < lines.length; k++) {
+                var line = lines[k].trim();
+                if (!line) continue;
+
+                var openCount = (line.match(/\(/g) || []).length;
+                var closeCount = (line.match(/\)/g) || []).length;
+                var startDepth = depth;
+
+                // 在外层闭合括号处拆行
+                var segs = [];
+                var current = '';
+                var segDepth = startDepth;
+                var runDepth = startDepth;
+                for (var c = 0; c < line.length; c++) {
+                    var ch = line[c];
+                    if (ch === '(') {
+                        runDepth++;
+                        current += ch;
+                    } else if (ch === ')') {
+                        runDepth--;
+                        if (runDepth < segDepth) {
+                            if (current.trim()) segs.push({ text: current.trim(), depth: segDepth });
+                            current = ')';
+                            segDepth = runDepth;
+                        } else {
+                            current += ch;
+                        }
+                    } else {
+                        current += ch;
+                    }
+                }
+                if (current.trim()) segs.push({ text: current.trim(), depth: segDepth });
+
+                for (var s = 0; s < segs.length; s++) {
+                    output.push(repeat(indent, segs[s].depth) + segs[s].text);
+                }
+
+                depth = depth + openCount - closeCount;
+                if (depth < 0) depth = 0;
+            }
+
+            // 对 SELECT / GROUP BY / ORDER BY 的字段列表按逗号拆分
+            var finalOutput = [];
+            for (var f = 0; f < output.length; f++) {
+                var ln = output[f];
+                var m = ln.match(/^(\s*)(SELECT|GROUP BY|ORDER BY)\s+(.+)$/);
+                if (m && hasTopLevelComma(m[3])) {
+                    var ind = m[1];
+                    var kw2 = m[2];
+                    var fields = splitTopLevelCommas(m[3]);
+                    finalOutput.push(ind + kw2);
+                    for (var fi = 0; fi < fields.length; fi++) {
+                        if (!fields[fi]) continue;
+                        finalOutput.push(ind + indent + fields[fi] + (fi < fields.length - 1 ? ',' : ''));
+                    }
+                } else {
+                    finalOutput.push(ln);
+                }
+            }
+
+            return sqlRestore(finalOutput.join('\n'), store);
+        }
+
+        function minifySQL(input) {
+            if (!input || !input.trim()) return '';
+            var store = [];
+            var text = sqlProtect(input, store);
+            // 移除注释
+            text = text.replace(/\u0000\d+\u0000/g, function(ph) {
+                var n = parseInt(ph.match(/\d+/)[0], 10);
+                var v = store[n];
+                // 保留字符串与引号标识，移除注释
+                if (/^(--|\/\*)/.test(v)) return '';
+                return ph;
+            });
+            text = text.replace(/\s+/g, ' ').trim();
+            text = text.replace(/\s*([(),;])\s*/g, '$1');
+            return sqlRestore(text, store);
+        }
+
+        /* ============================================================
+         *  HTML 格式化
+         * ============================================================ */
+        var HTML_VOID = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+            'link', 'meta', 'param', 'source', 'track', 'wbr'];
+        var HTML_PRESERVE = ['pre', 'textarea', 'script', 'style'];
+
+        function formatHTML(input, indent) {
+            if (!input || !input.trim()) return '';
+            var lines = [];
+            var depth = 0;
+            var pos = 0;
+            var len = input.length;
+
+            function push(content, d) {
+                var trimmed = content.replace(/^\s+|\s+$/g, '');
+                if (trimmed) lines.push(repeat(indent, d) + trimmed);
+            }
+
+            while (pos < len) {
+                // 注释
+                if (input.substring(pos, pos + 4) === '<!--') {
+                    var cEnd = input.indexOf('-->', pos);
+                    cEnd = cEnd === -1 ? len : cEnd + 3;
+                    push(input.substring(pos, cEnd), depth);
+                    pos = cEnd;
+                    continue;
+                }
+                if (input[pos] === '<') {
+                    var tagEnd = input.indexOf('>', pos);
+                    if (tagEnd === -1) {
+                        push(input.substring(pos), depth);
+                        break;
+                    }
+                    var tag = input.substring(pos, tagEnd + 1);
+                    var tm = tag.match(/^<\/?\s*([a-zA-Z][a-zA-Z0-9-]*)/);
+                    var name = tm ? tm[1].toLowerCase() : '';
+                    var isClosing = /^<\//.test(tag);
+                    var isSelfClosing = /\/>$/.test(tag);
+                    var isDoctype = /^<!/.test(tag);
+                    var isVoid = HTML_VOID.indexOf(name) >= 0;
+
+                    if (isClosing) {
+                        depth = Math.max(0, depth - 1);
+                        push(tag, depth);
+                        pos = tagEnd + 1;
+                    } else if (isDoctype) {
+                        push(tag, depth);
+                        pos = tagEnd + 1;
+                    } else if (isSelfClosing || isVoid) {
+                        push(tag, depth);
+                        pos = tagEnd + 1;
+                    } else {
+                        push(tag, depth);
+                        depth++;
+                        pos = tagEnd + 1;
+                        // 保留标签内容原样
+                        if (HTML_PRESERVE.indexOf(name) >= 0) {
+                            var closeTag = '</' + name;
+                            var lower = input.toLowerCase();
+                            var closeIdx = lower.indexOf(closeTag, pos);
+                            if (closeIdx === -1) {
+                                push(input.substring(pos), depth - 1);
+                                pos = len;
+                                break;
+                            }
+                            var inner = input.substring(pos, closeIdx);
+                            if (inner.replace(/\s+/g, '')) {
+                                if (name === 'pre' || name === 'textarea') {
+                                    var innerLines = inner.split('\n');
+                                    for (var il = 0; il < innerLines.length; il++) {
+                                        lines.push(repeat(indent, depth) + innerLines[il]);
+                                    }
+                                } else {
+                                    push(inner, depth - 1);
+                                }
+                            }
+                            var realCloseEnd = input.indexOf('>', closeIdx);
+                            push(input.substring(closeIdx, realCloseEnd + 1), depth - 1);
+                            depth = Math.max(0, depth - 1);
+                            pos = realCloseEnd + 1;
+                        }
+                    }
+                } else {
+                    var nextTag = input.indexOf('<', pos);
+                    nextTag = nextTag === -1 ? len : nextTag;
+                    push(input.substring(pos, nextTag), depth);
+                    pos = nextTag;
+                }
+            }
+
+            return lines.join('\n');
+        }
+
+        function minifyHTML(input) {
+            if (!input || !input.trim()) return '';
+            var text = input;
+            // 移除注释（保留条件注释的话过于复杂，这里直接移除）
+            text = text.replace(/<!--[\s\S]*?-->/g, '');
+            // 标签间空白压缩
+            text = text.replace(/>\s+</g, '><');
+            // 其余空白规整
+            text = text.replace(/\s+/g, ' ').trim();
+            return text;
+        }
+
+        /* ============================================================
+         *  CSS 格式化
+         * ============================================================ */
+        function formatCSS(input, indent) {
+            if (!input || !input.trim()) return '';
+            var comments = [];
+            var text = input.replace(/\/\*[\s\S]*?\*\//g, function(m) {
+                comments.push(m);
+                return '\u0000C' + (comments.length - 1) + '\u0000';
+            });
+            text = text.replace(/\s+/g, ' ').trim();
+
+            var pos = 0;
+            var output = [];
+
+            function skipSpace() {
+                while (pos < text.length && text[pos] === ' ') pos++;
+            }
+
+            function parseBody(indentLevel) {
+                var ind = repeat(indent, indentLevel);
+                while (pos < text.length) {
+                    skipSpace();
+                    if (pos >= text.length || text[pos] === '}') return;
+                    var start = pos;
+                    while (pos < text.length && text[pos] !== ';' && text[pos] !== '{' && text[pos] !== '}') pos++;
+                    var piece = text.substring(start, pos).trim();
+
+                    if (pos < text.length && text[pos] === '{') {
+                        pos++;
+                        output.push(ind + piece + ' {');
+                        parseBody(indentLevel + 1);
+                        if (pos < text.length && text[pos] === '}') pos++;
+                        output.push(ind + '}');
+                    } else {
+                        if (piece) output.push(ind + piece + ';');
+                        if (pos < text.length && text[pos] === ';') pos++;
+                    }
+                }
+            }
+
+            function parseRules(indentLevel) {
+                var ind = repeat(indent, indentLevel);
+                while (pos < text.length) {
+                    skipSpace();
+                    if (pos >= text.length || text[pos] === '}') return;
+                    var start = pos;
+                    while (pos < text.length && text[pos] !== '{' && text[pos] !== '}') pos++;
+                    var selector = text.substring(start, pos).trim();
+
+                    if (pos >= text.length) {
+                        if (selector) output.push(ind + selector);
+                        return;
+                    }
+                    if (text[pos] === '}') {
+                        if (selector) output.push(ind + selector);
+                        pos++;
+                        continue;
+                    }
+                    pos++;
+                    output.push(ind + selector + ' {');
+                    parseBody(indentLevel + 1);
+                    if (pos < text.length && text[pos] === '}') pos++;
+                    output.push(ind + '}');
+                }
+            }
+
+            parseRules(0);
+
+            var result = output.join('\n');
+            result = result.replace(/\u0000C(\d+)\u0000/g, function(_, n) {
+                return comments[parseInt(n, 10)];
+            });
+            return result;
+        }
+
+        function minifyCSS(input) {
+            if (!input || !input.trim()) return '';
+            var text = input;
+            text = text.replace(/\/\*[\s\S]*?\*\//g, '');
+            text = text.replace(/\s+/g, ' ').trim();
+            text = text.replace(/\s*([{}:;,>])\s*/g, '$1');
+            text = text.replace(/;}/g, '}');
+            return text;
+        }
+
+        /* ============================================================
+         *  JavaScript 格式化
+         * ============================================================ */
+        function jsProtect(text, store) {
+            text = text.replace(/`(?:\\.|[^`\\])*`/g, function(m) { store.push(m); return '\u0000' + (store.length - 1) + '\u0000'; });
+            text = text.replace(/"(?:\\.|[^"\\])*"/g, function(m) { store.push(m); return '\u0000' + (store.length - 1) + '\u0000'; });
+            text = text.replace(/'(?:\\.|[^'\\])*'/g, function(m) { store.push(m); return '\u0000' + (store.length - 1) + '\u0000'; });
+            text = text.replace(/\/\*[\s\S]*?\*\//g, function(m) { store.push(m); return '\u0000' + (store.length - 1) + '\u0000'; });
+            text = text.replace(/\/\/[^\n]*/g, function(m) { store.push(m); return '\u0000' + (store.length - 1) + '\u0000'; });
+            return text;
+        }
+
+        function jsRestore(text, store) {
+            return text.replace(/\u0000(\d+)\u0000/g, function(_, n) {
+                return store[parseInt(n, 10)];
+            });
+        }
+
+        function formatJS(input, indent) {
+            if (!input || !input.trim()) return '';
+            var store = [];
+            var text = jsProtect(input, store);
+
+            // 规整多余空白
+            text = text.replace(/[ \t]+/g, ' ');
+            text = text.replace(/\s*\n\s*/g, '\n');
+            text = text.trim();
+
+            var depth = 0;
+            var output = [];
+            var current = '';
+
+            function flush() {
+                var line = current.replace(/^\s+|\s+$/g, '');
+                if (line) output.push(repeat(indent, depth) + line);
+                current = '';
+            }
+
+            for (var i = 0; i < text.length; i++) {
+                var ch = text[i];
+                if (ch === '{') {
+                    current += ch;
+                    flush();
+                    depth++;
+                } else if (ch === '}') {
+                    flush();
+                    depth = Math.max(0, depth - 1);
+                    current = '}';
+                    // 判断 } 是否应与后续内容保持在同一行
+                    var peekIdx = i + 1;
+                    while (peekIdx < text.length && text[peekIdx] === ' ') peekIdx++;
+                    var nextCh = peekIdx < text.length ? text[peekIdx] : '';
+                    var keepWithBrace = false;
+                    if (/[;)\],.([+\-*/%=<>&|?:}]/.test(nextCh)) {
+                        keepWithBrace = true;
+                    } else if (/[a-zA-Z_$]/.test(nextCh)) {
+                        if (/^(else|catch|finally|while)\b/.test(text.substring(peekIdx))) {
+                            keepWithBrace = true;
+                        }
+                    }
+                    if (!keepWithBrace) {
+                        flush();
+                    }
+                } else if (ch === ';') {
+                    current += ch;
+                    flush();
+                } else if (ch === '\n') {
+                    // 换行：若当前行有内容则先记录再继续
+                    if (current.trim()) {
+                        flush();
+                    }
+                } else {
+                    current += ch;
+                }
+            }
+            flush();
+
+            // 合并以 ) 结尾的行与紧随其后的 } 行（如函数调用结尾）
+            var result = output.join('\n');
+            return jsRestore(result, store);
+        }
+
+        function minifyJS(input) {
+            if (!input || !input.trim()) return '';
+            var store = [];
+            var text = jsProtect(input, store);
+            // 移除注释
+            text = text.replace(/\u0000\d+\u0000/g, function(ph) {
+                var n = parseInt(ph.match(/\d+/)[0], 10);
+                var v = store[n];
+                if (/^(\/\/|\/\*)/.test(v)) return '';
+                return ph;
+            });
+            text = text.replace(/\s+/g, ' ').trim();
+            // 移除标点周围空白（保守集合，避免破坏 a + +b 等）
+            text = text.replace(/\s*([{}()\[\];,:=<>!&|?])\s*/g, '$1');
+            return jsRestore(text, store);
+        }
+
+        /* ============================================================
+         *  主流程
+         * ============================================================ */
+        function doFormat() {
+            var input = els.codeInput.value;
+            if (!input.trim()) {
+                showToast('请输入代码');
+                return;
+            }
+            var indent = getIndent();
+            var result = '';
+            try {
+                switch (currentLang) {
+                    case 'sql': result = formatSQL(input, indent); break;
+                    case 'html': result = formatHTML(input, indent); break;
+                    case 'css': result = formatCSS(input, indent); break;
+                    case 'js': result = formatJS(input, indent); break;
+                }
+                els.codeOutput.value = result;
+                updateStats();
+                setStatus('success', '格式化完成 · ' + currentLang.toUpperCase());
+                showToast('格式化成功');
+            } catch (e) {
+                setStatus('error', '格式化失败：' + (e.message || '未知错误'));
+                showToast('格式化失败');
+            }
+        }
+
+        function doMinify() {
+            var input = els.codeInput.value;
+            if (!input.trim()) {
+                showToast('请输入代码');
+                return;
+            }
+            var result = '';
+            try {
+                switch (currentLang) {
+                    case 'sql': result = minifySQL(input); break;
+                    case 'html': result = minifyHTML(input); break;
+                    case 'css': result = minifyCSS(input); break;
+                    case 'js': result = minifyJS(input); break;
+                }
+                els.codeOutput.value = result;
+                updateStats();
+                setStatus('success', '压缩完成 · ' + currentLang.toUpperCase());
+                showToast('压缩成功');
+            } catch (e) {
+                setStatus('error', '压缩失败：' + (e.message || '未知错误'));
+                showToast('压缩失败');
+            }
+        }
+
+        function clearAll() {
+            els.codeInput.value = '';
+            els.codeOutput.value = '';
+            updateStats();
+            setStatus('info', '已清空，请重新输入代码');
+            showToast('已清空');
+        }
+
+        function loadSample() {
+            els.codeInput.value = SAMPLES[currentLang];
+            updateStats();
+            doFormat();
+        }
+
+        function switchLang(lang) {
+            currentLang = lang;
+            for (var i = 0; i < els.tabs.length; i++) {
+                els.tabs[i].classList.toggle('active', els.tabs[i].getAttribute('data-lang') === lang);
+            }
+            var labels = { sql: 'SQL', html: 'HTML', css: 'CSS', js: 'JavaScript' };
+            setStatus('info', '已切换至 ' + labels[lang] + ' 模式');
+            els.codeInput.focus();
+        }
+
+        function setupEvents() {
+            for (var i = 0; i < els.tabs.length; i++) {
+                els.tabs[i].addEventListener('click', function() {
+                    switchLang(this.getAttribute('data-lang'));
+                });
+            }
+
+            els.formatBtn.addEventListener('click', doFormat);
+            els.minifyBtn.addEventListener('click', doMinify);
+            els.sampleBtn.addEventListener('click', loadSample);
+            els.clearBtn.addEventListener('click', clearAll);
+            els.copyBtn.addEventListener('click', function() {
+                copyToClipboard(els.codeOutput.value);
+            });
+
+            els.codeInput.addEventListener('input', updateStats);
+
+            // Textarea 内 Tab 缩进支持
+            els.codeInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    var start = this.selectionStart;
+                    var end = this.selectionEnd;
+                    var pad = getIndent();
+                    this.value = this.value.substring(0, start) + pad + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + pad.length;
+                    updateStats();
+                }
+            });
+        }
+
+        function init() {
+            setupEvents();
+            updateStats();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

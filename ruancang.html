@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>软仓 - 专业软件下载导航 | 在线工具箱</title>
+    <meta name="description" content="软仓（RuanCang.Net）专业软件仓库，收录近 600 款专业软件免费下载：Adobe、AutoCAD、平面设计、三维设计、影视动画、建筑设计、机械设计等，已嵌入在线工具箱">
+    <meta name="keywords" content="软仓,专业软件,软件下载,Adobe,AutoCAD,设计软件,免费软件">
+    <meta name="theme-color" content="#0F172A">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="软仓 - 专业软件下载导航">
+    <meta property="og:description" content="收录近 600 款专业软件免费下载：Adobe、AutoCAD、设计、开发类软件">
+    <meta property="og:url" content="https://gitzx01.netlify.app/ruancang.html">
+    <meta property="og:locale" content="zh_CN">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .rc-wrap {
+            padding-top: 76px;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+        .rc-toolbar {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.875rem 1.5rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+        }
+        .rc-toolbar-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+        .rc-toolbar-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), #0EA5E9);
+            color: #fff;
+        }
+        .rc-toolbar-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+        }
+        .rc-toolbar-sub {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .rc-toolbar-actions {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .rc-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .rc-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+        .rc-btn-primary {
+            background: linear-gradient(135deg, var(--primary), #0EA5E9);
+            border: none;
+            color: #fff;
+        }
+        .rc-btn-primary:hover {
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(30, 58, 138, 0.3);
+        }
+        .rc-frame-wrap {
+            flex: 1;
+            position: relative;
+            min-height: 0;
+        }
+        .rc-notice {
+            flex-shrink: 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.625rem;
+            padding: 0.625rem 1.5rem;
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.12), rgba(239, 68, 68, 0.1));
+            border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+            color: var(--text);
+            font-size: 0.8125rem;
+            line-height: 1.6;
+        }
+        .rc-notice-icon {
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: #F59E0B;
+        }
+        .rc-notice b {
+            color: #F59E0B;
+        }
+        .rc-notice-close {
+            flex-shrink: 0;
+            margin-left: auto;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s ease;
+        }
+        .rc-notice-close:hover {
+            color: var(--text);
+        }
+        .rc-notice.hidden {
+            display: none;
+        }
+        @media (max-width: 640px) {
+            .rc-notice { padding: 0.5rem 1rem; font-size: 0.75rem; }
+        }
+        .rc-frame {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+            background: #fff;
+        }
+        .rc-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.75rem;
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            z-index: 5;
+            transition: opacity 0.3s ease;
+        }
+        .rc-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .rc-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: rcSpin 0.8s linear infinite;
+        }
+        @keyframes rcSpin {
+            to { transform: rotate(360deg); }
+        }
+        @media (max-width: 640px) {
+            .rc-wrap { padding-top: 72px; }
+            .rc-toolbar { padding: 0.75rem 1rem; }
+            .rc-toolbar-sub { display: none; }
+            .rc-btn { padding: 0.4375rem 0.75rem; font-size: 0.75rem; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <span class="logo-text">在线工具箱</span>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="navigator.html" class="nav-link">导航</a>
+                <a href="ruancang.html" class="nav-link active">软仓</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main class="rc-wrap">
+        <div class="rc-toolbar">
+            <div class="rc-toolbar-info">
+                <div class="rc-toolbar-icon">
+                    <i data-lucide="package" style="width:20px;height:20px;"></i>
+                </div>
+                <div>
+                    <div class="rc-toolbar-title">软仓 · 专业软件仓库</div>
+                    <div class="rc-toolbar-sub">嵌入自 RuanCang.Net · 收录近 600 款专业软件，免费下载（仅供学习研究）</div>
+                </div>
+            </div>
+            <div class="rc-toolbar-actions">
+                <button type="button" class="rc-btn" id="rcReloadBtn" title="重新加载">
+                    <i data-lucide="refresh-cw" style="width:15px;height:15px;"></i>
+                    刷新
+                </button>
+                <a href="https://www.ruancang.net/" target="_blank" rel="noopener" class="rc-btn rc-btn-primary">
+                    <i data-lucide="external-link" style="width:15px;height:15px;"></i>
+                    打开原站
+                </a>
+            </div>
+        </div>
+        <div class="rc-notice" id="rcNotice" role="note">
+            <span class="rc-notice-icon">
+                <i data-lucide="shield-alert" style="width:16px;height:16px;"></i>
+            </span>
+            <span>
+                <b>版权提醒：</b>本站嵌入的「软仓」为第三方网站（RuanCang.Net）内容，其软件版权归原权利人所有。<br>
+                <b>免责公告：</b>本站仅提供浏览入口，不参与任何软件分发、破解或激活；下载安装前请自行甄别来源，建议优先通过官方渠道获取正版软件，本站不对第三方内容及其下载后果负责。
+            </span>
+            <button type="button" class="rc-notice-close" id="rcNoticeClose" title="关闭提示" aria-label="关闭提示">
+                <i data-lucide="x" style="width:16px;height:16px;"></i>
+            </button>
+        </div>
+        <div class="rc-frame-wrap">
+            <div class="rc-loading" id="rcLoading">
+                <div class="rc-spinner"></div>
+                <span>正在加载软仓...</span>
+            </div>
+            <iframe id="rcFrame" class="rc-frame" src="https://www.ruancang.net/" loading="eager" allowfullscreen referrerpolicy="no-referrer-when-downgrade" title="软仓 - 专业软件下载导航"></iframe>
+        </div>
+    </main>
+
+    <script>
+        (function() {
+            // 版权/免责公告：可关闭，7 天内不再重复显示
+            var notice = document.getElementById('rcNotice');
+            var noticeClose = document.getElementById('rcNoticeClose');
+            try {
+                var dismissedAt = localStorage.getItem('rc_notice_dismissed');
+                if (dismissedAt && (Date.now() - Number(dismissedAt) < 7 * 24 * 60 * 60 * 1000)) {
+                    notice.classList.add('hidden');
+                }
+            } catch (e) {}
+            noticeClose.addEventListener('click', function() {
+                notice.classList.add('hidden');
+                try { localStorage.setItem('rc_notice_dismissed', String(Date.now())); } catch (e) {}
+            });
+
+            var frame = document.getElementById('rcFrame');
+            var loading = document.getElementById('rcLoading');
+            var loaded = false;
+            var slowTimer = null;
+
+            // 加载完成隐藏遮罩
+            frame.addEventListener('load', function() {
+                loaded = true;
+                if (slowTimer) clearTimeout(slowTimer);
+                loading.classList.add('hidden');
+                setTimeout(function() { loading.style.display = 'none'; }, 350);
+            });
+
+            // 10 秒未加载完提示（可能网络慢或被目标站拦截）
+            slowTimer = setTimeout(function() {
+                if (!loaded) {
+                    var spinner = loading.querySelector('.rc-spinner');
+                    if (spinner) spinner.style.display = 'none';
+                    loading.querySelector('span').textContent = '加载较慢...如果长时间空白，请点右上角"打开原站"直接访问';
+                }
+            }, 10000);
+
+            // 刷新按钮
+            document.getElementById('rcReloadBtn').addEventListener('click', function() {
+                loading.style.display = 'flex';
+                loading.classList.remove('hidden');
+                loaded = false;
+                frame.src = frame.src;
+            });
+        })();
+    </script>
+</body>
+</html>

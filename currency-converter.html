@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汇率换算器 - 在线货币转换</title>
+    <meta name="description" content="免费在线汇率换算器：支持人民币、美元、欧元、日元、英镑等 20+ 种货币实时换算，可自动获取最新汇率或手动调整，数据本地处理">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .cc-hero { padding: 7rem 0 2rem; text-align: center; }
+    .cc-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(202, 138, 4, 0.12); color: #CA8A04; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .cc-hero .hero-badge i { width: 16px; height: 16px; }
+    .cc-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .cc-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .cc-section { padding: 1rem 0 2rem; }
+    .cc-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.4rem; box-shadow: var(--shadow-lg); max-width: 760px; margin: 0 auto; }
+
+    .cc-convert { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.75rem; align-items: end; }
+    .cc-field label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem; font-weight: 600; }
+    .cc-field select, .cc-field input { width: 100%; padding: 0.7rem 0.85rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 1rem; background: var(--bg); color: var(--text); }
+    .cc-swap { display: flex; align-items: center; justify-content: center; }
+    .cc-swap button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all .25s; }
+    .cc-swap button:hover { color: #CA8A04; border-color: #CA8A04; transform: rotate(180deg); }
+    .cc-swap i { width: 18px; height: 18px; }
+
+    .cc-result { margin-top: 1.25rem; padding: 1.25rem 1.5rem; background: linear-gradient(135deg, rgba(202, 138, 4, 0.08), rgba(245, 158, 11, 0.06)); border: 1px solid rgba(202, 138, 4, 0.3); border-radius: 16px; }
+    .cc-result-main { font-size: 1.9rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+    .cc-result-sub { color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.35rem; }
+    .cc-rate-line { margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-light); }
+
+    .cc-multi { margin-top: 1.25rem; }
+    .cc-multi-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.45rem; }
+    .cc-multi-title i { width: 16px; height: 16px; color: #CA8A04; }
+    .cc-multi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem; }
+    .cc-multi-item { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 0.65rem 0.85rem; font-size: 0.85rem; }
+    .cc-multi-item .cc-m-code { color: var(--text-secondary); font-size: 0.75rem; }
+    .cc-multi-item .cc-m-val { font-weight: 700; margin-top: 0.15rem; font-variant-numeric: tabular-nums; }
+
+    .cc-rates { margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.25rem; }
+    .cc-rates-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem; }
+    .cc-rates-title { font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 0.45rem; }
+    .cc-rates-title i { width: 16px; height: 16px; color: #CA8A04; }
+    .cc-update-info { font-size: 0.75rem; color: var(--text-light); }
+    .cc-rates-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .cc-rates-table th, .cc-rates-table td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); text-align: right; }
+    .cc-rates-table th { background: var(--bg); font-weight: 600; }
+    .cc-rates-table td:first-child, .cc-rates-table th:first-child { text-align: left; }
+    .cc-rates-table input { width: 90px; padding: 0.35rem 0.5rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.82rem; background: var(--bg); color: var(--text); text-align: right; }
+    .cc-actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+    .cc-btn { padding: 0.6rem 1.2rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text); transition: all .2s; }
+    .cc-btn i { width: 15px; height: 15px; }
+    .cc-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .cc-btn-primary { background: linear-gradient(135deg, #CA8A04, #F59E0B); color: #fff; border: none; }
+    .cc-btn-primary:hover { box-shadow: 0 6px 16px rgba(202, 138, 4, 0.3); }
+    .cc-note { font-size: 0.78rem; color: var(--text-light); margin-top: 1rem; line-height: 1.7; }
+
+    @media (max-width: 768px) {
+        .cc-hero { padding: 6rem 0 1.5rem; }
+        .cc-hero h1 { font-size: 1.85rem; }
+        .cc-convert { grid-template-columns: 1fr; }
+        .cc-swap { transform: rotate(90deg); }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #CA8A04, #F59E0B);">
+                    <i data-lucide="badge-dollar-sign"></i>
+                </div>
+                <span class="logo-text">汇率换算</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#currency" class="nav-link active">汇率换算</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="cc-hero">
+            <div class="hero-badge"><i data-lucide="badge-dollar-sign"></i><span>20+ 货币 · 实时汇率 · 免费使用</span></div>
+            <h1 class="hero-title">汇率<span class="gradient-text" style="background:linear-gradient(135deg,#CA8A04,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">换算</span></h1>
+            <p class="hero-description">支持 20+ 种货币自由换算，可自动获取最新汇率，断网时也能使用内置汇率手动换算。</p>
+        </section>
+
+        <section id="currency" class="cc-section">
+            <div class="container">
+                <div class="cc-card">
+                    <div class="cc-convert">
+                        <div class="cc-field">
+                            <label>金额</label>
+                            <input type="number" id="cc-amount" value="100" min="0" step="0.01">
+                        </div>
+                        <div class="cc-field">
+                            <label>从</label>
+                            <select id="cc-from"></select>
+                        </div>
+                        <div class="cc-swap"><button type="button" id="cc-swap-btn" title="交换货币"><i data-lucide="arrow-left-right"></i></button></div>
+                        <div class="cc-field">
+                            <label>到</label>
+                            <select id="cc-to"></select>
+                        </div>
+                    </div>
+
+                    <div class="cc-result" id="cc-result" style="display:none;">
+                        <div class="cc-result-main" id="cc-result-main">-</div>
+                        <div class="cc-result-sub" id="cc-result-sub">-</div>
+                        <div class="cc-rate-line" id="cc-rate-line">-</div>
+                    </div>
+
+                    <div class="cc-multi">
+                        <div class="cc-multi-title"><i data-lucide="layers"></i>多币种换算结果</div>
+                        <div class="cc-multi-grid" id="cc-multi"></div>
+                    </div>
+
+                    <div class="cc-rates">
+                        <div class="cc-rates-head">
+                            <div class="cc-rates-title"><i data-lucide="table"></i>汇率表（1 单位 = 多少人民币 CNY）</div>
+                            <span class="cc-update-info" id="cc-update-info">内置汇率 · 可手动修改</span>
+                        </div>
+                        <div class="cc-table-wrap" style="overflow-x:auto;">
+                            <table class="cc-rates-table">
+                                <thead><tr><th>货币</th><th>代码</th><th>兑人民币汇率</th></tr></thead>
+                                <tbody id="cc-rates-tbody"></tbody>
+                            </table>
+                        </div>
+                        <div class="cc-actions">
+                            <button type="button" class="cc-btn cc-btn-primary" id="cc-fetch"><i data-lucide="refresh-cw"></i>获取最新汇率</button>
+                            <button type="button" class="cc-btn" id="cc-reset"><i data-lucide="rotate-ccw"></i>恢复默认汇率</button>
+                        </div>
+                    </div>
+                    <p class="cc-note">说明：点击"获取最新汇率"将从免费公开接口拉取当日数据；若网络不可用或接口被限制，则使用内置汇率（仅供参考）。你可以直接在汇率表里修改数值进行手动换算。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #CA8A04, #F59E0B);">
+                    <i data-lucide="badge-dollar-sign"></i>
+                </div>
+                <span>汇率换算</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+        var CURRENCIES = [
+            { code: 'CNY', name: '人民币', rate: 1 },
+            { code: 'USD', name: '美元', rate: 7.18 },
+            { code: 'EUR', name: '欧元', rate: 7.82 },
+            { code: 'JPY', name: '日元', rate: 0.0478 },
+            { code: 'GBP', name: '英镑', rate: 9.12 },
+            { code: 'HKD', name: '港币', rate: 0.92 },
+            { code: 'KRW', name: '韩元', rate: 0.0052 },
+            { code: 'AUD', name: '澳元', rate: 4.72 },
+            { code: 'CAD', name: '加元', rate: 5.22 },
+            { code: 'SGD', name: '新加坡元', rate: 5.33 },
+            { code: 'THB', name: '泰铢', rate: 0.2 },
+            { code: 'MYR', name: '马来西亚林吉特', rate: 1.52 },
+            { code: 'RUB', name: '俄罗斯卢布', rate: 0.078 },
+            { code: 'INR', name: '印度卢比', rate: 0.086 },
+            { code: 'TRY', name: '土耳其里拉', rate: 0.22 },
+            { code: 'BRL', name: '巴西雷亚尔', rate: 1.44 },
+            { code: 'ZAR', name: '南非兰特', rate: 0.39 },
+            { code: 'NZD', name: '新西兰元', rate: 4.34 },
+            { code: 'CHF', name: '瑞士法郎', rate: 8.05 },
+            { code: 'SEK', name: '瑞典克朗', rate: 0.68 },
+            { code: 'NOK', name: '挪威克朗', rate: 0.66 },
+            { code: 'AED', name: '阿联酋迪拉姆', rate: 1.95 }
+        ];
+        var rates = {};
+        var fromCode = 'CNY', toCode = 'USD';
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        function initSelects() {
+            var from = document.getElementById('cc-from');
+            var to = document.getElementById('cc-to');
+            from.innerHTML = ''; to.innerHTML = '';
+            CURRENCIES.forEach(function(c) {
+                [from, to].forEach(function(sel, idx) {
+                    var opt = document.createElement('option');
+                    opt.value = c.code;
+                    opt.textContent = c.code + ' ' + c.name;
+                    sel.appendChild(opt);
+                    if (idx === 0 && c.code === fromCode) opt.selected = true;
+                    if (idx === 1 && c.code === toCode) opt.selected = true;
+                });
+            });
+        }
+
+        function renderRatesTable() {
+            var tb = document.getElementById('cc-rates-tbody');
+            tb.innerHTML = '';
+            CURRENCIES.forEach(function(c) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + c.name + '</td><td>' + c.code + '</td>';
+                var td = document.createElement('td');
+                var input = document.createElement('input');
+                input.type = 'number';
+                input.step = '0.0001';
+                input.value = rates[c.code];
+                input.addEventListener('input', function() {
+                    rates[c.code] = parseFloat(this.value) || 0;
+                    convert();
+                });
+                td.appendChild(input);
+                tr.appendChild(td);
+                tb.appendChild(tr);
+            });
+        }
+
+        function convert() {
+            var amount = parseFloat(document.getElementById('cc-amount').value);
+            if (isNaN(amount)) amount = 0;
+            fromCode = document.getElementById('cc-from').value;
+            toCode = document.getElementById('cc-to').value;
+            var result = amount / (rates[fromCode] || 1) * (rates[toCode] || 1);
+            var resEl = document.getElementById('cc-result');
+            resEl.style.display = 'block';
+            document.getElementById('cc-result-main').textContent = amount.toLocaleString('zh-CN') + ' ' + fromCode + ' = ' + result.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + toCode;
+            document.getElementById('cc-result-sub').textContent = getLabel(fromCode) + ' → ' + getLabel(toCode);
+            var cross = (rates[toCode] / (rates[fromCode] || 1));
+            document.getElementById('cc-rate-line').textContent = '1 ' + fromCode + ' = ' + cross.toFixed(4) + ' ' + toCode;
+            // 多币种
+            var grid = document.getElementById('cc-multi');
+            grid.innerHTML = '';
+            CURRENCIES.filter(function(c) { return c.code !== fromCode; }).slice(0, 11).forEach(function(c) {
+                var v = amount / (rates[fromCode] || 1) * (rates[c.code] || 1);
+                var item = document.createElement('div');
+                item.className = 'cc-multi-item';
+                item.innerHTML = '<div class="cc-m-code">' + c.code + ' ' + c.name + '</div><div class="cc-m-val">' + v.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>';
+                grid.appendChild(item);
+            });
+        }
+        function getLabel(code) {
+            var c = CURRENCIES.filter(function(x) { return x.code === code; })[0];
+            return c ? c.name : code;
+        }
+
+        document.getElementById('cc-amount').addEventListener('input', convert);
+        document.getElementById('cc-from').addEventListener('change', convert);
+        document.getElementById('cc-to').addEventListener('change', convert);
+        document.getElementById('cc-swap-btn').addEventListener('click', function() {
+            var t = document.getElementById('cc-from').value;
+            document.getElementById('cc-from').value = document.getElementById('cc-to').value;
+            document.getElementById('cc-to').value = t;
+            convert();
+        });
+
+        function fetchRates() {
+            var btn = document.getElementById('cc-fetch');
+            btn.disabled = true;
+            document.getElementById('cc-update-info').textContent = '正在获取最新汇率…';
+            fetch('https://open.er-api.com/v6/latest/CNY')
+                .then(function(res) { if (!res.ok) throw new Error('bad'); return res.json(); })
+                .then(function(data) {
+                    if (!data || !data.rates) throw new Error('no data');
+                    var updated = false;
+                    CURRENCIES.forEach(function(c) {
+                        if (c.code !== 'CNY' && data.rates[c.code]) {
+                            rates[c.code] = parseFloat(data.rates[c.code]);
+                            updated = true;
+                        }
+                    });
+                    if (updated) {
+                        renderRatesTable();
+                        document.getElementById('cc-update-info').textContent = '汇率已更新（' + new Date().toLocaleString('zh-CN') + '）';
+                        showToast('汇率已更新', 'success');
+                    } else {
+                        throw new Error('empty');
+                    }
+                    convert();
+                })
+                .catch(function() {
+                    document.getElementById('cc-update-info').textContent = '获取失败，使用内置汇率（可手动修改）';
+                    showToast('获取汇率失败，已使用内置数据', 'error');
+                })
+                .finally(function() { btn.disabled = false; });
+        }
+        document.getElementById('cc-fetch').addEventListener('click', fetchRates);
+        document.getElementById('cc-reset').addEventListener('click', function() {
+            CURRENCIES.forEach(function(c) { rates[c.code] = c.rate; });
+            renderRatesTable();
+            document.getElementById('cc-update-info').textContent = '已恢复内置汇率';
+            convert();
+            showToast('已恢复默认汇率', 'success');
+        });
+
+        // init
+        CURRENCIES.forEach(function(c) { rates[c.code] = c.rate; });
+        initSelects();
+        renderRatesTable();
+        convert();
+    })();
+    </script>
+</body>
+</html>

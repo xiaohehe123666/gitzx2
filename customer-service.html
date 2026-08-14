@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客服中心 - 在线工具箱</title>
+    <meta name="description" content="客服中心服务说明，了解全球公益贡献方式">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .cs-hero {
+            padding: 5rem 1.5rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+        .cs-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            background: rgba(245, 158, 11, 0.1);
+            color: #F59E0B;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .cs-hero-badge i { width: 16px; height: 16px; }
+        .cs-hero-title {
+            font-size: 2.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+            line-height: 1.15;
+        }
+        .cs-hero-desc {
+            font-size: 1.0625rem;
+            color: var(--text-secondary);
+            max-width: 640px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* FAQ 区块 */
+        .cs-faq-section {
+            padding: 2rem 1.5rem 3rem;
+            max-width: 860px;
+            margin: 0 auto;
+        }
+        .cs-faq-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+        .cs-faq-item {
+            border-bottom: 1px solid var(--border);
+        }
+        .cs-faq-item:last-child {
+            border-bottom: none;
+        }
+        .cs-faq-question {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.125rem 0.25rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            font-family: inherit;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+        .cs-faq-question i {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            color: var(--text-light);
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        .cs-faq-item.open .cs-faq-question i {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+        .cs-faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+        }
+        .cs-faq-answer-inner {
+            padding: 0 0.25rem 1.125rem;
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+        .cs-faq-answer-inner a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .cs-faq-answer-inner a:hover { text-decoration: underline; }
+        .cs-faq-more {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .cs-faq-more p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+        .cs-faq-more-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            border-radius: 12px;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: none;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+        .cs-faq-more-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+        .cs-faq-more-btn i { width: 17px; height: 17px; }
+
+        /* 全球公益 */
+        .cs-welfare-section {
+            padding: 3rem 1.5rem;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .cs-section-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        .cs-section-title .gradient-text {
+            background: linear-gradient(135deg, #DC2626, #F59E0B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .cs-section-desc {
+            text-align: center;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+
+        .cs-welfare-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+        .cs-welfare-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .cs-welfare-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        .cs-welfare-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .cs-welfare-icon i { width: 24px; height: 24px; }
+        .cs-welfare-icon.unesco {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(147, 197, 253, 0.12));
+            color: #2563EB;
+        }
+        .cs-welfare-icon.unicef {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.12), rgba(251, 113, 133, 0.12));
+            color: #DB2777;
+        }
+        .cs-welfare-icon.who {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(52, 211, 153, 0.12));
+            color: #059669;
+        }
+        .cs-welfare-icon.wwf {
+            background: linear-gradient(135deg, rgba(237, 99, 213, 0.12), rgba(244, 114, 182, 0.12));
+            color: #DB2777;
+        }
+        .cs-welfare-icon.redcross {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(248, 113, 113, 0.12));
+            color: #DC2626;
+        }
+        .cs-welfare-icon.givewell {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(251, 191, 36, 0.12));
+            color: #D97706;
+        }
+
+        .cs-welfare-name {
+            font-size: 1.0625rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.35rem;
+        }
+        .cs-welfare-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .cs-welfare-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-decoration: none;
+            transition: gap 0.2s ease;
+        }
+        .cs-welfare-link:hover {
+            gap: 0.5rem;
+        }
+        .cs-welfare-link i { width: 14px; height: 14px; }
+
+        /* 贡献方式 */
+        .cs-contribute-section {
+            padding: 2rem 1.5rem 4rem;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .cs-contribute-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .cs-contribute-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem 1.25rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .cs-contribute-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .cs-contribute-icon {
+            width: 44px;
+            height: 44px;
+            margin: 0 auto 0.75rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+        }
+        .cs-contribute-icon i { width: 22px; height: 22px; }
+        .cs-contribute-title {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.35rem;
+        }
+        .cs-contribute-desc {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* CTA */
+        .cs-cta-section {
+            padding: 2rem 1.5rem 4rem;
+            text-align: center;
+        }
+        .cs-cta-card {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.08), rgba(245, 158, 11, 0.08));
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        .cs-cta-title {
+            font-size: 1.375rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+        }
+        .cs-cta-text {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+        .cs-cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.85rem 2rem;
+            background: linear-gradient(135deg, #DC2626, #F59E0B);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .cs-cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);
+        }
+        .cs-cta-btn i { width: 18px; height: 18px; }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .cs-hero {
+                padding: 4rem 1rem 1.5rem;
+            }
+            .cs-hero-title {
+                font-size: 2rem;
+            }
+            .cs-faq-card {
+                padding: 1.5rem 1.125rem;
+            }
+            .cs-faq-question {
+                font-size: 0.9375rem;
+            }
+            .cs-welfare-section,
+            .cs-contribute-section {
+                padding: 2rem 1rem;
+            }
+            .cs-section-title {
+                font-size: 1.65rem;
+            }
+            .cs-welfare-grid,
+            .cs-contribute-grid {
+                grid-template-columns: 1fr;
+            }
+            .cs-cta-card {
+                padding: 2rem 1.25rem;
+                margin: 0 0.75rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .cs-hero-title {
+                font-size: 1.65rem;
+            }
+            .cs-section-title {
+                font-size: 1.4rem;
+            }
+            .cs-welfare-card,
+            .cs-contribute-card {
+                padding: 1.25rem 1rem;
+            }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #F59E0B, #EF4444);">
+                    <i data-lucide="headset"></i>
+                </div>
+                <span class="logo-text">客服中心</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="#welfare" class="nav-link active">公益</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero 区 -->
+        <section class="cs-hero">
+            <div class="cs-hero-badge">
+                <i data-lucide="headset"></i>
+                <span>客服中心</span>
+            </div>
+            <h1 class="cs-hero-title">客服中心</h1>
+            <p class="cs-hero-desc">
+                我们非常重视每一位用户的声音。这里汇集了最常见的问题解答，
+                若仍未解决你的疑问，欢迎通过反馈或论坛与我们联系。
+            </p>
+        </section>
+
+        <!-- 常见问题 FAQ -->
+        <section class="cs-faq-section">
+            <div class="cs-faq-card">
+                <h2 class="cs-section-title" style="font-size:1.5rem; margin-bottom:0.5rem;">常见问题 <span class="gradient-text">FAQ</span></h2>
+                <p class="cs-section-desc" style="text-align:left; margin-bottom:1rem;">快速找到你想要的答案</p>
+
+                <div class="cs-faq-item">
+                    <button class="cs-faq-question" type="button">
+                        <span>1. 这些工具需要注册或登录才能使用吗？</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="cs-faq-answer">
+                        <div class="cs-faq-answer-inner">
+                            大部分工具<b>无需登录</b>即可直接使用，数据在浏览器本地处理，安全高效。登录后可解锁收藏工具、使用记录、积分签到、论坛发言等更多功能，也方便跨设备同步（需使用同一浏览器）。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cs-faq-item">
+                    <button class="cs-faq-question" type="button">
+                        <span>2. 我的文件会上传到服务器吗？</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="cs-faq-answer">
+                        <div class="cs-faq-answer-inner">
+                            不会。本站所有工具均采用<b>纯本地处理</b>技术，文件只在你的浏览器内存中处理，完成后直接下载，不会上传到任何服务器。你可以断网测试，绝大多数工具仍可正常工作。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cs-faq-item">
+                    <button class="cs-faq-question" type="button">
+                        <span>3. 忘记密码了怎么办？</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="cs-faq-answer">
+                        <div class="cs-faq-answer-inner">
+                            本站基于浏览器本地存储，账号数据保存在你当前使用的浏览器中。若忘记密码，可联系管理员重置；若更换了浏览器或设备，原账号无法跨设备迁移，建议使用常用浏览器并开启密码保存。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cs-faq-item">
+                    <button class="cs-faq-question" type="button">
+                        <span>4. 收藏的工具在哪里查看？</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="cs-faq-answer">
+                        <div class="cs-faq-answer-inner">
+                            登录后进入 <a href="user-profile.html">个人中心</a>，在「我的收藏 &amp; 最近使用」面板中即可查看收藏工具和最近使用记录，点击即可一键直达。收藏入口是工具卡片右上角的星标按钮。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cs-faq-item">
+                    <button class="cs-faq-question" type="button">
+                        <span>5. 如何获取积分？积分有什么用？</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="cs-faq-answer">
+                        <div class="cs-faq-answer-inner">
+                            进入 <a href="user-profile.html">个人中心</a> 点击「立即签到」即可每日领取积分：每天 +5 分，连续签到每满 7 天额外 +10 分。积分当前用于展示与激励，更多积分玩法正在规划中。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cs-faq-item">
+                    <button class="cs-faq-question" type="button">
+                        <span>6. 我想提建议或反馈问题，怎么联系你们？</span>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="cs-faq-answer">
+                        <div class="cs-faq-answer-inner">
+                            你可以在 <a href="forum.html">论坛</a> 发帖交流，或到 <a href="user-profile.html">个人中心</a> 提交反馈（点「发送反馈」）。我们会认真阅读每一条建议，并持续优化工具箱。感谢你的支持！
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cs-faq-more">
+                    <p>没有找到你想要的答案？</p>
+                    <a href="forum.html" class="cs-faq-more-btn">
+                        <i data-lucide="message-circle"></i>
+                        前往论坛交流
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 全球公益 -->
+        <section id="welfare" class="cs-welfare-section">
+            <h2 class="cs-section-title">全球<span class="gradient-text">公益</span></h2>
+            <p class="cs-section-desc">
+                这个世界还有很多需要帮助的人。你可以通过以下国际公益组织，为教育、医疗、环保、儿童保护等事业贡献力量。
+                每一份善意，都在让世界变得更美好。
+            </p>
+
+            <div class="cs-welfare-grid">
+                <div class="cs-welfare-card">
+                    <div class="cs-welfare-icon unesco">
+                        <i data-lucide="globe"></i>
+                    </div>
+                    <div class="cs-welfare-name">联合国教科文组织</div>
+                    <div class="cs-welfare-desc">促进教育、科学和文化方面的国际合作，推动可持续发展。</div>
+                    <a href="https://www.unesco.org/zh" target="_blank" rel="noopener" class="cs-welfare-link">
+                        <span>了解更多</span>
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="cs-welfare-card">
+                    <div class="cs-welfare-icon unicef">
+                        <i data-lucide="baby"></i>
+                    </div>
+                    <div class="cs-welfare-name">联合国儿童基金会</div>
+                    <div class="cs-welfare-desc">为全球贫困儿童提供医疗、教育和保护，守护每个孩子的未来。</div>
+                    <a href="https://www.unicef.cn/" target="_blank" rel="noopener" class="cs-welfare-link">
+                        <span>了解更多</span>
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="cs-welfare-card">
+                    <div class="cs-welfare-icon who">
+                        <i data-lucide="heart-pulse"></i>
+                    </div>
+                    <div class="cs-welfare-name">世界卫生组织</div>
+                    <div class="cs-welfare-desc">致力于全球公共卫生事业，帮助各国应对健康挑战，建设更健康的世界。</div>
+                    <a href="https://www.who.int/zh" target="_blank" rel="noopener" class="cs-welfare-link">
+                        <span>了解更多</span>
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="cs-welfare-card">
+                    <div class="cs-welfare-icon wwf">
+                        <i data-lucide="leaf"></i>
+                    </div>
+                    <div class="cs-welfare-name">世界自然基金会</div>
+                    <div class="cs-welfare-desc">保护自然环境和濒危物种，推动人与自然和谐共存。</div>
+                    <a href="https://www.wwfchina.org/" target="_blank" rel="noopener" class="cs-welfare-link">
+                        <span>了解更多</span>
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="cs-welfare-card">
+                    <div class="cs-welfare-icon redcross">
+                        <i data-lucide="heart"></i>
+                    </div>
+                    <div class="cs-welfare-name">红十字会</div>
+                    <div class="cs-welfare-desc">在世界各地提供人道主义援助，帮助受灾害和冲突影响的人们。</div>
+                    <a href="https://www.redcross.org.cn/" target="_blank" rel="noopener" class="cs-welfare-link">
+                        <span>了解更多</span>
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="cs-welfare-card">
+                    <div class="cs-welfare-icon givewell">
+                        <i data-lucide="gift"></i>
+                    </div>
+                    <div class="cs-welfare-name">GiveWell 公益平台</div>
+                    <div class="cs-welfare-desc">高效筛选和推荐最值得捐赠的公益项目，让你的每一分钱发挥最大价值。</div>
+                    <a href="https://www.givewell.org/" target="_blank" rel="noopener" class="cs-welfare-link">
+                        <span>了解更多</span>
+                        <i data-lucide="arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 贡献方式 -->
+        <section class="cs-contribute-section">
+            <h2 class="cs-section-title">如何<span class="gradient-text">贡献</span></h2>
+            <p class="cs-section-desc">
+                公益不只是捐款，每个人都可以用自己的方式为世界带来改变。
+            </p>
+
+            <div class="cs-contribute-grid">
+                <div class="cs-contribute-card">
+                    <div class="cs-contribute-icon">
+                        <i data-lucide="coins"></i>
+                    </div>
+                    <div class="cs-contribute-title">经济捐赠</div>
+                    <div class="cs-contribute-desc">向信誉良好的公益组织捐款，支持他们的项目和运营。</div>
+                </div>
+                <div class="cs-contribute-card">
+                    <div class="cs-contribute-icon">
+                        <i data-lucide="users"></i>
+                    </div>
+                    <div class="cs-contribute-title">志愿参与</div>
+                    <div class="cs-contribute-desc">加入志愿服务，用你的时间和技能直接帮助他人。</div>
+                </div>
+                <div class="cs-contribute-card">
+                    <div class="cs-contribute-icon">
+                        <i data-lucide="book-open"></i>
+                    </div>
+                    <div class="cs-contribute-title">知识分享</div>
+                    <div class="cs-contribute-desc">支教、在线教育、翻译等，用知识改变命运。</div>
+                </div>
+                <div class="cs-contribute-card">
+                    <div class="cs-contribute-icon">
+                        <i data-lucide="recycle"></i>
+                    </div>
+                    <div class="cs-contribute-title">环保行动</div>
+                    <div class="cs-contribute-desc">低碳生活、垃圾分类、植树造林，守护地球家园。</div>
+                </div>
+                <div class="cs-contribute-card">
+                    <div class="cs-contribute-icon">
+                        <i data-lucide="message-circle-heart"></i>
+                    </div>
+                    <div class="cs-contribute-title">传播善意</div>
+                    <div class="cs-contribute-desc">分享公益故事，让更多人关注社会问题并参与其中。</div>
+                </div>
+                <div class="cs-contribute-card">
+                    <div class="cs-contribute-icon">
+                        <i data-lucide="hand-heart"></i>
+                    </div>
+                    <div class="cs-contribute-title">身边小事</div>
+                    <div class="cs-contribute-desc">帮助身边有需要的人，善举不分大小，温暖就在身边。</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="cs-cta-section">
+            <div class="cs-cta-card">
+                <h3 class="cs-cta-title">让我们一起改变世界</h3>
+                <p class="cs-cta-text">
+                    如果常见问题没有解决你的疑惑，欢迎前往论坛或提交反馈告诉我们。
+                    同时也别忘了看看全球有哪些公益项目正在等待你的帮助，善意不分多少，行动就是力量。
+                </p>
+                <a href="https://www.unicef.cn/" target="_blank" rel="noopener" class="cs-cta-btn">
+                    <i data-lucide="heart"></i>
+                    <span>立即了解全球公益</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #1D4ED8, #0284C7);">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <span>在线工具箱</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <script>
+        if (window.lucide) lucide.createIcons();
+
+        // FAQ 手风琴
+        (function() {
+            var items = document.querySelectorAll('.cs-faq-item');
+            items.forEach(function(item) {
+                var q = item.querySelector('.cs-faq-question');
+                var a = item.querySelector('.cs-faq-answer');
+                q.addEventListener('click', function() {
+                    var isOpen = item.classList.contains('open');
+                    // 关闭所有
+                    items.forEach(function(it) {
+                        it.classList.remove('open');
+                        it.querySelector('.cs-faq-answer').style.maxHeight = '0';
+                    });
+                    // 打开当前
+                    if (!isOpen) {
+                        item.classList.add('open');
+                        a.style.maxHeight = a.scrollHeight + 'px';
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

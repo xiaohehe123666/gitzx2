@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 图片互转 - 图片转 Base64 在线工具</title>
+    <meta name="description" content="免费在线 Base64 图片转换工具：图片转 Base64 字符串、Base64 转图片，支持 PNG/JPG/WebP，一键复制，开发调试必备">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .b64-hero { padding: 7rem 0 2rem; text-align: center; }
+    .b64-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(2, 132, 199, 0.1); color: #0284C7; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .b64-hero .hero-badge i { width: 16px; height: 16px; }
+    .b64-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .b64-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .b64-section { padding: 1rem 0 2rem; }
+    .b64-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-lg); max-width: 760px; margin: 0 auto; }
+    .b64-tabs { display: flex; gap: 0.25rem; padding: 1rem 1.5rem 0; border-bottom: 1px solid var(--border); }
+    .b64-tab { border: none; background: transparent; padding: 0.7rem 1.2rem; border-radius: 12px 12px 0 0; font-family: inherit; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+    .b64-tab i { width: 16px; height: 16px; }
+    .b64-tab:hover { color: var(--text); }
+    .b64-tab.active { color: #0284C7; border-bottom-color: #0284C7; background: rgba(2, 132, 199, 0.05); }
+    .b64-panel { padding: 1.5rem; display: none; }
+    .b64-panel.active { display: block; animation: tbFadeIn .25s ease; }
+
+    .b64-dropzone { border: 2px dashed var(--border); border-radius: 16px; padding: 2rem 1.25rem; text-align: center; cursor: pointer; transition: all .25s ease; background: var(--bg); }
+    .b64-dropzone:hover, .b64-dropzone.drag { border-color: #0284C7; background: rgba(2, 132, 199, 0.05); }
+    .b64-dropzone i { width: 40px; height: 40px; color: var(--text-light); margin-bottom: 0.65rem; }
+    .b64-dropzone p { color: var(--text-secondary); font-size: 0.9rem; }
+    .b64-dropzone strong { color: #0284C7; }
+
+    .b64-textarea { width: 100%; min-height: 160px; border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem 1rem; font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace; font-size: 0.78rem; line-height: 1.6; resize: vertical; background: var(--bg); color: var(--text); }
+    .b64-preview-img { max-width: 260px; max-height: 260px; border-radius: 12px; border: 1px solid var(--border); margin-top: 1rem; display: none; background: #fff; }
+    .b64-actions { display: flex; gap: 0.75rem; margin-top: 1.1rem; flex-wrap: wrap; }
+    .b64-btn { padding: 0.7rem 1.3rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s; }
+    .b64-btn i { width: 16px; height: 16px; }
+    .b64-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .b64-btn-primary { background: linear-gradient(135deg, #0284C7, #38BDF8); color: #fff; border: none; }
+    .b64-btn-primary:hover { box-shadow: 0 6px 16px rgba(2, 132, 199, 0.3); }
+    .b64-meta { font-size: 0.8rem; color: var(--text-light); margin-top: 0.75rem; }
+    .b64-hint { font-size: 0.78rem; color: var(--text-light); margin-top: 1rem; line-height: 1.7; }
+
+    @media (max-width: 768px) {
+        .b64-hero { padding: 6rem 0 1.5rem; }
+        .b64-hero h1 { font-size: 1.85rem; }
+        .b64-tabs { padding: 0.75rem 1rem 0; }
+        .b64-panel { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #0284C7, #38BDF8);">
+                    <i data-lucide="image"></i>
+                </div>
+                <span class="logo-text">Base64 图片互转</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#base64-image" class="nav-link active">Base64 图片</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="b64-hero">
+            <div class="hero-badge"><i data-lucide="image"></i><span>图片 ⇄ Base64 · 一键互转</span></div>
+            <h1 class="hero-title">Base64 <span class="gradient-text" style="background:linear-gradient(135deg,#0284C7,#38BDF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">图片互转</span></h1>
+            <p class="hero-description">把图片转成 Base64 字符串嵌入代码，或把 Base64 还原成图片，开发调试场景常用。</p>
+        </section>
+
+        <section id="base64-image" class="b64-section">
+            <div class="container">
+                <div class="b64-card">
+                    <div class="b64-tabs">
+                        <button type="button" class="b64-tab active" data-tab="to"><i data-lucide="upload"></i>图片 → Base64</button>
+                        <button type="button" class="b64-tab" data-tab="from"><i data-lucide="download"></i>Base64 → 图片</button>
+                    </div>
+
+                    <div class="b64-panel active" id="panel-to">
+                        <div class="b64-dropzone" id="dz-b64to">
+                            <i data-lucide="image-plus"></i>
+                            <p><strong>点击选择图片</strong> 或拖拽到此处</p>
+                            <p style="margin-top:0.3rem;font-size:0.8rem;">支持 PNG / JPG / WebP，最大 10MB</p>
+                        </div>
+                        <input type="file" id="file-b64to" accept="image/*" hidden>
+                        <textarea class="b64-textarea" id="b64to-out" readonly placeholder="转换结果将显示在这里…" style="margin-top:1rem;"></textarea>
+                        <div class="b64-meta" id="b64to-meta"></div>
+                        <div class="b64-actions">
+                            <button type="button" class="b64-btn b64-btn-primary" id="btn-b64to-copy"><i data-lucide="copy"></i>复制 Base64</button>
+                            <button type="button" class="b64-btn" id="btn-b64to-download"><i data-lucide="download"></i>下载 .txt</button>
+                        </div>
+                    </div>
+
+                    <div class="b64-panel" id="panel-from">
+                        <textarea class="b64-textarea" id="b64from-in" placeholder="粘贴 Base64 字符串，支持带前缀：&#10;data:image/png;base64,iVBORw0KGgo…&#10;或纯 Base64 内容（需选择图片类型）"></textarea>
+                        <div class="b64-field" style="margin-top:0.75rem;">
+                            <select id="b64from-type" style="padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:0.85rem;background:var(--bg);color:var(--text);">
+                                <option value="auto">自动识别</option>
+                                <option value="image/png">PNG</option>
+                                <option value="image/jpeg">JPG</option>
+                                <option value="image/webp">WebP</option>
+                                <option value="image/gif">GIF</option>
+                            </select>
+                        </div>
+                        <img class="b64-preview-img" id="b64from-preview" alt="预览">
+                        <div class="b64-actions">
+                            <button type="button" class="b64-btn b64-btn-primary" id="btn-b64from-show"><i data-lucide="eye"></i>预览图片</button>
+                            <button type="button" class="b64-btn" id="btn-b64from-download"><i data-lucide="download"></i>下载图片</button>
+                        </div>
+                        <p class="b64-hint">提示：Base64 字符串可通过 <code>data:image/png;base64,前缀</code> 直接用于 HTML 的 img src、CSS 背景图或小程序 image 组件。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #0284C7, #38BDF8);">
+                    <i data-lucide="image"></i>
+                </div>
+                <span>Base64 图片互转</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        var tabs = document.querySelectorAll('.b64-tab');
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                tabs.forEach(function(t) { t.classList.remove('active'); });
+                tab.classList.add('active');
+                document.querySelectorAll('.b64-panel').forEach(function(p) { p.classList.remove('active'); });
+                document.getElementById('panel-' + tab.getAttribute('data-tab')).classList.add('active');
+            });
+        });
+
+        /* 图片 → Base64 */
+        var lastDataUrl = '';
+        var dz = document.getElementById('dz-b64to');
+        var input = document.getElementById('file-b64to');
+        dz.addEventListener('click', function() { input.click(); });
+        dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag'); });
+        dz.addEventListener('dragleave', function() { dz.classList.remove('drag'); });
+        dz.addEventListener('drop', function(e) {
+            e.preventDefault(); dz.classList.remove('drag');
+            if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); }
+        });
+        input.addEventListener('change', function() {
+            if (!this.files.length) return;
+            var f = this.files[0];
+            if (f.size > 10 * 1024 * 1024) { showToast('图片超过 10MB', 'error'); return; }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                lastDataUrl = e.target.result;
+                document.getElementById('b64to-out').value = lastDataUrl;
+                var len = lastDataUrl.length;
+                document.getElementById('b64to-meta').textContent = f.name + ' · ' + (f.size / 1024).toFixed(1) + ' KB · Base64 长度 ' + len.toLocaleString();
+                showToast('转换完成', 'success');
+            };
+            reader.readAsDataURL(f);
+        });
+        document.getElementById('btn-b64to-copy').addEventListener('click', function() {
+            var v = document.getElementById('b64to-out').value;
+            if (!v) { showToast('请先上传图片', 'error'); return; }
+            navigator.clipboard.writeText(v).then(function() { showToast('已复制', 'success'); }).catch(function() {
+                var ta = document.getElementById('b64to-out');
+                ta.select(); document.execCommand('copy');
+                showToast('已复制', 'success');
+            });
+        });
+        document.getElementById('btn-b64to-download').addEventListener('click', function() {
+            var v = document.getElementById('b64to-out').value;
+            if (!v) { showToast('请先上传图片', 'error'); return; }
+            var blob = new Blob([v], { type: 'text/plain;charset=utf-8' });
+            var u = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = u; a.download = 'image_base64.txt';
+            document.body.appendChild(a); a.click(); a.remove();
+        });
+
+        /* Base64 → 图片 */
+        function getDataUrl() {
+            var raw = document.getElementById('b64from-in').value.trim();
+            if (!raw) { showToast('请先粘贴 Base64 内容', 'error'); return null; }
+            if (raw.startsWith('data:image/')) return raw;
+            var type = document.getElementById('b64from-type').value;
+            var mime = type === 'auto' ? 'image/png' : type;
+            return 'data:' + mime + ';base64,' + raw;
+        }
+        document.getElementById('btn-b64from-show').addEventListener('click', function() {
+            var url = getDataUrl();
+            if (!url) return;
+            var img = document.getElementById('b64from-preview');
+            img.src = url;
+            img.style.display = 'block';
+            img.onerror = function() { img.style.display = 'none'; showToast('图片解析失败：Base64 内容无效', 'error'); };
+        });
+        document.getElementById('btn-b64from-download').addEventListener('click', function() {
+            var url = getDataUrl();
+            if (!url) return;
+            var a = document.createElement('a');
+            var mime = url.split(';')[0].split(':')[1] || 'image/png';
+            var ext = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' }[mime] || 'png';
+            a.href = url;
+            a.download = 'decoded_image.' + ext;
+            document.body.appendChild(a); a.click(); a.remove();
+            showToast('已下载图片', 'success');
+        });
+    })();
+    </script>
+</body>
+</html>

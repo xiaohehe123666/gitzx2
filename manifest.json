@@ -1,0 +1,31 @@
+{
+  "name": "在线工具箱 - 全能实用工具集",
+  "short_name": "工具箱",
+  "description": "免费在线工具箱：PDF处理、图片工具、开发工具、网络工具、生活实用工具一站式服务",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F172A",
+  "theme_color": "#6366F1",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icons/favicon.ico",
+      "sizes": "16x16 32x32 48x48",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/A_modern_flat_app_icon_for_an__2026-08-13T03-24-33.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/A_modern_flat_app_icon_for_an__2026-08-13T03-24-33.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

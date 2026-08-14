@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>屏幕录制 - 录屏工具</title>
+    <meta name="description" content="免费在线屏幕录制工具：录制屏幕画面、窗口或浏览器标签页，支持麦克风声音，录制的视频直接在浏览器本地处理，无需安装软件">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .sr-hero { padding: 7rem 0 2rem; text-align: center; }
+    .sr-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(217, 119, 6, 0.1); color: #D97706; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .sr-hero .hero-badge i { width: 16px; height: 16px; }
+    .sr-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .sr-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .sr-section { padding: 1rem 0 2rem; }
+    .sr-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-lg); max-width: 720px; margin: 0 auto; }
+
+    .sr-preview { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .sr-preview video { width: 100%; height: 100%; object-fit: contain; }
+    .sr-preview-empty { color: var(--text-secondary); font-size: 0.9rem; text-align: center; padding: 1rem; }
+    .sr-preview-empty i { width: 36px; height: 36px; margin-bottom: 0.5rem; opacity: 0.5; display: block; margin-left: auto; margin-right: auto; }
+
+    .sr-status { margin-top: 0.85rem; text-align: center; font-size: 0.9rem; font-weight: 600; }
+    .sr-status.recording { color: #EF4444; }
+    .sr-status.idle { color: var(--text-secondary); }
+
+    .sr-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 1.1rem; }
+    .sr-opt { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 0.75rem 0.95rem; }
+    .sr-opt label { display: block; font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.35rem; }
+    .sr-opt select, .sr-opt input { width: 100%; padding: 0.5rem 0.6rem; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); color: var(--text); font-family: inherit; font-size: 0.88rem; box-sizing: border-box; }
+
+    .sr-actions { display: flex; gap: 0.75rem; margin-top: 1.1rem; justify-content: center; flex-wrap: wrap; }
+    .sr-btn { padding: 0.7rem 1.5rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s; }
+    .sr-btn i { width: 16px; height: 16px; }
+    .sr-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .sr-btn-record { background: linear-gradient(135deg, #EF4444, #F97316); color: #fff; border: none; }
+    .sr-btn-record:hover { box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3); }
+    .sr-btn-stop { background: linear-gradient(135deg, #2563EB, #3B82F6); color: #fff; border: none; }
+    .sr-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .sr-tips { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.85rem; }
+    .sr-tip { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1rem 1.1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+    .sr-tip i { width: 18px; height: 18px; color: var(--primary-light); flex-shrink: 0; margin-top: 2px; }
+    .sr-tip b { display: block; font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .sr-tip p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; }
+
+    @media (max-width: 768px) {
+        .sr-hero { padding: 6rem 0 1.5rem; }
+        .sr-hero h1 { font-size: 1.85rem; }
+        .sr-card { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="monitor-play"></i>
+                </div>
+                <span class="logo-text">屏幕录制</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#recorder" class="nav-link active">屏幕录制</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="sr-hero">
+            <div class="hero-badge"><i data-lucide="monitor-play"></i><span>无需安装 · 浏览器直接录制</span></div>
+            <h1 class="hero-title">在线<span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">屏幕录制</span></h1>
+            <p class="hero-description">录制屏幕、窗口或标签页画面，可选麦克风声音，录制完成直接下载。</p>
+        </section>
+
+        <section id="recorder" class="sr-section">
+            <div class="container">
+                <div class="sr-card">
+                    <div class="sr-preview" id="previewBox">
+                        <div class="sr-preview-empty" id="emptyPreview">
+                            <i data-lucide="video"></i>
+                            <div>点击"开始录制"后选择要录制的屏幕内容<br>录制画面将实时显示在这里</div>
+                        </div>
+                        <video id="previewVideo" autoplay playsinline muted style="display:none;"></video>
+                    </div>
+
+                    <div class="sr-status idle" id="statusBox">准备就绪</div>
+
+                    <div class="sr-options">
+                        <div class="sr-opt">
+                            <label>录制画面</label>
+                            <select id="sourceType">
+                                <option value="screen">整个屏幕</option>
+                                <option value="window">窗口</option>
+                                <option value="tab">浏览器标签页</option>
+                            </select>
+                        </div>
+                        <div class="sr-opt">
+                            <label>麦克风声音</label>
+                            <select id="micSelect">
+                                <option value="yes">录制（推荐）</option>
+                                <option value="no">不录制</option>
+                            </select>
+                        </div>
+                        <div class="sr-opt">
+                            <label>视频格式</label>
+                            <select id="formatSelect">
+                                <option value="video/webm">WebM（推荐）</option>
+                                <option value="video/mp4">MP4（部分浏览器支持）</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="sr-actions">
+                        <button type="button" class="sr-btn sr-btn-record" id="btnStart"><i data-lucide="circle"></i>开始录制</button>
+                        <button type="button" class="sr-btn sr-btn-stop" id="btnStop" disabled><i data-lucide="square"></i>停止录制</button>
+                        <button type="button" class="sr-btn" id="btnDownload" disabled><i data-lucide="download"></i>下载视频</button>
+                    </div>
+                </div>
+
+                <div class="sr-tips">
+                    <div class="sr-tip"><i data-lucide="shield-check"></i><div><b>隐私安全</b><p>录制全程在浏览器本地完成，视频不会上传到任何服务器。</p></div></div>
+                    <div class="sr-tip"><i data-lucide="info"></i><div><b>浏览器支持</b><p>推荐使用 Chrome、Edge 浏览器，Firefox 支持有限。</p></div></div>
+                    <div class="sr-tip"><i data-lucide="clock"></i><div><b>录制时长</b><p>建议控制在 10 分钟以内，超长录制可能生成较大文件。</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="monitor-play"></i>
+                </div>
+                <span>屏幕录制</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        var mediaRecorder = null;
+        var recordedChunks = [];
+        var stream = null;
+        var startTime = 0;
+        var timerInterval = null;
+
+        function setStatus(text, cls) {
+            var el = document.getElementById('statusBox');
+            el.textContent = text;
+            el.className = 'sr-status ' + (cls || 'idle');
+        }
+
+        document.getElementById('btnStart').addEventListener('click', async function() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                showToast('当前浏览器不支持屏幕录制（需 Chrome/Edge）', 'error');
+                return;
+            }
+
+            var sourceType = document.getElementById('sourceType').value;
+            var displayOptions = { video: { cursor: 'always' }, audio: true };
+            if (sourceType === 'tab') displayOptions.video = true;
+
+            try {
+                var displayStream = await navigator.mediaDevices.getDisplayMedia(displayOptions);
+
+                var useMic = document.getElementById('micSelect').value === 'yes';
+                var micStream = null;
+                if (useMic) {
+                    try {
+                        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    } catch (e) {
+                        showToast('麦克风权限被拒绝，将仅录制画面', 'error');
+                    }
+                }
+
+                var tracks = displayStream.getVideoTracks();
+                if (!tracks.length) { showToast('未获取到画面轨道', 'error'); return; }
+
+                var tracksList = displayStream.getTracks();
+                if (micStream) tracksList = tracksList.concat(micStream.getTracks());
+
+                stream = new MediaStream(tracksList);
+
+                var video = document.getElementById('previewVideo');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('emptyPreview').style.display = 'none';
+
+                recordedChunks = [];
+                var format = document.getElementById('formatSelect').value;
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: (format === 'video/mp4' && MediaRecorder.isTypeSupported('video/mp4')) ? 'video/mp4' : 'video/webm'
+                });
+                mediaRecorder.ondataavailable = function(e) {
+                    if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+                };
+                mediaRecorder.onstop = function() {
+                    setStatus('录制完成');
+                    document.getElementById('btnDownload').disabled = false;
+                };
+                mediaRecorder.start(200);
+
+                startTime = Date.now();
+                timerInterval = setInterval(function() {
+                    var s = Math.floor((Date.now() - startTime) / 1000);
+                    var m = Math.floor(s / 60);
+                    var sec = String(s % 60).padStart(2, '0');
+                    setStatus('● 录制中 ' + m + ':' + sec, 'recording');
+                }, 500);
+
+                setStatus('● 录制中 0:00', 'recording');
+                document.getElementById('btnStart').disabled = true;
+                document.getElementById('btnStop').disabled = false;
+
+                // 用户关闭分享面板时停止
+                displayStream.getVideoTracks()[0].addEventListener('ended', function() {
+                    stopRecording();
+                });
+
+            } catch (err) {
+                if (err && err.name === 'NotAllowedError') {
+                    showToast('已取消屏幕选择或权限被拒绝', 'error');
+                } else {
+                    showToast('无法开始录制：' + (err.message || '未知错误'), 'error');
+                }
+            }
+        });
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            if (stream) { stream.getTracks().forEach(function(t) { t.stop(); }); stream = null; }
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            document.getElementById('btnStart').disabled = false;
+            document.getElementById('btnStop').disabled = true;
+        }
+
+        document.getElementById('btnStop').addEventListener('click', function() {
+            stopRecording();
+            setStatus('录制已停止');
+        });
+
+        document.getElementById('btnDownload').addEventListener('click', function() {
+            if (!recordedChunks.length) { showToast('没有可下载的录制内容', 'error'); return; }
+            var blob = new Blob(recordedChunks, { type: 'video/webm' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'screen-recording-' + new Date().toISOString().replace(/[:.]/g, '-') + '.webm';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
+            showToast('视频已开始下载', 'success');
+        });
+    })();
+    </script>
+</body>
+</html>

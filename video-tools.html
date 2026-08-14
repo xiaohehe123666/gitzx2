@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频工具箱 - 视频压缩 / 视频转音频 / 视频截取</title>
+    <meta name="description" content="免费在线视频处理工具：视频压缩减小体积、视频转音频提取背景音乐、视频片段截取，全部在浏览器本地完成，不上传服务器">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .vt-hero { padding: 7rem 0 2rem; text-align: center; }
+    .vt-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(220, 38, 38, 0.1); color: #DC2626; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .vt-hero .hero-badge i { width: 16px; height: 16px; }
+    .vt-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .vt-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .vt-section { padding: 1rem 0 2rem; }
+    .vt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-lg); }
+    .vt-tabs { display: flex; gap: 0.25rem; padding: 1rem 1.5rem 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .vt-tab { border: none; background: transparent; padding: 0.7rem 1.2rem; border-radius: 12px 12px 0 0; font-family: inherit; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+    .vt-tab i { width: 16px; height: 16px; }
+    .vt-tab:hover { color: var(--text); }
+    .vt-tab.active { color: #DC2626; border-bottom-color: #DC2626; background: rgba(220, 38, 38, 0.05); }
+    .vt-panel { padding: 1.5rem; display: none; }
+    .vt-panel.active { display: block; animation: tbFadeIn .25s ease; }
+
+    .vt-dropzone { border: 2px dashed var(--border); border-radius: 16px; padding: 2.5rem 1.5rem; text-align: center; cursor: pointer; transition: all .25s ease; background: var(--bg); }
+    .vt-dropzone:hover, .vt-dropzone.drag { border-color: var(--primary-light); background: rgba(59, 130, 246, 0.04); }
+    .vt-dropzone i { width: 42px; height: 42px; color: var(--text-light); margin-bottom: 0.75rem; }
+    .vt-dropzone p { color: var(--text-secondary); font-size: 0.9rem; }
+    .vt-dropzone strong { color: var(--primary-light); }
+
+    .vt-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+    .vt-field label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem; font-weight: 600; }
+    .vt-field select, .vt-field input { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
+    .vt-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .vt-btn { padding: 0.7rem 1.4rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s ease; }
+    .vt-btn i { width: 16px; height: 16px; }
+    .vt-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .vt-btn-primary { background: linear-gradient(135deg, #DC2626, #EF4444); color: #fff; border: none; }
+    .vt-btn-primary:hover { box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3); }
+    .vt-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .vt-preview { margin-top: 1.25rem; }
+    .vt-preview video { width: 100%; max-height: 380px; border-radius: 14px; background: #000; }
+    .vt-progress-wrap { margin-top: 1rem; }
+    .vt-progress { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+    .vt-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #DC2626, #EF4444); border-radius: 999px; transition: width .15s ease; }
+    .vt-progress-text { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; }
+    .vt-result { margin-top: 1rem; padding: 1rem 1.25rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 14px; font-size: 0.9rem; display: none; }
+    .vt-result.show { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .vt-result i { color: var(--success); width: 18px; height: 18px; }
+    .vt-result a { margin-left: auto; }
+
+    .vt-timeline { position: relative; margin-top: 1.25rem; padding: 0 6px; }
+    .vt-time-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem; }
+    .vt-range input[type=range] { width: 100%; accent-color: #DC2626; }
+    .vt-hint { font-size: 0.8rem; color: var(--text-light); margin-top: 0.75rem; line-height: 1.6; }
+
+    @media (max-width: 768px) {
+        .vt-hero { padding: 6rem 0 1.5rem; }
+        .vt-hero h1 { font-size: 1.85rem; }
+        .vt-tabs { padding: 0.75rem 1rem 0; }
+        .vt-panel { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #DC2626, #EF4444);">
+                    <i data-lucide="video"></i>
+                </div>
+                <span class="logo-text">视频工具箱</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#video-tools" class="nav-link active">视频工具</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="vt-hero">
+            <div class="hero-badge"><i data-lucide="video"></i><span>视频压缩 · 转音频 · 片段截取</span></div>
+            <h1 class="hero-title">视频<span class="gradient-text" style="background:linear-gradient(135deg,#DC2626,#EF4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">工具箱</span></h1>
+            <p class="hero-description">压缩视频体积、提取音频、截取精彩片段，全部在浏览器本地完成，文件不会上传到任何服务器。</p>
+        </section>
+
+        <section id="video-tools" class="vt-section">
+            <div class="container">
+                <div class="vt-card">
+                    <div class="vt-tabs">
+                        <button type="button" class="vt-tab active" data-tab="compress"><i data-lucide="minimize-2"></i>压缩视频</button>
+                        <button type="button" class="vt-tab" data-tab="audio"><i data-lucide="music"></i>视频转音频</button>
+                        <button type="button" class="vt-tab" data-tab="trim"><i data-lucide="scissors"></i>截取片段</button>
+                    </div>
+
+                    <!-- 压缩 -->
+                    <div class="vt-panel active" id="panel-compress">
+                        <div class="vt-dropzone" id="dz-compress">
+                            <i data-lucide="upload-cloud"></i>
+                            <p><strong>点击选择视频</strong> 或拖拽文件到此处</p>
+                            <p style="margin-top:0.3rem;font-size:0.8rem;">支持 MP4 / WebM / MOV，最大 500MB</p>
+                        </div>
+                        <input type="file" id="file-compress" accept="video/*" hidden>
+                        <div class="vt-row">
+                            <div class="vt-field"><label>输出分辨率</label>
+                                <select id="compress-res"><option value="same">保持原分辨率</option><option value="1280">720P (1280)</option><option value="854">480P (854)</option><option value="640">360P (640)</option></select>
+                            </div>
+                            <div class="vt-field"><label>画质</label>
+                                <select id="compress-quality"><option value="0.4">高压缩（体积最小）</option><option value="0.7" selected>均衡</option><option value="0.9">高清（体积较大）</option></select>
+                            </div>
+                            <div class="vt-field"><label>帧率</label>
+                                <select id="compress-fps"><option value="30">30 FPS</option><option value="24">24 FPS</option><option value="15">15 FPS（更小）</option></select>
+                            </div>
+                        </div>
+                        <div class="vt-preview" id="preview-compress" style="display:none;"><video controls muted></video></div>
+                        <div class="vt-actions">
+                            <button type="button" class="vt-btn vt-btn-primary" id="btn-compress"><i data-lucide="play"></i>开始压缩</button>
+                            <button type="button" class="vt-btn" id="btn-compress-reset"><i data-lucide="refresh-cw"></i>重新选择</button>
+                        </div>
+                        <div class="vt-progress-wrap" id="progress-compress" style="display:none;">
+                            <div class="vt-progress"><div class="vt-progress-bar" id="bar-compress"></div></div>
+                            <div class="vt-progress-text" id="text-compress"></div>
+                        </div>
+                        <div class="vt-result" id="result-compress"><i data-lucide="check-circle"></i><span id="result-compress-info"></span><a id="dl-compress" class="vt-btn vt-btn-primary" download><i data-lucide="download"></i>下载</a></div>
+                    </div>
+
+                    <!-- 转音频 -->
+                    <div class="vt-panel" id="panel-audio">
+                        <div class="vt-dropzone" id="dz-audio">
+                            <i data-lucide="file-audio"></i>
+                            <p><strong>点击选择视频</strong> 或拖拽文件到此处</p>
+                            <p style="margin-top:0.3rem;font-size:0.8rem;">提取视频中的音轨，导出为高保真 WAV 音频</p>
+                        </div>
+                        <input type="file" id="file-audio" accept="video/*,audio/*" hidden>
+                        <div class="vt-preview" id="preview-audio" style="display:none;"></div>
+                        <div class="vt-actions">
+                            <button type="button" class="vt-btn vt-btn-primary" id="btn-audio"><i data-lucide="music"></i>提取音频</button>
+                            <button type="button" class="vt-btn" id="btn-audio-reset"><i data-lucide="refresh-cw"></i>重新选择</button>
+                        </div>
+                        <div class="vt-progress-wrap" id="progress-audio" style="display:none;">
+                            <div class="vt-progress"><div class="vt-progress-bar" id="bar-audio"></div></div>
+                            <div class="vt-progress-text" id="text-audio"></div>
+                        </div>
+                        <div class="vt-result" id="result-audio"><i data-lucide="check-circle"></i><span id="result-audio-info"></span><a id="dl-audio" class="vt-btn vt-btn-primary" download><i data-lucide="download"></i>下载 WAV</a></div>
+                        <p class="vt-hint">提示：导出为无损 WAV 格式，兼容所有播放器和剪辑软件。</p>
+                    </div>
+
+                    <!-- 截取 -->
+                    <div class="vt-panel" id="panel-trim">
+                        <div class="vt-dropzone" id="dz-trim">
+                            <i data-lucide="scissors"></i>
+                            <p><strong>点击选择视频</strong> 或拖拽文件到此处</p>
+                            <p style="margin-top:0.3rem;font-size:0.8rem;">截取视频中任意时间段的内容</p>
+                        </div>
+                        <input type="file" id="file-trim" accept="video/*" hidden>
+                        <div class="vt-preview" id="preview-trim" style="display:none;"><video controls></video></div>
+                        <div class="vt-timeline" id="timeline" style="display:none;">
+                            <div class="vt-time-info"><span id="trim-start-display">00:00</span><span id="trim-end-display">00:00</span></div>
+                            <div class="vt-range">
+                                <input type="range" id="trim-start" min="0" max="0" step="0.1" value="0">
+                                <input type="range" id="trim-end" min="0" max="0" step="0.1" value="0">
+                            </div>
+                            <p class="vt-hint">拖动两个滑块设定开始 / 结束时间，可先用预览视频定位。</p>
+                        </div>
+                        <div class="vt-actions" id="trim-actions" style="display:none;">
+                            <button type="button" class="vt-btn vt-btn-primary" id="btn-trim"><i data-lucide="play"></i>截取片段</button>
+                            <button type="button" class="vt-btn" id="btn-trim-reset"><i data-lucide="refresh-cw"></i>重新选择</button>
+                        </div>
+                        <div class="vt-progress-wrap" id="progress-trim" style="display:none;">
+                            <div class="vt-progress"><div class="vt-progress-bar" id="bar-trim"></div></div>
+                            <div class="vt-progress-text" id="text-trim"></div>
+                        </div>
+                        <div class="vt-result" id="result-trim"><i data-lucide="check-circle"></i><span id="result-trim-info"></span><a id="dl-trim" class="vt-btn vt-btn-primary" download><i data-lucide="download"></i>下载</a></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #DC2626, #EF4444);">
+                    <i data-lucide="video"></i>
+                </div>
+                <span>视频工具箱</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+        var curFile = {};
+
+        /* ===== Tab 切换 ===== */
+        var tabs = document.querySelectorAll('.vt-tab');
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                tabs.forEach(function(t) { t.classList.remove('active'); });
+                tab.classList.add('active');
+                document.querySelectorAll('.vt-panel').forEach(function(p) { p.classList.remove('active'); });
+                document.getElementById('panel-' + tab.getAttribute('data-tab')).classList.add('active');
+            });
+        });
+
+        /* ===== 拖拽 / 选择文件 ===== */
+        function bindDropzone(dzId, inputId) {
+            var dz = document.getElementById(dzId);
+            var input = document.getElementById(inputId);
+            dz.addEventListener('click', function() { input.click(); });
+            dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag'); });
+            dz.addEventListener('dragleave', function() { dz.classList.remove('drag'); });
+            dz.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dz.classList.remove('drag');
+                if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); }
+            });
+        }
+        bindDropzone('dz-compress', 'file-compress');
+        bindDropzone('dz-audio', 'file-audio');
+        bindDropzone('dz-trim', 'file-trim');
+
+        function fmtBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+        function fmtTime(s) {
+            s = Math.max(0, Math.floor(s));
+            var m = Math.floor(s / 60), sec = s % 60;
+            return (m < 10 ? '0' + m : m) + ':' + (sec < 10 ? '0' + sec : sec);
+        }
+        function showResult(id, info, downloadUrl, filename) {
+            var el = document.getElementById(id);
+            el.classList.add('show');
+            document.getElementById(id + '-info').textContent = info;
+            var a = el.querySelector('a');
+            a.href = downloadUrl;
+            a.download = filename;
+        }
+        function setProgress(barId, textId, pct, text) {
+            document.getElementById(barId).style.width = pct + '%';
+            var t = document.getElementById(textId);
+            t.textContent = text;
+        }
+
+        /* ===== 视频压缩 ===== */
+        var compressFile = null;
+        document.getElementById('file-compress').addEventListener('change', function() {
+            if (!this.files.length) return;
+            compressFile = this.files[0];
+            var video = document.querySelector('#preview-compress video');
+            video.src = URL.createObjectURL(compressFile);
+            document.getElementById('preview-compress').style.display = 'block';
+            document.getElementById('result-compress').classList.remove('show');
+            document.getElementById('progress-compress').style.display = 'none';
+        });
+        document.getElementById('btn-compress-reset').addEventListener('click', function() {
+            compressFile = null;
+            document.getElementById('file-compress').value = '';
+            document.getElementById('preview-compress').style.display = 'none';
+            document.getElementById('result-compress').classList.remove('show');
+        });
+        document.getElementById('btn-compress').addEventListener('click', function() {
+            if (!compressFile) { showToast('请先选择视频文件', 'error'); return; }
+            var btn = this;
+            btn.disabled = true;
+            document.getElementById('progress-compress').style.display = 'block';
+            document.getElementById('result-compress').classList.remove('show');
+            var res = document.getElementById('compress-res').value;
+            var quality = parseFloat(document.getElementById('compress-quality').value);
+            var fps = parseInt(document.getElementById('compress-fps').value);
+
+            var url = URL.createObjectURL(compressFile);
+            var video = document.createElement('video');
+            video.src = url;
+            video.muted = true;
+            video.playsInline = true;
+            video.onloadedmetadata = function() {
+                var outW = res === 'same' ? video.videoWidth : parseInt(res);
+                var outH = Math.round(video.videoHeight * outW / video.videoWidth);
+                if (outH % 2) outH -= 1;
+                var canvas = document.createElement('canvas');
+                canvas.width = outW;
+                canvas.height = outH;
+                var ctx = canvas.getContext('2d');
+                var stream = canvas.captureStream(fps);
+                var mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : (MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : '');
+                var rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: Math.round(quality * 6000000) } : {});
+                var chunks = [];
+                rec.ondataavailable = function(e) { if (e.data.size) chunks.push(e.data); };
+                rec.onstop = function() {
+                    btn.disabled = false;
+                    var blob = new Blob(chunks, { type: rec.mimeType || 'video/webm' });
+                    var u = URL.createObjectURL(blob);
+                    var name = compressFile.name.replace(/\.[^.]+$/, '') + '_compressed.webm';
+                    showResult('result-compress', '压缩完成：' + fmtBytes(blob.size) + '（原 ' + fmtBytes(compressFile.size) + '，约 ' + Math.round(blob.size / compressFile.size * 100) + '%）', u, name);
+                    document.getElementById('progress-compress').style.display = 'none';
+                    video.pause();
+                    URL.revokeObjectURL(url);
+                };
+                video.onended = function() { rec.stop(); };
+                var raf;
+                function draw() {
+                    if (!video.paused && !video.ended) {
+                        ctx.drawImage(video, 0, 0, outW, outH);
+                        var p = Math.round(video.currentTime / video.duration * 100);
+                        setProgress('bar-compress', 'text-compress', p, '压缩中… ' + fmtTime(video.currentTime) + ' / ' + fmtTime(video.duration));
+                    }
+                    raf = requestAnimationFrame(draw);
+                }
+                rec.start(200);
+                video.play();
+                draw();
+            };
+            video.onerror = function() {
+                btn.disabled = false;
+                document.getElementById('progress-compress').style.display = 'none';
+                showToast('视频格式不支持，请换用 MP4/WebM', 'error');
+            };
+        });
+
+        /* ===== 视频转音频 (WAV) ===== */
+        var audioFile = null;
+        document.getElementById('file-audio').addEventListener('change', function() {
+            if (!this.files.length) return;
+            audioFile = this.files[0];
+            document.getElementById('result-audio').classList.remove('show');
+            document.getElementById('progress-audio').style.display = 'none';
+            var info = document.createElement('p');
+            info.style.cssText = 'font-size:.9rem;color:var(--text-secondary);padding:.75rem 1rem;background:var(--bg);border-radius:12px;';
+            info.textContent = '已选择：' + audioFile.name + '（' + fmtBytes(audioFile.size) + '）';
+            var pv = document.getElementById('preview-audio');
+            pv.innerHTML = '';
+            pv.appendChild(info);
+            pv.style.display = 'block';
+        });
+        document.getElementById('btn-audio-reset').addEventListener('click', function() {
+            audioFile = null;
+            document.getElementById('file-audio').value = '';
+            document.getElementById('preview-audio').style.display = 'none';
+            document.getElementById('result-audio').classList.remove('show');
+        });
+
+        function audioBufferToWav(buffer) {
+            var numCh = buffer.numberOfChannels;
+            var sampleRate = buffer.sampleRate;
+            var length = buffer.length * numCh * 2;
+            var ab = new ArrayBuffer(44 + length);
+            var view = new DataView(ab);
+            function writeString(offset, str) {
+                for (var i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+            }
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + length, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numCh, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * numCh * 2, true);
+            view.setUint16(32, numCh * 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, length, true);
+            var chans = [];
+            for (var c = 0; c < numCh; c++) chans.push(buffer.getChannelData(c));
+            var offset = 44;
+            for (var i = 0; i < buffer.length; i++) {
+                for (var c = 0; c < numCh; c++) {
+                    var s = Math.max(-1, Math.min(1, chans[c][i]));
+                    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                    offset += 2;
+                }
+            }
+            return ab;
+        }
+
+        document.getElementById('btn-audio').addEventListener('click', function() {
+            if (!audioFile) { showToast('请先选择视频文件', 'error'); return; }
+            var btn = this;
+            btn.disabled = true;
+            document.getElementById('progress-audio').style.display = 'block';
+            document.getElementById('result-audio').classList.remove('show');
+            setProgress('bar-audio', 'text-audio', 10, '正在解码音轨…');
+            setTimeout(function() { doExtract(); }, 30);
+            function doExtract() {
+                try {
+                    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioFile.arrayBuffer().then(function(buf) {
+                        return ctx.decodeAudioData(buf);
+                    }).then(function(audioBuffer) {
+                        setProgress('bar-audio', 'text-audio', 70, '正在编码 WAV…');
+                        setTimeout(function() {
+                            var wav = audioBufferToWav(audioBuffer);
+                            var blob = new Blob([wav], { type: 'audio/wav' });
+                            var u = URL.createObjectURL(blob);
+                            var name = audioFile.name.replace(/\.[^.]+$/, '') + '.wav';
+                            btn.disabled = false;
+                            document.getElementById('progress-audio').style.display = 'none';
+                            showResult('result-audio', '提取成功：' + fmtBytes(blob.size) + '，采样率 ' + audioBuffer.sampleRate + ' Hz', u, name);
+                            ctx.close();
+                        }, 50);
+                    }).catch(function() {
+                        btn.disabled = false;
+                        document.getElementById('progress-audio').style.display = 'none';
+                        showToast('解码失败：该视频音轨编码可能不受浏览器支持', 'error');
+                    });
+                } catch (e) {
+                    btn.disabled = false;
+                    document.getElementById('progress-audio').style.display = 'none';
+                    showToast('当前浏览器不支持音频解码', 'error');
+                }
+            }
+        });
+
+        /* ===== 视频截取 ===== */
+        var trimFile = null, trimVideo = null;
+        document.getElementById('file-trim').addEventListener('change', function() {
+            if (!this.files.length) return;
+            trimFile = this.files[0];
+            trimVideo = document.querySelector('#preview-trim video');
+            var url = URL.createObjectURL(trimFile);
+            trimVideo.src = url;
+            trimVideo.onloadedmetadata = function() {
+                var dur = trimVideo.duration;
+                var start = document.getElementById('trim-start');
+                var end = document.getElementById('trim-end');
+                start.max = end.max = dur;
+                end.value = dur;
+                start.value = 0;
+                document.getElementById('trim-start-display').textContent = '00:00';
+                document.getElementById('trim-end-display').textContent = fmtTime(dur);
+                document.getElementById('preview-trim').style.display = 'block';
+                document.getElementById('timeline').style.display = 'block';
+                document.getElementById('trim-actions').style.display = 'flex';
+                document.getElementById('result-trim').classList.remove('show');
+            };
+        });
+        function syncTrim(slider, other, displayId, isStart) {
+            var v = parseFloat(slider.value);
+            if (isStart && v >= parseFloat(other.value)) { v = parseFloat(other.value) - 0.1; slider.value = Math.max(0, v); }
+            if (!isStart && v <= parseFloat(other.value)) { v = parseFloat(other.value) + 0.1; slider.value = v; }
+            document.getElementById(displayId).textContent = fmtTime(slider.value);
+        }
+        document.getElementById('trim-start').addEventListener('input', function() {
+            syncTrim(this, document.getElementById('trim-end'), 'trim-start-display', true);
+        });
+        document.getElementById('trim-end').addEventListener('input', function() {
+            syncTrim(this, document.getElementById('trim-start'), 'trim-end-display', false);
+        });
+        document.getElementById('btn-trim-reset').addEventListener('click', function() {
+            trimFile = null;
+            document.getElementById('file-trim').value = '';
+            document.getElementById('preview-trim').style.display = 'none';
+            document.getElementById('timeline').style.display = 'none';
+            document.getElementById('trim-actions').style.display = 'none';
+            document.getElementById('result-trim').classList.remove('show');
+        });
+        document.getElementById('btn-trim').addEventListener('click', function() {
+            if (!trimFile) { showToast('请先选择视频文件', 'error'); return; }
+            var start = parseFloat(document.getElementById('trim-start').value);
+            var end = parseFloat(document.getElementById('trim-end').value);
+            if (end - start < 0.3) { showToast('片段太短（至少 0.3 秒）', 'error'); return; }
+            var btn = this;
+            btn.disabled = true;
+            document.getElementById('progress-trim').style.display = 'block';
+            document.getElementById('result-trim').classList.remove('show');
+            setProgress('bar-trim', 'text-trim', 0, '准备中…');
+
+            var video = document.createElement('video');
+            video.src = URL.createObjectURL(trimFile);
+            video.muted = false;
+            video.playsInline = true;
+            video.onloadedmetadata = function() {
+                var mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : (MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : '');
+                var stream = video.captureStream();
+                var rec = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
+                var chunks = [];
+                rec.ondataavailable = function(e) { if (e.data.size) chunks.push(e.data); };
+                rec.onstop = function() {
+                    btn.disabled = false;
+                    var blob = new Blob(chunks, { type: rec.mimeType || 'video/webm' });
+                    var u = URL.createObjectURL(blob);
+                    var name = trimFile.name.replace(/\.[^.]+$/, '') + '_' + fmtTime(start).replace(':', '-') + '_' + fmtTime(end).replace(':', '-') + '.webm';
+                    showResult('result-trim', '截取完成：' + fmtTime(end - start) + '，' + fmtBytes(blob.size), u, name);
+                    document.getElementById('progress-trim').style.display = 'none';
+                    video.pause();
+                };
+                video.ontimeupdate = function() {
+                    var p = Math.round((video.currentTime - start) / (end - start) * 100);
+                    setProgress('bar-trim', 'text-trim', Math.min(100, p), '截取中… ' + fmtTime(video.currentTime - start) + ' / ' + fmtTime(end - start));
+                    if (video.currentTime >= end) rec.stop();
+                };
+                rec.start(200);
+                video.currentTime = start;
+                video.play();
+            };
+            video.onerror = function() {
+                btn.disabled = false;
+                document.getElementById('progress-trim').style.display = 'none';
+                showToast('视频格式不支持', 'error');
+            };
+        });
+
+        /* ===== Toast ===== */
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            if (window.lucide) lucide.createIcons();
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+    })();
+    </script>
+</body>
+</html>

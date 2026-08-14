@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF压缩 - 在线免费PDF压缩工具</title>
+    <meta name="description" content="免费在线PDF压缩工具，减小PDF文件体积，浏览器本地压缩，保护隐私">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #0891B2, #06B6D4);">
+                    <i data-lucide="file-minus"></i>
+                </div>
+                <span class="logo-text">PDF压缩</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#compressor" class="nav-link active">压缩</a>
+                <a href="#features" class="nav-link">特性</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="shield-check"></i>
+                    <span>本地压缩 · 隐私安全</span>
+                </div>
+                <h1 class="hero-title">
+                    PDF压缩<br>
+                    <span class="gradient-text">减小文件体积</span>
+                </h1>
+                <p class="hero-description">
+                    免费在线压缩PDF文件，减小PDF体积便于邮件发送和网络传输，
+                    所有压缩在您的浏览器本地完成，确保您的隐私安全。
+                </p>
+            </div>
+        </section>
+
+        <section id="compressor" class="converter-section">
+            <div class="converter-card">
+                <div class="converter-header">
+                    <h2>上传PDF文件</h2>
+                    <p>支持单个文件，最大50MB</p>
+                </div>
+
+                <div id="uploadZone" class="upload-zone">
+                    <div class="upload-content">
+                        <div class="upload-icon" style="background: linear-gradient(135deg, #0891B2, #06B6D4);">
+                            <i data-lucide="file-minus"></i>
+                        </div>
+                        <h3>拖拽PDF文件到此处</h3>
+                        <p>或者点击按钮选择文件</p>
+                        <button id="selectBtn" class="btn-select" style="background: linear-gradient(135deg, #0891B2, #06B6D4);">
+                            <i data-lucide="folder-open"></i>
+                            选择PDF
+                        </button>
+                        <input type="file" id="fileInput" accept="application/pdf" hidden>
+                    </div>
+                </div>
+
+                <div id="compressPanel" class="compress-panel hidden">
+                    <div class="file-info-card">
+                        <div class="file-info-icon">
+                            <i data-lucide="file-text"></i>
+                        </div>
+                        <div class="file-info-details">
+                            <h4 id="fileName">document.pdf</h4>
+                            <div class="file-info-meta">
+                                <span id="fileSize">0 KB</span>
+                                <span class="meta-sep">·</span>
+                                <span id="filePages">0 页</span>
+                            </div>
+                        </div>
+                        <button id="removeBtn" class="btn-icon">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+
+                    <div class="compress-controls">
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>压缩级别</span>
+                            </label>
+                            <div class="compress-levels">
+                                <button class="level-btn" data-level="low">
+                                    <i data-lucide="minimize"></i>
+                                    <span>轻度压缩</span>
+                                    <small>体积减小小</small>
+                                </button>
+                                <button class="level-btn active" data-level="medium">
+                                    <i data-lucide="scale"></i>
+                                    <span>标准压缩</span>
+                                    <small>推荐使用</small>
+                                </button>
+                                <button class="level-btn" data-level="high">
+                                    <i data-lucide="zoom-out"></i>
+                                    <span>强力压缩</span>
+                                    <small>体积减小大</small>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>图像质量</span>
+                                <span id="qualityValue" class="control-value">70%</span>
+                            </label>
+                            <input type="range" id="qualitySlider" min="10" max="100" value="70" class="slider" style="--slider-color: #06B6D4;">
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>最大分辨率</span>
+                                <span id="dpiValue" class="control-value">150 DPI</span>
+                            </label>
+                            <input type="range" id="dpiSlider" min="72" max="300" value="150" step="18" class="slider" style="--slider-color: #06B6D4;">
+                        </div>
+                    </div>
+
+                    <button id="compressBtn" class="btn-process" style="background: linear-gradient(135deg, #0891B2, #06B6D4);">
+                        <i data-lucide="zap"></i>
+                        开始压缩
+                    </button>
+
+                    <div id="progressSection" class="progress-section hidden">
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                        <p id="progressText" class="progress-text">正在压缩中...</p>
+                    </div>
+
+                    <div id="resultSection" class="result-section hidden">
+                        <div class="result-card">
+                            <div class="result-icon">
+                                <i data-lucide="check-circle"></i>
+                            </div>
+                            <h3>压缩完成！</h3>
+                            <div class="result-stats">
+                                <div class="result-stat">
+                                    <span class="stat-label">原始大小</span>
+                                    <span id="originalSizeResult" class="stat-value">0 KB</span>
+                                </div>
+                                <div class="result-stat">
+                                    <span class="stat-label">压缩后</span>
+                                    <span id="compressedSizeResult" class="stat-value">0 KB</span>
+                                </div>
+                                <div class="result-stat highlight">
+                                    <span class="stat-label">压缩率</span>
+                                    <span id="compressRatioResult" class="stat-value">0%</span>
+                                </div>
+                                <div class="result-stat">
+                                    <span class="stat-label">节省空间</span>
+                                    <span id="savedSpaceResult" class="stat-value">0 KB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="result-actions">
+                            <button id="downloadBtn" class="btn-download" style="background: linear-gradient(135deg, #0891B2, #06B6D4);">
+                                <i data-lucide="download"></i>
+                                下载压缩PDF
+                            </button>
+                            <button id="resetBtn" class="btn-secondary">
+                                <i data-lucide="refresh-cw"></i>
+                                重新选择
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="errorSection" class="error-section hidden">
+                        <div class="error-icon">
+                            <i data-lucide="alert-circle"></i>
+                        </div>
+                        <h3>压缩失败</h3>
+                        <p id="errorMessage">请重试或更换文件</p>
+                        <button id="retryBtn" class="btn-secondary">
+                            <i data-lucide="rotate-ccw"></i>
+                            重新尝试
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、高效、安全的PDF压缩工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 182, 212, 0.1)); color: #0891B2;">
+                        <i data-lucide="lock"></i>
+                    </div>
+                    <h3>隐私保护</h3>
+                    <p>所有压缩在浏览器本地完成，文件不会上传到任何服务器</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 182, 212, 0.1)); color: #0891B2;">
+                        <i data-lucide="sliders"></i>
+                    </div>
+                    <h3>多级压缩</h3>
+                    <p>轻度、标准、强力三档压缩，配合质量和分辨率精细控制</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 182, 212, 0.1)); color: #0891B2;">
+                        <i data-lucide="file-check"></i>
+                    </div>
+                    <h3>质量可控</h3>
+                    <p>自由调整图像质量和分辨率，找到体积与质量的平衡点</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 182, 212, 0.1)); color: #0891B2;">
+                        <i data-lucide="mail"></i>
+                    </div>
+                    <h3>邮件友好</h3>
+                    <p>压缩后文件更小，便于通过邮件发送和在线分享</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 182, 212, 0.1)); color: #0891B2;">
+                        <i data-lucide="zap"></i>
+                    </div>
+                    <h3>快速高效</h3>
+                    <p>基于PDF解析和重编码技术，压缩速度快</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 182, 212, 0.1)); color: #0891B2;">
+                        <i data-lucide="globe"></i>
+                    </div>
+                    <h3>跨平台</h3>
+                    <p>支持Windows、Mac、Linux系统，无需安装软件</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #0891B2, #06B6D4);">
+                    <i data-lucide="file-minus"></i>
+                </div>
+                <span>PDF压缩</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var state = {
+            file: null,
+            pdfDocument: null,
+            compressedBlob: null,
+            compressedFileName: '',
+            level: 'medium',
+            quality: 0.7,
+            dpi: 150
+        };
+
+        var els = {
+            uploadZone: document.getElementById('uploadZone'),
+            fileInput: document.getElementById('fileInput'),
+            selectBtn: document.getElementById('selectBtn'),
+            compressPanel: document.getElementById('compressPanel'),
+            fileName: document.getElementById('fileName'),
+            fileSize: document.getElementById('fileSize'),
+            filePages: document.getElementById('filePages'),
+            removeBtn: document.getElementById('removeBtn'),
+            qualitySlider: document.getElementById('qualitySlider'),
+            qualityValue: document.getElementById('qualityValue'),
+            dpiSlider: document.getElementById('dpiSlider'),
+            dpiValue: document.getElementById('dpiValue'),
+            levelBtns: document.querySelectorAll('.level-btn'),
+            compressBtn: document.getElementById('compressBtn'),
+            progressSection: document.getElementById('progressSection'),
+            progressFill: document.getElementById('progressFill'),
+            progressText: document.getElementById('progressText'),
+            resultSection: document.getElementById('resultSection'),
+            originalSizeResult: document.getElementById('originalSizeResult'),
+            compressedSizeResult: document.getElementById('compressedSizeResult'),
+            compressRatioResult: document.getElementById('compressRatioResult'),
+            savedSpaceResult: document.getElementById('savedSpaceResult'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            errorSection: document.getElementById('errorSection'),
+            errorMessage: document.getElementById('errorMessage'),
+            retryBtn: document.getElementById('retryBtn')
+        };
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        function show(el) { el.classList.remove('hidden'); }
+        function hide(el) { el.classList.add('hidden'); }
+
+        function showError(msg) {
+            els.errorMessage.textContent = msg;
+            show(els.errorSection);
+            hide(els.resultSection);
+            hide(els.progressSection);
+        }
+
+        function setProgress(percent, text) {
+            els.progressFill.style.width = percent + '%';
+            els.progressText.textContent = text || ('正在压缩中...');
+        }
+
+        function setLevel(level) {
+            state.level = level;
+            els.levelBtns.forEach(function(btn) {
+                btn.classList.toggle('active', btn.getAttribute('data-level') === level);
+            });
+
+            if (level === 'low') {
+                els.qualitySlider.value = 90;
+                els.dpiSlider.value = 220;
+            } else if (level === 'medium') {
+                els.qualitySlider.value = 70;
+                els.dpiSlider.value = 150;
+            } else {
+                els.qualitySlider.value = 40;
+                els.dpiSlider.value = 96;
+            }
+
+            updateQualityDisplay();
+        }
+
+        function updateQualityDisplay() {
+            els.qualityValue.textContent = els.qualitySlider.value + '%';
+            els.dpiValue.textContent = els.dpiSlider.value + ' DPI';
+            state.quality = parseInt(els.qualitySlider.value, 10) / 100;
+            state.dpi = parseInt(els.dpiSlider.value, 10);
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+
+            if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                showError('请选择PDF文件');
+                return;
+            }
+
+            if (file.size > 50 * 1048576) {
+                showError('文件大小超过50MB限制');
+                return;
+            }
+
+            hide(els.errorSection);
+            hide(els.resultSection);
+            state.file = file;
+
+            els.fileName.textContent = file.name;
+            els.fileSize.textContent = formatSize(file.size);
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var typedArray = new Uint8Array(e.target.result);
+
+                if (window.pdfjsLib) {
+                    pdfjsLib.getDocument({ data: typedArray }).promise.then(function(pdf) {
+                        state.pdfDocument = pdf;
+                        els.filePages.textContent = pdf.numPages + ' 页';
+                        show(els.compressPanel);
+                    }).catch(function(err) {
+                        showError('PDF文件解析失败：' + (err.message || '未知错误'));
+                    });
+                } else {
+                    els.filePages.textContent = '未知';
+                    show(els.compressPanel);
+                }
+            };
+            reader.onerror = function() {
+                showError('文件读取失败');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function compressPDF() {
+            if (!state.file) return;
+
+            hide(els.errorSection);
+            hide(els.resultSection);
+            show(els.progressSection);
+            setProgress(5, '准备压缩...');
+
+            var quality = state.quality;
+            var dpi = state.dpi;
+
+            var fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                var typedArray = new Uint8Array(e.target.result);
+
+                pdfjsLib.getDocument({ data: typedArray }).promise.then(function(pdf) {
+                    state.pdfDocument = pdf;
+                    var totalPages = pdf.numPages;
+                    var scale = dpi / 72;
+                    var isMultiPage = totalPages > 1;
+
+                    var canvasPromises = [];
+                    for (var i = 1; i <= totalPages; i++) {
+                        (function(pageNum) {
+                            canvasPromises.push(
+                                pdf.getPage(pageNum).then(function(page) {
+                                    var viewport = page.getViewport({ scale: scale });
+                                    var canvas = document.createElement('canvas');
+                                    canvas.width = viewport.width;
+                                    canvas.height = viewport.height;
+                                    var ctx = canvas.getContext('2d');
+                                    return page.render({
+                                        canvasContext: ctx,
+                                        viewport: viewport
+                                    }).promise.then(function() {
+                                        return { canvas: canvas, width: viewport.width, height: viewport.height };
+                                    });
+                                })
+                            );
+                        })(i);
+                    }
+
+                    Promise.all(canvasPromises).then(function(results) {
+                        setProgress(50, '生成压缩PDF...');
+
+                        try {
+                            var jsPDF = new jspdf.jsPDF({
+                                orientation: results[0].width > results[0].height ? 'landscape' : 'portrait',
+                                unit: 'px',
+                                format: [results[0].width, results[0].height]
+                            });
+
+                            results.forEach(function(result, idx) {
+                                if (idx > 0) {
+                                    jsPDF.addPage([result.width, result.height], result.width > result.height ? 'landscape' : 'portrait');
+                                }
+
+                                var imgData = result.canvas.toDataURL('image/jpeg', quality);
+                                jsPDF.addImage(imgData, 'JPEG', 0, 0, result.width, result.height);
+
+                                setProgress(50 + Math.round((idx + 1) / results.length * 40), '压缩页面 ' + (idx + 1) + '/' + results.length);
+                            });
+
+                            setProgress(92, '生成文件...');
+
+                            var blob = jsPDF.output('blob');
+
+                            setProgress(100, '完成！');
+
+                            state.compressedBlob = blob;
+                            var baseName = state.file.name.replace(/\.[^/.]+$/, '');
+                            state.compressedFileName = baseName + '_compressed.pdf';
+
+                            setTimeout(showResult, 400);
+                        } catch (err) {
+                            showError('压缩失败：' + (err.message || '未知错误'));
+                        }
+                    }).catch(function(err) {
+                        showError('页面渲染失败：' + (err.message || '未知错误'));
+                    });
+                }).catch(function(err) {
+                    showError('PDF解析失败：' + (err.message || '未知错误'));
+                });
+            };
+            fileReader.onerror = function() {
+                showError('文件读取失败');
+            };
+            fileReader.readAsArrayBuffer(state.file);
+        }
+
+        function showResult() {
+            hide(els.progressSection);
+            show(els.resultSection);
+
+            var originalSize = state.file.size;
+            var compressedSize = state.compressedBlob.size;
+            var ratio = 0;
+            var saved = 0;
+
+            if (originalSize > 0) {
+                ratio = Math.round((1 - compressedSize / originalSize) * 100);
+                saved = originalSize - compressedSize;
+                if (ratio < 0) ratio = 0;
+                if (saved < 0) saved = 0;
+            }
+
+            els.originalSizeResult.textContent = formatSize(originalSize);
+            els.compressedSizeResult.textContent = formatSize(compressedSize);
+            els.compressRatioResult.textContent = ratio + '%';
+            els.savedSpaceResult.textContent = formatSize(saved);
+        }
+
+        function download() {
+            if (!state.compressedBlob) return;
+            if (window.saveAs) {
+                saveAs(state.compressedBlob, state.compressedFileName);
+            } else {
+                var url = URL.createObjectURL(state.compressedBlob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = state.compressedFileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        function reset() {
+            state.file = null;
+            state.pdfDocument = null;
+            state.compressedBlob = null;
+            state.compressedFileName = '';
+            els.fileInput.value = '';
+            hide(els.compressPanel);
+            hide(els.progressSection);
+            hide(els.resultSection);
+            hide(els.errorSection);
+        }
+
+        function removeFile() {
+            reset();
+        }
+
+        function setupEvents() {
+            els.selectBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                els.fileInput.click();
+            });
+
+            els.uploadZone.addEventListener('click', function(e) {
+                if (e.target === els.selectBtn || e.target.closest('.btn-select')) return;
+                els.fileInput.click();
+            });
+
+            els.fileInput.addEventListener('change', function(e) {
+                if (e.target.files[0]) handleFile(e.target.files[0]);
+            });
+
+            els.uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+
+            els.uploadZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+
+            els.uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+            });
+
+            els.removeBtn.addEventListener('click', removeFile);
+
+            els.levelBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    setLevel(this.getAttribute('data-level'));
+                });
+            });
+
+            els.qualitySlider.addEventListener('input', updateQualityDisplay);
+            els.dpiSlider.addEventListener('input', updateQualityDisplay);
+
+            els.compressBtn.addEventListener('click', compressPDF);
+            els.downloadBtn.addEventListener('click', download);
+            els.resetBtn.addEventListener('click', reset);
+            els.retryBtn.addEventListener('click', reset);
+        }
+
+        function init() {
+            updateQualityDisplay();
+            setupEvents();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

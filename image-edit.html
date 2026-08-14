@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片裁剪与水印 - 在线工具箱</title>
+    <meta name="description" content="免费在线图片裁剪与水印工具，支持自由裁剪、比例裁剪、文字水印、图片水印，纯前端 Canvas 实现，隐私安全">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        /* ============ 图片裁剪与水印页面专属样式 ============ */
+        .editor-section { padding: 3rem 0; }
+
+        .editor-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow: var(--shadow-xl);
+            padding: 2.5rem;
+            max-width: 1120px;
+            margin: 0 auto;
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+
+        .editor-header { text-align: center; margin-bottom: 2rem; }
+        .editor-header h2 { font-size: 1.75rem; color: var(--text); margin-bottom: 0.5rem; }
+        .editor-header p { color: var(--text-secondary); font-size: 0.95rem; }
+
+        .editor-panel { margin-top: 1.5rem; }
+
+        .editor-layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* 画布区 */
+        .editor-canvas-area {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem;
+            min-height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .canvas-stage {
+            position: relative;
+            display: inline-block;
+            line-height: 0;
+        }
+
+        #displayCanvas {
+            max-width: 100%;
+            border-radius: 8px;
+            display: block;
+            background:
+                linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
+                linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
+                linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+        }
+
+        /* 裁剪框 */
+        .crop-box {
+            position: absolute;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            cursor: move;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .crop-grid {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.45)),
+                linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.45)),
+                linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.45)),
+                linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0.45));
+            background-size: 1px 100%, 1px 100%, 100% 1px, 100% 1px;
+            background-position: 33.33% 0, 66.66% 0, 0 33.33%, 0 66.66%;
+            background-repeat: no-repeat;
+        }
+
+        .crop-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border: 1px solid var(--primary);
+            border-radius: 2px;
+            z-index: 2;
+        }
+        .crop-handle[data-handle="nw"] { top: -6px; left: -6px; cursor: nwse-resize; }
+        .crop-handle[data-handle="n"]  { top: -6px; left: calc(50% - 6px); cursor: ns-resize; }
+        .crop-handle[data-handle="ne"] { top: -6px; right: -6px; cursor: nesw-resize; }
+        .crop-handle[data-handle="e"]  { top: calc(50% - 6px); right: -6px; cursor: ew-resize; }
+        .crop-handle[data-handle="se"] { bottom: -6px; right: -6px; cursor: nwse-resize; }
+        .crop-handle[data-handle="s"]  { bottom: -6px; left: calc(50% - 6px); cursor: ns-resize; }
+        .crop-handle[data-handle="sw"] { bottom: -6px; left: -6px; cursor: nesw-resize; }
+        .crop-handle[data-handle="w"]  { top: calc(50% - 6px); left: -6px; cursor: ew-resize; }
+
+        .crop-size-label {
+            position: absolute;
+            top: -28px;
+            left: 0;
+            background: var(--primary);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            font-family: 'Space Grotesk', sans-serif;
+            line-height: 1.4;
+        }
+
+        .image-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            padding: 0 0.25rem;
+        }
+        .image-info strong { color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+        .image-info .info-tag {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: var(--bg); border: 1px solid var(--border);
+            padding: 0.25rem 0.6rem; border-radius: 8px;
+        }
+        .image-info .info-tag i { width: 14px; height: 14px; }
+
+        /* 控制面板 */
+        .editor-controls {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem;
+        }
+
+        .control-tabs {
+            display: flex;
+            gap: 0.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.25rem;
+            margin-bottom: 1rem;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 0.55rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+        .tab-btn i { width: 16px; height: 16px; }
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-content { animation: fadeIn 0.2s ease; }
+        .tab-content.hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1rem 1rem 1.15rem;
+            margin-bottom: 0.85rem;
+        }
+        .section-block:last-child { margin-bottom: 0; }
+        .section-block-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .ratio-options { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .ratio-btn {
+            padding: 0.4rem 0.7rem;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .ratio-btn:hover { border-color: var(--primary-light); color: var(--primary); }
+        .ratio-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .text-input, .number-input {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: var(--bg);
+            transition: border-color 0.2s ease;
+        }
+        .text-input:focus, .number-input:focus { outline: none; border-color: var(--primary-light); }
+
+        .wm-type-tabs {
+            display: flex;
+            gap: 0.25rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.2rem;
+            margin-bottom: 0.85rem;
+        }
+        .wm-type-btn {
+            flex: 1;
+            padding: 0.4rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.82rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+        }
+        .wm-type-btn i { width: 14px; height: 14px; }
+        .wm-type-btn.active { background: var(--bg-card); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+        .color-row { display: flex; align-items: center; gap: 0.5rem; }
+        .color-input {
+            width: 44px; height: 38px;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            background: var(--bg-card);
+        }
+        .color-input::-webkit-color-swatch-wrapper { padding: 3px; }
+        .color-input::-webkit-color-swatch { border: none; border-radius: 7px; }
+
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.4rem;
+            max-width: 150px;
+        }
+        .position-cell {
+            aspect-ratio: 1;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .position-cell::after {
+            content: '';
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--text-light);
+            transition: all 0.2s ease;
+        }
+        .position-cell:hover { border-color: var(--primary-light); }
+        .position-cell.active {
+            border-color: var(--primary);
+            background: rgba(30, 58, 138, 0.1);
+        }
+        .position-cell.active::after { background: var(--primary); transform: scale(1.3); }
+
+        .wm-image-upload {
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            background: var(--bg);
+        }
+        .wm-image-upload:hover { border-color: var(--primary-light); color: var(--primary); }
+        .wm-image-preview {
+            margin-top: 0.5rem;
+            max-height: 64px;
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .btn-apply {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+            border: none;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .btn-apply:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+        .btn-apply i { width: 18px; height: 18px; }
+
+        .btn-reset-small {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            width: 100%;
+            background: var(--bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 0.55rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .btn-reset-small:hover { border-color: var(--primary-light); color: var(--primary); }
+        .btn-reset-small i { width: 15px; height: 15px; }
+
+        .export-preview {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem;
+            text-align: center;
+            margin-bottom: 0.85rem;
+        }
+        .export-preview img {
+            max-width: 100%;
+            max-height: 140px;
+            border-radius: 8px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--text);
+            color: var(--bg-card);
+            padding: 0.7rem 1.4rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 900px) {
+            .editor-layout { grid-template-columns: 1fr; }
+            .editor-card { padding: 1.5rem; }
+        }
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon"><i data-lucide="wrench"></i></div>
+                <span class="logo-text">在线工具箱</span>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="crop"></i>
+                    <span>本地裁剪 · 水印 · 隐私安全</span>
+                </div>
+                <h1 class="hero-title">
+                    图片裁剪与<span class="gradient-text">水印工具</span>
+                </h1>
+                <p class="hero-description">
+                    基于 Canvas API 的纯前端图片处理工具，支持自由裁剪、比例裁剪、文字与图片水印，
+                    所有处理在浏览器本地完成，图片不会上传到任何服务器。
+                </p>
+            </div>
+        </section>
+
+        <section class="editor-section">
+            <div class="editor-card">
+                <div class="editor-header">
+                    <h2>上传图片</h2>
+                    <p>支持 PNG、JPG、WebP，最大 20MB</p>
+                </div>
+
+                <div id="uploadZone" class="upload-zone">
+                    <div class="upload-content">
+                        <div class="upload-icon">
+                            <i data-lucide="image-plus"></i>
+                        </div>
+                        <h3>拖拽图片到此处</h3>
+                        <p>或者点击按钮选择文件</p>
+                        <button id="selectBtn" class="btn-select">
+                            <i data-lucide="folder-open"></i>
+                            选择图片
+                        </button>
+                        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" hidden>
+                    </div>
+                </div>
+
+                <div id="editorPanel" class="editor-panel hidden">
+                    <div class="editor-layout">
+                        <div class="editor-canvas-area">
+                            <div class="canvas-wrapper" id="canvasWrapper">
+                                <div class="canvas-stage" id="canvasStage">
+                                    <canvas id="displayCanvas"></canvas>
+                                    <div class="crop-box" id="cropBox">
+                                        <div class="crop-grid"></div>
+                                        <div class="crop-size-label" id="cropSizeLabel">0×0</div>
+                                        <div class="crop-handle" data-handle="nw"></div>
+                                        <div class="crop-handle" data-handle="n"></div>
+                                        <div class="crop-handle" data-handle="ne"></div>
+                                        <div class="crop-handle" data-handle="e"></div>
+                                        <div class="crop-handle" data-handle="se"></div>
+                                        <div class="crop-handle" data-handle="s"></div>
+                                        <div class="crop-handle" data-handle="sw"></div>
+                                        <div class="crop-handle" data-handle="w"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="image-info">
+                                <span class="info-tag"><i data-lucide="image"></i> 当前尺寸 <strong id="currentDims">0×0</strong></span>
+                                <span class="info-tag"><i data-lucide="layers"></i> 原始尺寸 <strong id="originalDims">0×0</strong></span>
+                                <span class="info-tag"><i data-lucide="hard-drive"></i> <strong id="fileSize">0 KB</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="editor-controls">
+                            <div class="control-tabs">
+                                <button class="tab-btn active" data-tab="crop">
+                                    <i data-lucide="crop"></i> 裁剪
+                                </button>
+                                <button class="tab-btn" data-tab="watermark">
+                                    <i data-lucide="droplet"></i> 水印
+                                </button>
+                                <button class="tab-btn" data-tab="export">
+                                    <i data-lucide="download"></i> 导出
+                                </button>
+                            </div>
+
+                            <!-- 裁剪 -->
+                            <div class="tab-content" id="tabCrop">
+                                <div class="section-block">
+                                    <div class="section-block-title">裁剪比例</div>
+                                    <div class="ratio-options" id="ratioOptions">
+                                        <button class="ratio-btn active" data-ratio="free">自由</button>
+                                        <button class="ratio-btn" data-ratio="1:1">1:1</button>
+                                        <button class="ratio-btn" data-ratio="4:3">4:3</button>
+                                        <button class="ratio-btn" data-ratio="16:9">16:9</button>
+                                        <button class="ratio-btn" data-ratio="3:4">3:4</button>
+                                    </div>
+                                </div>
+                                <div class="section-block">
+                                    <div class="section-block-title">裁剪尺寸</div>
+                                    <div class="control-group" style="margin-bottom:0.75rem;">
+                                        <div class="control-label">
+                                            <span>裁剪框大小</span>
+                                            <span id="cropDimValue" class="control-value">0 × 0</span>
+                                        </div>
+                                    </div>
+                                    <button id="applyCropBtn" class="btn-apply">
+                                        <i data-lucide="check"></i> 应用裁剪
+                                    </button>
+                                    <button id="resetCropBtn" class="btn-reset-small" style="margin-top:0.5rem;">
+                                        <i data-lucide="maximize"></i> 重置裁剪框
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 水印 -->
+                            <div class="tab-content hidden" id="tabWatermark">
+                                <div class="wm-type-tabs">
+                                    <button class="wm-type-btn active" data-wm-type="text">
+                                        <i data-lucide="type"></i> 文字水印
+                                    </button>
+                                    <button class="wm-type-btn" data-wm-type="image">
+                                        <i data-lucide="image"></i> 图片水印
+                                    </button>
+                                </div>
+
+                                <!-- 文字水印 -->
+                                <div id="wmTextPanel">
+                                    <div class="section-block">
+                                        <div class="section-block-title">水印文字</div>
+                                        <input type="text" id="wmText" class="text-input" value="© 我的图片" placeholder="输入水印文字">
+                                    </div>
+                                    <div class="section-block">
+                                        <div class="control-group">
+                                            <label class="control-label">
+                                                <span>字体大小</span>
+                                                <span id="wmFontSizeValue" class="control-value">32px</span>
+                                            </label>
+                                            <input type="range" id="wmFontSize" min="10" max="200" value="32" class="slider">
+                                        </div>
+                                        <div class="control-group" style="margin-bottom:0;">
+                                            <label class="control-label"><span>颜色</span></label>
+                                            <div class="color-row">
+                                                <input type="color" id="wmColor" class="color-input" value="#FFFFFF">
+                                                <span id="wmColorValue" style="font-size:0.8rem;color:var(--text-secondary);font-family:'Space Grotesk',sans-serif;">#FFFFFF</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="section-block">
+                                        <div class="control-group">
+                                            <label class="control-label">
+                                                <span>透明度</span>
+                                                <span id="wmOpacityValue" class="control-value">60%</span>
+                                            </label>
+                                            <input type="range" id="wmOpacity" min="0" max="100" value="60" class="slider">
+                                        </div>
+                                        <div class="control-group" style="margin-bottom:0;">
+                                            <label class="control-label"><span>位置</span></label>
+                                            <div class="position-grid" id="wmTextPosition">
+                                                <div class="position-cell" data-pos="tl"></div>
+                                                <div class="position-cell" data-pos="tc"></div>
+                                                <div class="position-cell" data-pos="tr"></div>
+                                                <div class="position-cell" data-pos="ml"></div>
+                                                <div class="position-cell" data-pos="c"></div>
+                                                <div class="position-cell" data-pos="mr"></div>
+                                                <div class="position-cell" data-pos="bl"></div>
+                                                <div class="position-cell" data-pos="bc"></div>
+                                                <div class="position-cell active" data-pos="br"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 图片水印 -->
+                                <div id="wmImagePanel" class="hidden">
+                                    <div class="section-block">
+                                        <div class="section-block-title">水印图片</div>
+                                        <label class="wm-image-upload" for="wmFileInput">
+                                            <i data-lucide="upload" style="width:16px;height:16px;vertical-align:middle;"></i>
+                                            点击上传小图作为水印
+                                        </label>
+                                        <input type="file" id="wmFileInput" accept="image/*" hidden>
+                                        <img id="wmImagePreview" class="wm-image-preview hidden" alt="水印预览">
+                                    </div>
+                                    <div class="section-block">
+                                        <div class="control-group">
+                                            <label class="control-label">
+                                                <span>缩放（占图片宽度）</span>
+                                                <span id="wmImgScaleValue" class="control-value">30%</span>
+                                            </label>
+                                            <input type="range" id="wmImgScale" min="5" max="100" value="30" class="slider">
+                                        </div>
+                                        <div class="control-group" style="margin-bottom:0;">
+                                            <label class="control-label">
+                                                <span>透明度</span>
+                                                <span id="wmImgOpacityValue" class="control-value">60%</span>
+                                            </label>
+                                            <input type="range" id="wmImgOpacity" min="0" max="100" value="60" class="slider">
+                                        </div>
+                                    </div>
+                                    <div class="section-block">
+                                        <div class="control-group" style="margin-bottom:0;">
+                                            <label class="control-label"><span>位置</span></label>
+                                            <div class="position-grid" id="wmImagePosition">
+                                                <div class="position-cell" data-pos="tl"></div>
+                                                <div class="position-cell" data-pos="tc"></div>
+                                                <div class="position-cell" data-pos="tr"></div>
+                                                <div class="position-cell" data-pos="ml"></div>
+                                                <div class="position-cell" data-pos="c"></div>
+                                                <div class="position-cell" data-pos="mr"></div>
+                                                <div class="position-cell" data-pos="bl"></div>
+                                                <div class="position-cell" data-pos="bc"></div>
+                                                <div class="position-cell active" data-pos="br"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button id="applyWatermarkBtn" class="btn-apply">
+                                    <i data-lucide="check"></i> 应用水印
+                                </button>
+                            </div>
+
+                            <!-- 导出 -->
+                            <div class="tab-content hidden" id="tabExport">
+                                <div class="section-block">
+                                    <div class="section-block-title">预览</div>
+                                    <div class="export-preview">
+                                        <img id="exportPreview" alt="导出预览">
+                                    </div>
+                                </div>
+                                <div class="section-block">
+                                    <div class="control-group">
+                                        <label class="control-label"><span>导出格式</span></label>
+                                        <div class="format-options" id="formatOptions">
+                                            <button class="format-btn active" data-format="image/png">PNG</button>
+                                            <button class="format-btn" data-format="image/jpeg">JPG</button>
+                                            <button class="format-btn" data-format="image/webp">WEBP</button>
+                                        </div>
+                                    </div>
+                                    <div class="control-group" style="margin-bottom:0;">
+                                        <label class="control-label">
+                                            <span>质量</span>
+                                            <span id="qualityValue" class="control-value">90%</span>
+                                        </label>
+                                        <input type="range" id="qualitySlider" min="10" max="100" value="90" class="slider">
+                                    </div>
+                                </div>
+                                <button id="downloadBtn" class="btn-apply">
+                                    <i data-lucide="download"></i> 下载图片
+                                </button>
+                                <button id="reuploadBtn" class="btn-reset-small" style="margin-top:0.5rem;">
+                                    <i data-lucide="refresh-cw"></i> 重新上传
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="errorSection" class="error-section hidden">
+                    <div class="error-icon">
+                        <i data-lucide="alert-circle"></i>
+                    </div>
+                    <h3>处理失败</h3>
+                    <p id="errorMessage">请重试或更换文件</p>
+                    <button id="retryBtn" class="btn-secondary">
+                        <i data-lucide="rotate-ccw"></i>
+                        重新尝试
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、高效、安全的图片裁剪与水印工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="crop"></i></div>
+                    <h3>自由裁剪</h3>
+                    <p>拖拽裁剪框边角调整大小与位置，支持自由比例与 1:1、4:3、16:9、3:4 预设</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="type"></i></div>
+                    <h3>文字水印</h3>
+                    <p>自定义文字内容、字体大小、颜色与透明度，9 宫格位置任选</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="image"></i></div>
+                    <h3>图片水印</h3>
+                    <p>上传小图作为水印，可缩放与调整透明度，支持 9 宫格位置放置</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="file-image"></i></div>
+                    <h3>多格式导出</h3>
+                    <p>支持 PNG、JPG、WebP 格式下载，质量可调，满足不同场景</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="lock"></i></div>
+                    <h3>隐私保护</h3>
+                    <p>所有处理在浏览器本地完成，图片不会上传到任何服务器</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="smartphone"></i></div>
+                    <h3>响应式布局</h3>
+                    <p>适配桌面与移动端，支持触屏操作，随时随地处理图片</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #1D4ED8, #0284C7);">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <span>图片裁剪与水印</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var state = {
+            originalFile: null,
+            originalImage: null,
+            workingImage: null,
+            watermarkImage: null,
+            crop: { x: 0, y: 0, w: 0, h: 0 },
+            ratio: 'free',
+            watermarkApplied: false,
+            activeTab: 'crop',
+            wmType: 'text',
+            wm: {
+                text: '© 我的图片',
+                fontSize: 32,
+                color: '#FFFFFF',
+                opacity: 0.6,
+                position: 'br',
+                imgScale: 30,
+                imgOpacity: 0.6,
+                imgPosition: 'br'
+            },
+            exportFormat: 'image/png',
+            exportQuality: 90,
+            displayScale: 1,
+            drag: null
+        };
+
+        var els = {};
+
+        function $(id) { return document.getElementById(id); }
+
+        function bind() {
+            els = {
+                uploadZone: $('uploadZone'),
+                fileInput: $('fileInput'),
+                selectBtn: $('selectBtn'),
+                editorPanel: $('editorPanel'),
+                canvasWrapper: $('canvasWrapper'),
+                canvasStage: $('canvasStage'),
+                displayCanvas: $('displayCanvas'),
+                cropBox: $('cropBox'),
+                cropSizeLabel: $('cropSizeLabel'),
+                currentDims: $('currentDims'),
+                originalDims: $('originalDims'),
+                fileSize: $('fileSize'),
+                tabBtns: document.querySelectorAll('.tab-btn'),
+                ratioOptions: $('ratioOptions'),
+                cropDimValue: $('cropDimValue'),
+                applyCropBtn: $('applyCropBtn'),
+                resetCropBtn: $('resetCropBtn'),
+                wmTypeBtns: document.querySelectorAll('.wm-type-btn'),
+                wmTextPanel: $('wmTextPanel'),
+                wmImagePanel: $('wmImagePanel'),
+                wmText: $('wmText'),
+                wmFontSize: $('wmFontSize'),
+                wmFontSizeValue: $('wmFontSizeValue'),
+                wmColor: $('wmColor'),
+                wmColorValue: $('wmColorValue'),
+                wmOpacity: $('wmOpacity'),
+                wmOpacityValue: $('wmOpacityValue'),
+                wmTextPosition: $('wmTextPosition'),
+                wmFileInput: $('wmFileInput'),
+                wmImagePreview: $('wmImagePreview'),
+                wmImgScale: $('wmImgScale'),
+                wmImgScaleValue: $('wmImgScaleValue'),
+                wmImgOpacity: $('wmImgOpacity'),
+                wmImgOpacityValue: $('wmImgOpacityValue'),
+                wmImagePosition: $('wmImagePosition'),
+                applyWatermarkBtn: $('applyWatermarkBtn'),
+                exportPreview: $('exportPreview'),
+                formatOptions: $('formatOptions'),
+                qualitySlider: $('qualitySlider'),
+                qualityValue: $('qualityValue'),
+                downloadBtn: $('downloadBtn'),
+                reuploadBtn: $('reuploadBtn'),
+                errorSection: $('errorSection'),
+                errorMessage: $('errorMessage'),
+                retryBtn: $('retryBtn'),
+                toast: $('toast')
+            };
+        }
+
+        function show(el) { el.classList.remove('hidden'); }
+        function hide(el) { el.classList.add('hidden'); }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+        function showToast(msg) {
+            els.toast.textContent = msg;
+            els.toast.classList.add('show');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { els.toast.classList.remove('show'); }, 2000);
+        }
+
+        function showError(msg) {
+            els.errorMessage.textContent = msg;
+            show(els.errorSection);
+            hide(els.editorPanel);
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function parseRatio(ratio) {
+            if (ratio === '1:1') return 1;
+            if (ratio === '4:3') return 4 / 3;
+            if (ratio === '16:9') return 16 / 9;
+            if (ratio === '3:4') return 3 / 4;
+            return 1;
+        }
+
+        /* ============ 文件上传 ============ */
+        function handleFile(file) {
+            if (!file) return;
+            if (!file.type.match(/^image\/(png|jpeg|webp)$/)) {
+                showError('请选择 PNG、JPG 或 WebP 格式的图片');
+                return;
+            }
+            if (file.size > 20 * 1048576) {
+                showError('文件大小超过 20MB 限制');
+                return;
+            }
+
+            hide(els.errorSection);
+            state.originalFile = file;
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    state.originalImage = img;
+                    // 初始 workingImage 为绘制了原图的 canvas，便于后续操作
+                    var c = document.createElement('canvas');
+                    c.width = img.width; c.height = img.height;
+                    c.getContext('2d').drawImage(img, 0, 0);
+                    state.workingImage = c;
+                    state.watermarkApplied = false;
+                    state.crop = { x: 0, y: 0, w: img.width, h: img.height };
+                    els.originalDims.textContent = img.width + '×' + img.height;
+                    els.fileSize.textContent = formatSize(file.size);
+                    show(els.editorPanel);
+                    if (window.lucide) lucide.createIcons();
+                    renderEditor();
+                    updateExportPreview();
+                };
+                img.onerror = function() { showError('图片加载失败，请检查文件是否损坏'); };
+                img.src = e.target.result;
+            };
+            reader.onerror = function() { showError('文件读取失败'); };
+            reader.readAsDataURL(file);
+        }
+
+        /* ============ 渲染 ============ */
+        function renderEditor() {
+            if (!state.workingImage) return;
+            var img = state.workingImage;
+            var maxW = Math.max(els.canvasWrapper.clientWidth - 32, 100);
+            var maxH = 480;
+            var scale = Math.min(maxW / img.width, maxH / img.height);
+            if (scale > 2) scale = 2; // 限制小图过度放大
+            var dW = Math.max(1, Math.round(img.width * scale));
+            var dH = Math.max(1, Math.round(img.height * scale));
+
+            var canvas = els.displayCanvas;
+            canvas.width = dW; canvas.height = dH;
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, dW, dH);
+            ctx.drawImage(img, 0, 0, dW, dH);
+
+            state.displayScale = scale;
+
+            // 水印预览（未应用时）
+            if (!state.watermarkApplied) {
+                drawWatermark(ctx, dW, dH, scale);
+            }
+
+            updateCropBox();
+            els.currentDims.textContent = img.width + '×' + img.height;
+            els.cropDimValue.textContent = Math.round(state.crop.w) + ' × ' + Math.round(state.crop.h);
+        }
+
+        function updateCropBox() {
+            var s = state.displayScale || 1;
+            var c = state.crop;
+            els.cropBox.style.left = (c.x * s) + 'px';
+            els.cropBox.style.top = (c.y * s) + 'px';
+            els.cropBox.style.width = (c.w * s) + 'px';
+            els.cropBox.style.height = (c.h * s) + 'px';
+            els.cropSizeLabel.textContent = Math.round(c.w) + '×' + Math.round(c.h);
+            els.cropDimValue.textContent = Math.round(c.w) + ' × ' + Math.round(c.h);
+        }
+
+        function computePosition(pos, W, H, tw, th) {
+            var pad = Math.min(W, H) * 0.03;
+            var x, y;
+            switch (pos) {
+                case 'tl': x = pad; y = pad; break;
+                case 'tc': x = (W - tw) / 2; y = pad; break;
+                case 'tr': x = W - tw - pad; y = pad; break;
+                case 'ml': x = pad; y = (H - th) / 2; break;
+                case 'c':  x = (W - tw) / 2; y = (H - th) / 2; break;
+                case 'mr': x = W - tw - pad; y = (H - th) / 2; break;
+                case 'bl': x = pad; y = H - th - pad; break;
+                case 'bc': x = (W - tw) / 2; y = H - th - pad; break;
+                case 'br': x = W - tw - pad; y = H - th - pad; break;
+                default:   x = W - tw - pad; y = H - th - pad;
+            }
+            return { x: x, y: y };
+        }
+
+        function drawWatermark(ctx, W, H, scale) {
+            var wm = state.wm;
+            ctx.save();
+            if (state.wmType === 'text') {
+                if (!wm.text) { ctx.restore(); return; }
+                var fontSize = wm.fontSize * scale;
+                ctx.font = '600 ' + fontSize + 'px Inter, -apple-system, sans-serif';
+                ctx.fillStyle = wm.color;
+                ctx.globalAlpha = wm.opacity;
+                ctx.textBaseline = 'top';
+                var tw = ctx.measureText(wm.text).width;
+                var pos = computePosition(wm.position, W, H, tw, fontSize);
+                ctx.fillText(wm.text, pos.x, pos.y);
+            } else {
+                if (!state.watermarkImage) { ctx.restore(); return; }
+                var wmi = state.watermarkImage;
+                var wmW = W * (wm.imgScale / 100);
+                var wmH = wmi.height * (wmW / wmi.width);
+                var pos = computePosition(wm.imgPosition, W, H, wmW, wmH);
+                ctx.globalAlpha = wm.imgOpacity;
+                ctx.drawImage(wmi, pos.x, pos.y, wmW, wmH);
+            }
+            ctx.restore();
+        }
+
+        /* ============ 裁剪拖拽 ============ */
+        function getPoint(e) {
+            if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            if (e.changedTouches && e.changedTouches[0]) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+            return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrag(e) {
+            if (!state.workingImage) return;
+            e.preventDefault();
+            e.stopPropagation();
+            var target = e.target;
+            var handle = target.getAttribute && target.getAttribute('data-handle');
+            var p = getPoint(e);
+            state.drag = {
+                handle: handle,
+                startX: p.x,
+                startY: p.y,
+                startCrop: { x: state.crop.x, y: state.crop.y, w: state.crop.w, h: state.crop.h }
+            };
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchmove', onDrag, { passive: false });
+            document.addEventListener('touchend', endDrag);
+        }
+
+        function onDrag(e) {
+            if (!state.drag) return;
+            e.preventDefault();
+            var p = getPoint(e);
+            var s = state.displayScale || 1;
+            var dx = (p.x - state.drag.startX) / s;
+            var dy = (p.y - state.drag.startY) / s;
+            var img = state.workingImage;
+            var IW = img.width, IH = img.height;
+            var sc = state.drag.startCrop;
+            var nc;
+
+            if (!state.drag.handle) {
+                // 移动
+                nc = {
+                    x: clamp(sc.x + dx, 0, IW - sc.w),
+                    y: clamp(sc.y + dy, 0, IH - sc.h),
+                    w: sc.w,
+                    h: sc.h
+                };
+            } else {
+                nc = resizeCrop(sc, state.drag.handle, dx, dy, IW, IH, state.ratio);
+            }
+            state.crop = nc;
+            updateCropBox();
+        }
+
+        function endDrag() {
+            state.drag = null;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', endDrag);
+            document.removeEventListener('touchmove', onDrag);
+            document.removeEventListener('touchend', endDrag);
+        }
+
+        function resizeCrop(sc, handle, dx, dy, IW, IH, ratio) {
+            var left = sc.x, top = sc.y, right = sc.x + sc.w, bottom = sc.y + sc.h;
+            if (handle.indexOf('w') > -1) left = sc.x + dx;
+            if (handle.indexOf('e') > -1) right = sc.x + sc.w + dx;
+            if (handle.indexOf('n') > -1) top = sc.y + dy;
+            if (handle.indexOf('s') > -1) bottom = sc.y + sc.h + dy;
+
+            if (right < left) { var t = left; left = right; right = t; }
+            if (bottom < top) { var t2 = top; top = bottom; bottom = t2; }
+
+            var w = right - left;
+            var h = bottom - top;
+
+            if (ratio !== 'free') {
+                var r = parseRatio(ratio); // w/h
+                if (handle === 'n' || handle === 's') {
+                    w = h * r;
+                    left = sc.x + sc.w / 2 - w / 2;
+                    right = left + w;
+                } else if (handle === 'e' || handle === 'w') {
+                    h = w / r;
+                    top = sc.y + sc.h / 2 - h / 2;
+                    bottom = top + h;
+                } else {
+                    // 角拖拽：以 w 为主，h = w/r，固定对角
+                    h = w / r;
+                    if (handle === 'nw') { top = bottom - h; left = right - w; }
+                    else if (handle === 'ne') { top = bottom - h; }
+                    else if (handle === 'sw') { left = right - w; }
+                    // se: left/top 不变
+                }
+            }
+
+            // 边界约束
+            var minSize = 20;
+            if (left < 0) left = 0;
+            if (top < 0) top = 0;
+            if (right > IW) right = IW;
+            if (bottom > IH) bottom = IH;
+
+            w = Math.max(minSize, right - left);
+            h = Math.max(minSize, bottom - top);
+
+            // 比例下二次校正（若裁剪被边界截断）
+            if (ratio !== 'free') {
+                var r2 = parseRatio(ratio);
+                if (w / h > r2) { w = h * r2; }
+                else { h = w / r2; }
+                if (left + w > IW) { left = IW - w; }
+                if (top + h > IH) { top = IH - h; }
+                if (left < 0) { left = 0; w = IW; h = w / r2; }
+                if (top < 0) { top = 0; h = IH; w = h * r2; }
+            }
+
+            return { x: left, y: top, w: w, h: h };
+        }
+
+        function setRatio(ratio) {
+            state.ratio = ratio;
+            if (!state.workingImage) return;
+            if (ratio === 'free') { updateCropBox(); return; }
+            var r = parseRatio(ratio);
+            var img = state.workingImage;
+            var IW = img.width, IH = img.height;
+            var w, h;
+            if (IW / IH > r) { h = IH; w = h * r; } else { w = IW; h = w / r; }
+            state.crop = { x: (IW - w) / 2, y: (IH - h) / 2, w: w, h: h };
+            updateCropBox();
+        }
+
+        function resetCrop() {
+            if (!state.workingImage) return;
+            var img = state.workingImage;
+            state.crop = { x: 0, y: 0, w: img.width, h: img.height };
+            updateCropBox();
+        }
+
+        /* ============ 应用裁剪 ============ */
+        function applyCrop() {
+            var img = state.workingImage;
+            var c = state.crop;
+            if (!img) return;
+            var cw = Math.round(c.w), ch = Math.round(c.h);
+            if (cw < 1 || ch < 1) { showToast('裁剪区域过小'); return; }
+            var canvas = document.createElement('canvas');
+            canvas.width = cw; canvas.height = ch;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, Math.round(c.x), Math.round(c.y), cw, ch, 0, 0, cw, ch);
+            state.workingImage = canvas;
+            state.crop = { x: 0, y: 0, w: canvas.width, h: canvas.height };
+            // 比例保持为 free 以适配新尺寸
+            state.ratio = 'free';
+            document.querySelectorAll('.ratio-btn').forEach(function(b) {
+                b.classList.toggle('active', b.getAttribute('data-ratio') === 'free');
+            });
+            renderEditor();
+            updateExportPreview();
+            showToast('裁剪已应用');
+        }
+
+        /* ============ 应用水印 ============ */
+        function applyWatermark() {
+            var img = state.workingImage;
+            if (!img) return;
+            if (state.wmType === 'text' && !state.wm.text) { showToast('请输入水印文字'); return; }
+            if (state.wmType === 'image' && !state.watermarkImage) { showToast('请上传水印图片'); return; }
+
+            var canvas = document.createElement('canvas');
+            canvas.width = img.width; canvas.height = img.height;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            drawWatermark(ctx, img.width, img.height, 1);
+            state.workingImage = canvas;
+            state.watermarkApplied = true;
+            renderEditor();
+            updateExportPreview();
+            showToast('水印已应用');
+        }
+
+        /* ============ 导出 ============ */
+        function updateExportPreview() {
+            if (!state.workingImage) return;
+            var img = state.workingImage;
+            // 生成预览（限制最大边 400）
+            var maxSide = 400;
+            var scale = Math.min(maxSide / img.width, maxSide / img.height, 1);
+            var c = document.createElement('canvas');
+            c.width = Math.round(img.width * scale);
+            c.height = Math.round(img.height * scale);
+            var ctx = c.getContext('2d');
+            if (state.exportFormat === 'image/jpeg') {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, c.width, c.height);
+            }
+            ctx.drawImage(img, 0, 0, c.width, c.height);
+            els.exportPreview.src = c.toDataURL(state.exportFormat === 'image/png' ? 'image/png' : 'image/jpeg', 0.85);
+        }
+
+        function exportImage() {
+            var img = state.workingImage;
+            if (!img) return;
+            var canvas = document.createElement('canvas');
+            canvas.width = img.width; canvas.height = img.height;
+            var ctx = canvas.getContext('2d');
+            if (state.exportFormat === 'image/jpeg') {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            ctx.drawImage(img, 0, 0);
+            var qArg = state.exportFormat === 'image/png' ? undefined : state.exportQuality / 100;
+            canvas.toBlob(function(blob) {
+                if (!blob) { showToast('导出失败，请重试'); return; }
+                var ext = state.exportFormat === 'image/png' ? '.png' : (state.exportFormat === 'image/jpeg' ? '.jpg' : '.webp');
+                var baseName = (state.originalFile && state.originalFile.name) ? state.originalFile.name.replace(/\.[^/.]+$/, '') : 'image-edit';
+                var fileName = baseName + '_edited' + ext;
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url; a.download = fileName;
+                document.body.appendChild(a); a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('已开始下载');
+            }, state.exportFormat, qArg);
+        }
+
+        /* ============ 重置 / 重新上传 ============ */
+        function reupload() {
+            state.originalFile = null;
+            state.originalImage = null;
+            state.workingImage = null;
+            state.watermarkImage = null;
+            state.watermarkApplied = false;
+            els.fileInput.value = '';
+            els.wmFileInput.value = '';
+            els.wmImagePreview.classList.add('hidden');
+            els.wmImagePreview.src = '';
+            hide(els.editorPanel);
+            hide(els.errorSection);
+        }
+
+        /* ============ 事件绑定 ============ */
+        function initEvents() {
+            // 上传
+            els.selectBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                els.fileInput.click();
+            });
+            els.uploadZone.addEventListener('click', function(e) {
+                if (e.target === els.selectBtn || e.target.closest('.btn-select')) return;
+                els.fileInput.click();
+            });
+            els.fileInput.addEventListener('change', function(e) {
+                if (e.target.files[0]) handleFile(e.target.files[0]);
+            });
+            els.uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            els.uploadZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            els.uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+            });
+
+            // Tab 切换
+            els.tabBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var tab = this.getAttribute('data-tab');
+                    els.tabBtns.forEach(function(b) { b.classList.toggle('active', b === btn); });
+                    document.querySelectorAll('.tab-content').forEach(function(p) { p.classList.add('hidden'); });
+                    var panel = $('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+                    if (panel) panel.classList.remove('hidden');
+                    state.activeTab = tab;
+                    if (tab === 'export') updateExportPreview();
+                    if (window.lucide) lucide.createIcons();
+                });
+            });
+
+            // 裁剪比例
+            els.ratioOptions.querySelectorAll('.ratio-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    els.ratioOptions.querySelectorAll('.ratio-btn').forEach(function(b) { b.classList.remove('active'); });
+                    this.classList.add('active');
+                    setRatio(this.getAttribute('data-ratio'));
+                });
+            });
+
+            // 裁剪拖拽
+            els.cropBox.addEventListener('mousedown', startDrag);
+            els.cropBox.addEventListener('touchstart', startDrag, { passive: false });
+
+            els.applyCropBtn.addEventListener('click', applyCrop);
+            els.resetCropBtn.addEventListener('click', resetCrop);
+
+            // 水印类型切换
+            els.wmTypeBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    els.wmTypeBtns.forEach(function(b) { b.classList.toggle('active', b === btn); });
+                    state.wmType = this.getAttribute('data-wm-type');
+                    els.wmTextPanel.classList.toggle('hidden', state.wmType !== 'text');
+                    els.wmImagePanel.classList.toggle('hidden', state.wmType !== 'image');
+                    renderEditor();
+                    if (window.lucide) lucide.createIcons();
+                });
+            });
+
+            // 文字水印
+            els.wmText.addEventListener('input', function() {
+                state.wm.text = this.value;
+                state.watermarkApplied = false;
+                renderEditor();
+            });
+            els.wmFontSize.addEventListener('input', function() {
+                state.wm.fontSize = parseInt(this.value, 10);
+                els.wmFontSizeValue.textContent = this.value + 'px';
+                state.watermarkApplied = false;
+                renderEditor();
+            });
+            els.wmColor.addEventListener('input', function() {
+                state.wm.color = this.value;
+                els.wmColorValue.textContent = this.value.toUpperCase();
+                state.watermarkApplied = false;
+                renderEditor();
+            });
+            els.wmOpacity.addEventListener('input', function() {
+                state.wm.opacity = parseInt(this.value, 10) / 100;
+                els.wmOpacityValue.textContent = this.value + '%';
+                state.watermarkApplied = false;
+                renderEditor();
+            });
+            els.wmTextPosition.querySelectorAll('.position-cell').forEach(function(cell) {
+                cell.addEventListener('click', function() {
+                    els.wmTextPosition.querySelectorAll('.position-cell').forEach(function(c) { c.classList.remove('active'); });
+                    this.classList.add('active');
+                    state.wm.position = this.getAttribute('data-pos');
+                    state.watermarkApplied = false;
+                    renderEditor();
+                });
+            });
+
+            // 图片水印
+            els.wmFileInput.addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    var img = new Image();
+                    img.onload = function() {
+                        state.watermarkImage = img;
+                        els.wmImagePreview.src = ev.target.result;
+                        els.wmImagePreview.classList.remove('hidden');
+                        state.watermarkApplied = false;
+                        renderEditor();
+                        if (window.lucide) lucide.createIcons();
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            els.wmImgScale.addEventListener('input', function() {
+                state.wm.imgScale = parseInt(this.value, 10);
+                els.wmImgScaleValue.textContent = this.value + '%';
+                state.watermarkApplied = false;
+                renderEditor();
+            });
+            els.wmImgOpacity.addEventListener('input', function() {
+                state.wm.imgOpacity = parseInt(this.value, 10) / 100;
+                els.wmImgOpacityValue.textContent = this.value + '%';
+                state.watermarkApplied = false;
+                renderEditor();
+            });
+            els.wmImagePosition.querySelectorAll('.position-cell').forEach(function(cell) {
+                cell.addEventListener('click', function() {
+                    els.wmImagePosition.querySelectorAll('.position-cell').forEach(function(c) { c.classList.remove('active'); });
+                    this.classList.add('active');
+                    state.wm.imgPosition = this.getAttribute('data-pos');
+                    state.watermarkApplied = false;
+                    renderEditor();
+                });
+            });
+
+            els.applyWatermarkBtn.addEventListener('click', applyWatermark);
+
+            // 导出
+            els.formatOptions.querySelectorAll('.format-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    els.formatOptions.querySelectorAll('.format-btn').forEach(function(b) { b.classList.remove('active'); });
+                    this.classList.add('active');
+                    state.exportFormat = this.getAttribute('data-format');
+                    updateExportPreview();
+                });
+            });
+            els.qualitySlider.addEventListener('input', function() {
+                state.exportQuality = parseInt(this.value, 10);
+                els.qualityValue.textContent = this.value + '%';
+            });
+            els.downloadBtn.addEventListener('click', exportImage);
+            els.reuploadBtn.addEventListener('click', reupload);
+            els.retryBtn.addEventListener('click', reupload);
+
+            // 窗口尺寸变化时重新渲染
+            var resizeTimer = null;
+            window.addEventListener('resize', function() {
+                if (!state.workingImage) return;
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(renderEditor, 150);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            bind();
+            initEvents();
+            if (window.lucide) lucide.createIcons();
+        });
+
+        // 兜底：lucide 异步加载完成后再次渲染图标
+        window.addEventListener('load', function() {
+            if (window.lucide) lucide.createIcons();
+        });
+    })();
+    </script>
+</body>
+</html>

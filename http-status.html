@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP状态码速查 - UA解析工具</title>
+    <meta name="description" content="免费在线HTTP工具：HTTP状态码大全速查表（1xx-5xx）支持搜索，User-Agent浏览器标识解析，识别浏览器、操作系统、设备类型，开发者必备">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .hs-hero { padding: 7rem 0 2rem; text-align: center; }
+        .hs-hero .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; background: rgba(249,115,22,0.1); color: #FB923C;
+            border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem;
+        }
+        .hs-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .hs-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+        .hs-section { padding: 1rem 0 2rem; max-width: 1000px; margin: 0 auto; }
+        .hs-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 1.75rem; box-shadow: var(--shadow-lg); margin-bottom: 1.5rem;
+        }
+        .hs-card-title { display: flex; align-items: center; gap: 0.6rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; }
+        .hs-card-title i { width: 20px; height: 20px; color: #FB923C; }
+
+        .hs-search { position: relative; margin-bottom: 1.25rem; }
+        .hs-search i {
+            position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+            width: 16px; height: 16px; color: var(--text-light);
+        }
+        .hs-search input {
+            width: 100%; padding: 0.7rem 1rem 0.7rem 2.6rem; box-sizing: border-box;
+            background: var(--bg); color: var(--text); border: 1px solid var(--border);
+            border-radius: 12px; font-family: inherit; font-size: 0.9rem;
+        }
+        .hs-search input:focus { outline: none; border-color: #FB923C; box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
+
+        .hs-groups { display: flex; flex-direction: column; gap: 1.25rem; }
+        .hs-group h4 {
+            display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 700;
+            margin-bottom: 0.6rem; color: var(--text);
+        }
+        .hs-group h4 .tag {
+            font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; font-weight: 600;
+        }
+        .hs-table { width: 100%; border-collapse: collapse; background: var(--bg); border-radius: 12px; overflow: hidden; }
+        .hs-table th, .hs-table td {
+            text-align: left; padding: 0.55rem 1rem; font-size: 0.82rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .hs-table th { background: rgba(249,115,22,0.06); color: var(--text-secondary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+        .hs-table tr:last-child td { border-bottom: none; }
+        .hs-table td.code { font-family: 'SF Mono', 'Consolas', monospace; font-weight: 700; color: #FB923C; white-space: nowrap; }
+        .hs-table tr.hidden { display: none; }
+
+        .hs-empty { display: none; text-align: center; color: var(--text-light); padding: 1.5rem; font-size: 0.85rem; }
+        .hs-empty.visible { display: block; }
+
+        /* UA 解析 */
+        .hs-ua { width: 100%; min-height: 90px; padding: 0.9rem; box-sizing: border-box;
+            background: var(--bg); color: var(--text); border: 1px solid var(--border);
+            border-radius: 12px; font-family: monospace; font-size: 0.78rem; line-height: 1.6; resize: vertical; }
+        .hs-ua:focus { outline: none; border-color: #FB923C; }
+        .hs-ua-btns { display: flex; gap: 0.6rem; margin-top: 0.9rem; flex-wrap: wrap; }
+        .hs-btn {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            padding: 0.6rem 1.2rem; border: none; border-radius: 12px;
+            font-family: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .hs-btn i { width: 16px; height: 16px; }
+        .hs-btn-primary { background: linear-gradient(135deg, #EA580C, #F97316); color: #fff; }
+        .hs-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(249,115,22,0.35); }
+        .hs-btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .hs-btn-ghost:hover { border-color: #FB923C; color: #FB923C; }
+
+        .hs-ua-result { display: none; margin-top: 1rem; }
+        .hs-ua-result.visible { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
+        .hs-kv { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; }
+        .hs-kv .k { font-size: 0.72rem; color: var(--text-light); margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+        .hs-kv .v { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <section class="hs-hero">
+        <div class="hero-badge"><i data-lucide="globe"></i><span>HTTP 状态码速查 · UA 解析</span></div>
+        <h1 class="hero-title">HTTP <span class="gradient-text" style="background:linear-gradient(135deg,#EA580C,#F97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">工具</span></h1>
+        <p class="hero-description">速查 HTTP 状态码含义，解析 User-Agent 识别浏览器与设备。</p>
+    </section>
+
+    <section class="hs-section">
+        <div class="hs-card">
+            <div class="hs-card-title"><i data-lucide="search"></i>HTTP 状态码速查</div>
+            <div class="hs-search">
+                <i data-lucide="search"></i>
+                <input type="text" id="codeSearch" placeholder="搜索状态码或名称，如 404 / Not Found / 未找到">
+            </div>
+            <div class="hs-groups" id="codeGroups"></div>
+            <div class="hs-empty" id="codeEmpty">没有匹配的状态码</div>
+        </div>
+
+        <div class="hs-card">
+            <div class="hs-card-title"><i data-lucide="smartphone"></i>User-Agent 解析</div>
+            <textarea class="hs-ua" id="uaInput" placeholder="粘贴 User-Agent 字符串"></textarea>
+            <div class="hs-ua-btns">
+                <button class="hs-btn hs-btn-primary" id="btnParseUa"><i data-lucide="wand-2"></i>解析</button>
+                <button class="hs-btn hs-btn-ghost" id="btnCurrentUa"><i data-lucide="monitor"></i>使用当前浏览器</button>
+            </div>
+            <div class="hs-ua-result" id="uaResult"></div>
+        </div>
+    </section>
+
+    <script>
+        (function() {
+            var statusData = [
+                { code: 100, name: 'Continue', zh: '继续', desc: '服务器收到请求头，客户端应继续发送请求体', group: '1xx 信息' },
+                { code: 101, name: 'Switching Protocols', zh: '切换协议', desc: '服务器同意客户端切换协议（如升级到 WebSocket）', group: '1xx 信息' },
+                { code: 102, name: 'Processing', zh: '处理中', desc: 'WebDAV 请求已接收，服务器正在处理', group: '1xx 信息' },
+                { code: 200, name: 'OK', zh: '请求成功', desc: '请求成功，响应中返回请求的数据', group: '2xx 成功' },
+                { code: 201, name: 'Created', zh: '已创建', desc: '请求成功且服务器创建了新资源（如新用户）', group: '2xx 成功' },
+                { code: 202, name: 'Accepted', zh: '已接受', desc: '请求已接受但尚未处理完成', group: '2xx 成功' },
+                { code: 203, name: 'Non-Authoritative Info', zh: '非权威信息', desc: '返回的元信息来自本地或第三方拷贝而非原始服务器', group: '2xx 成功' },
+                { code: 204, name: 'No Content', zh: '无内容', desc: '请求成功但没有内容返回（常用于删除操作）', group: '2xx 成功' },
+                { code: 205, name: 'Reset Content', zh: '重置内容', desc: '请求成功，要求客户端重置视图', group: '2xx 成功' },
+                { code: 206, name: 'Partial Content', zh: '部分内容', desc: '服务器成功处理了部分 GET 请求（断点续传）', group: '2xx 成功' },
+                { code: 301, name: 'Moved Permanently', zh: '永久重定向', desc: '资源已永久移动到新 URL，后续应使用新地址', group: '3xx 重定向' },
+                { code: 302, name: 'Found', zh: '临时重定向', desc: '资源临时位于其他 URL（307 取代了此语义）', group: '3xx 重定向' },
+                { code: 303, name: 'See Other', zh: '查看其他位置', desc: '应使用 GET 请求到另一个 URL 获取结果', group: '3xx 重定向' },
+                { code: 304, name: 'Not Modified', zh: '未修改', desc: '资源未变化，客户端可继续使用缓存', group: '3xx 重定向' },
+                { code: 307, name: 'Temporary Redirect', zh: '临时重定向', desc: '临时重定向，保持请求方法与主体不变', group: '3xx 重定向' },
+                { code: 308, name: 'Permanent Redirect', zh: '永久重定向', desc: '永久重定向，保持请求方法与主体不变', group: '3xx 重定向' },
+                { code: 400, name: 'Bad Request', zh: '请求错误', desc: '请求语法错误，服务器无法理解', group: '4xx 客户端错误' },
+                { code: 401, name: 'Unauthorized', zh: '未认证', desc: '需要身份验证，或认证信息无效', group: '4xx 客户端错误' },
+                { code: 403, name: 'Forbidden', zh: '禁止访问', desc: '服务器理解请求但拒绝执行（无权限）', group: '4xx 客户端错误' },
+                { code: 404, name: 'Not Found', zh: '未找到', desc: '请求的资源不存在', group: '4xx 客户端错误' },
+                { code: 405, name: 'Method Not Allowed', zh: '方法不允许', desc: '请求方法不被该资源支持（如对只读接口 POST）', group: '4xx 客户端错误' },
+                { code: 406, name: 'Not Acceptable', zh: '不可接受', desc: '无法按 Accept 头要求生成响应内容', group: '4xx 客户端错误' },
+                { code: 408, name: 'Request Timeout', zh: '请求超时', desc: '服务器等待请求超时', group: '4xx 客户端错误' },
+                { code: 409, name: 'Conflict', zh: '冲突', desc: '请求与资源当前状态冲突', group: '4xx 客户端错误' },
+                { code: 410, name: 'Gone', zh: '资源已删除', desc: '资源已被永久删除且不会恢复', group: '4xx 客户端错误' },
+                { code: 411, name: 'Length Required', zh: '需要长度', desc: '请求缺少 Content-Length 头', group: '4xx 客户端错误' },
+                { code: 413, name: 'Payload Too Large', zh: '内容过长', desc: '请求体过大，超出服务器处理能力', group: '4xx 客户端错误' },
+                { code: 415, name: 'Unsupported Media Type', zh: '媒体类型不支持', desc: '请求体的媒体类型不被支持', group: '4xx 客户端错误' },
+                { code: 422, name: 'Unprocessable Entity', zh: '无法处理的实体', desc: '语义错误，无法处理（常用于表单校验失败）', group: '4xx 客户端错误' },
+                { code: 429, name: 'Too Many Requests', zh: '请求过多', desc: '请求频率超出限制，触发了限流', group: '4xx 客户端错误' },
+                { code: 500, name: 'Internal Server Error', zh: '服务器内部错误', desc: '服务器遇到未知错误，无法完成请求', group: '5xx 服务器错误' },
+                { code: 501, name: 'Not Implemented', zh: '未实现', desc: '服务器不支持请求所需的功能', group: '5xx 服务器错误' },
+                { code: 502, name: 'Bad Gateway', zh: '网关错误', desc: '网关或代理从上游服务器收到无效响应', group: '5xx 服务器错误' },
+                { code: 503, name: 'Service Unavailable', zh: '服务不可用', desc: '服务器暂时无法处理请求（过载或维护）', group: '5xx 服务器错误' },
+                { code: 504, name: 'Gateway Timeout', zh: '网关超时', desc: '网关或代理等待上游服务器响应超时', group: '5xx 服务器错误' },
+                { code: 505, name: 'HTTP Version Not Supported', zh: '版本不支持', desc: '服务器不支持请求使用的 HTTP 协议版本', group: '5xx 服务器错误' }
+            ];
+
+            var colors = { '1xx 信息': '#38BDF8', '2xx 成功': '#34D399', '3xx 重定向': '#FBBF24', '4xx 客户端错误': '#FB923C', '5xx 服务器错误': '#F87171' };
+            var groups = {};
+            statusData.forEach(function(s) { (groups[s.group] = groups[s.group] || []).push(s); });
+
+            function renderGroups(filter) {
+                var wrap = document.getElementById('codeGroups');
+                wrap.innerHTML = '';
+                var empty = true;
+                Object.keys(groups).forEach(function(g) {
+                    var list = groups[g].filter(function(s) {
+                        if (!filter) return true;
+                        var q = filter.toLowerCase();
+                        return String(s.code).indexOf(q) > -1 || s.name.toLowerCase().indexOf(q) > -1 || s.zh.indexOf(q) > -1;
+                    });
+                    if (!list.length) return;
+                    empty = false;
+                    var div = document.createElement('div');
+                    div.className = 'hs-group';
+                    var color = colors[g];
+                    div.innerHTML = '<h4>' + g + '<span class="tag" style="background:' + color + '22;color:' + color + ';">' + list.length + ' 条</span></h4>';
+                    var table = document.createElement('table');
+                    table.className = 'hs-table';
+                    table.innerHTML = '<tr><th>状态码</th><th>英文名称</th><th>中文含义</th><th>说明</th></tr>';
+                    list.forEach(function(s) {
+                        table.innerHTML += '<tr><td class="code">' + s.code + '</td><td>' + s.name + '</td><td>' + s.zh + '</td><td>' + s.desc + '</td></tr>';
+                    });
+                    div.appendChild(table);
+                    wrap.appendChild(div);
+                });
+                document.getElementById('codeEmpty').classList.toggle('visible', empty);
+            }
+            renderGroups('');
+            document.getElementById('codeSearch').addEventListener('input', function() {
+                renderGroups(this.value.trim());
+            });
+
+            // ---------- UA 解析 ----------
+            function parseUa(ua) {
+                ua = ua || '';
+                var result = { 浏览器: '未知', 浏览器版本: '-', 操作系统: '未知', 设备: '未知', 引擎: '未知' };
+                // 设备
+                if (/ipad|tablet/i.test(ua)) result.设备 = '平板';
+                else if (/iphone|ipod/i.test(ua)) result.设备 = '手机 (iOS)';
+                else if (/android/i.test(ua) && /mobile/i.test(ua)) result.设备 = '手机 (Android)';
+                else if (/android/i.test(ua)) result.设备 = '平板 (Android)';
+                else if (/windows phone/i.test(ua)) result.设备 = '手机 (Windows)';
+                else if (/mobile|phone/i.test(ua)) result.设备 = '手机';
+                else result.设备 = '电脑';
+                // 操作系统
+                var osMap = [
+                    [/windows nt 11|windows nt 10\.0/gi, 'Windows 10/11'],
+                    [/windows nt 6\.3/gi, 'Windows 8.1'], [/windows nt 6\.1/gi, 'Windows 7'],
+                    [/mac os x/gi, 'macOS'], [/android/gi, 'Android'], [/iphone os|ipad os/gi, 'iOS'],
+                    [/linux/gi, 'Linux'], [/ubuntu/gi, 'Ubuntu']
+                ];
+                for (var i = 0; i < osMap.length; i++) {
+                    if (osMap[i][0].test(ua)) { result.操作系统 = osMap[i][1]; break; }
+                }
+                // 浏览器
+                if (/edg\//i.test(ua)) { result.浏览器 = 'Edge'; result.浏览器版本 = (ua.match(/edg\/([\d.]+)/i) || [])[1] || '-'; }
+                else if (/chrome\//i.test(ua) && !/chromium/i.test(ua)) { result.浏览器 = 'Chrome'; result.浏览器版本 = (ua.match(/chrome\/([\d.]+)/i) || [])[1] || '-'; }
+                else if (/firefox\//i.test(ua)) { result.浏览器 = 'Firefox'; result.浏览器版本 = (ua.match(/firefox\/([\d.]+)/i) || [])[1] || '-'; }
+                else if (/safari\//i.test(ua) && /version\//i.test(ua)) { result.浏览器 = 'Safari'; result.浏览器版本 = (ua.match(/version\/([\d.]+)/i) || [])[1] || '-'; }
+                else if (/opr\//i.test(ua) || /opera/i.test(ua)) { result.浏览器 = 'Opera'; result.浏览器版本 = (ua.match(/(?:opr|opera)\/([\d.]+)/i) || [])[1] || '-'; }
+                else if (/micromessenger/i.test(ua)) result.浏览器 = '微信内置浏览器';
+                else if (/qq\//i.test(ua)) result.浏览器 = 'QQ浏览器';
+                // 引擎
+                if (/webkit/i.test(ua)) result.引擎 = 'WebKit/Blink';
+                if (/gecko\//i.test(ua) && !/webkit/i.test(ua)) result.引擎 = 'Gecko';
+                return result;
+            }
+
+            function renderUaResult(obj) {
+                var box = document.getElementById('uaResult');
+                box.classList.add('visible');
+                box.innerHTML = '';
+                Object.keys(obj).forEach(function(k) {
+                    var kv = document.createElement('div');
+                    kv.className = 'hs-kv';
+                    kv.innerHTML = '<div class="k">' + k + '</div><div class="v">' + obj[k] + '</div>';
+                    box.appendChild(kv);
+                });
+            }
+
+            document.getElementById('btnParseUa').addEventListener('click', function() {
+                var ua = document.getElementById('uaInput').value.trim();
+                if (!ua) { Auth.showToast && Auth.showToast('请粘贴 User-Agent 字符串', 'error'); return; }
+                renderUaResult(parseUa(ua));
+            });
+            document.getElementById('btnCurrentUa').addEventListener('click', function() {
+                var ua = navigator.userAgent;
+                document.getElementById('uaInput').value = ua;
+                renderUaResult(parseUa(ua));
+            });
+        })();
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #1D4ED8, #0284C7);">
+                    <i data-lucide="server"></i>
+                </div>
+                <span>HTTP状态码</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本编解码 - HTML实体/URL/Unicode/进制/Base64</title>
+    <meta name="description" content="免费在线文本编解码工具：HTML实体编码、URL编码、Unicode转义、二进制/八进制/十六进制互转、大小写转换、Base64编解码，程序员日常必备">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .tc-hero { padding: 7rem 0 2rem; text-align: center; }
+        .tc-hero .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; background: rgba(14,165,233,0.1); color: #38BDF8;
+            border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem;
+        }
+        .tc-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .tc-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+        .tc-section { padding: 1rem 0 2rem; max-width: 1000px; margin: 0 auto; }
+        .tc-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 1.75rem; box-shadow: var(--shadow-lg);
+        }
+        .tc-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .tc-tab {
+            border: 1px solid var(--border); background: var(--bg); padding: 0.5rem 1.1rem;
+            border-radius: 999px; font-family: inherit; font-size: 0.82rem; font-weight: 600;
+            color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+        }
+        .tc-tab i { width: 14px; height: 14px; }
+        .tc-tab.active { background: linear-gradient(135deg, #0284C7, #0EA5E9); color: #fff; border-color: transparent; box-shadow: 0 4px 12px rgba(14,165,233,0.3); }
+
+        .tc-pane { display: none; }
+        .tc-pane.active { display: block; }
+        .tc-pane h3 { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.6rem; }
+        .tc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .tc-area {
+            width: 100%; min-height: 220px; padding: 0.9rem; box-sizing: border-box;
+            background: var(--bg); color: var(--text); border: 1px solid var(--border);
+            border-radius: 12px; font-family: 'SF Mono', 'Consolas', monospace; font-size: 0.8rem;
+            line-height: 1.6; resize: vertical;
+        }
+        .tc-area:focus { outline: none; border-color: #38BDF8; }
+        .tc-area[readonly] { color: var(--text-secondary); }
+
+        .tc-ops { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+        .tc-btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.55rem 1.1rem; border: none; border-radius: 10px;
+            font-family: inherit; font-size: 0.83rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tc-btn i { width: 14px; height: 14px; }
+        .tc-btn-primary { background: linear-gradient(135deg, #0284C7, #0EA5E9); color: #fff; }
+        .tc-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(14,165,233,0.3); }
+        .tc-btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .tc-btn-ghost:hover { border-color: #38BDF8; color: #38BDF8; }
+
+        .tc-radix { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+        .tc-radix label { font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.3rem; cursor: pointer; }
+        .tc-radix input[type="radio"] { accent-color: #0EA5E9; }
+
+        @media (max-width: 760px) { .tc-grid { grid-template-columns: 1fr; } }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <section class="tc-hero">
+        <div class="hero-badge"><i data-lucide="binary"></i><span>编解码 · 转换 · 程序员日常必备</span></div>
+        <h1 class="hero-title">文本<span class="gradient-text" style="background:linear-gradient(135deg,#0284C7,#38BDF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">编解码</span></h1>
+        <p class="hero-description">HTML 实体、URL 编码、Unicode、进制转换、大小写、Base64 一站式处理。</p>
+    </section>
+
+    <section class="tc-section">
+        <div class="tc-card">
+            <div class="tc-tabs" id="tabs">
+                <button class="tc-tab active" data-tab="entity"><i data-lucide="code-xml"></i>HTML实体</button>
+                <button class="tc-tab" data-tab="url"><i data-lucide="link"></i>URL编码</button>
+                <button class="tc-tab" data-tab="unicode"><i data-lucide="languages"></i>Unicode</button>
+                <button class="tc-tab" data-tab="radix"><i data-lucide="binary"></i>进制转换</button>
+                <button class="tc-tab" data-tab="case"><i data-lucide="case-sensitive"></i>大小写</button>
+                <button class="tc-tab" data-tab="base64"><i data-lucide="shield"></i>Base64</button>
+            </div>
+
+            <!-- HTML 实体 -->
+            <div class="tc-pane active" id="pane-entity">
+                <div class="tc-grid">
+                    <div><h3>输入</h3><textarea class="tc-area" id="entityIn" placeholder="<div> & "在线工具" &copy; 2026</textarea></div>
+                    <div><h3>输出</h3><textarea class="tc-area" id="entityOut" readonly></textarea></div>
+                </div>
+                <div class="tc-ops">
+                    <button class="tc-btn tc-btn-primary" data-op="encode" data-tool="entity"><i data-lucide="lock"></i>编码（转义）</button>
+                    <button class="tc-btn tc-btn-primary" data-op="decode" data-tool="entity"><i data-lucide="unlock"></i>解码（还原）</button>
+                    <button class="tc-btn tc-btn-ghost tc-copy" data-tool="entity"><i data-lucide="copy"></i>复制</button>
+                </div>
+            </div>
+
+            <!-- URL -->
+            <div class="tc-pane" id="pane-url">
+                <div class="tc-grid">
+                    <div><h3>输入</h3><textarea class="tc-area" id="urlIn" placeholder="https://example.com/工具箱?q=你好世界&page=1"></textarea></div>
+                    <div><h3>输出</h3><textarea class="tc-area" id="urlOut" readonly></textarea></div>
+                </div>
+                <div class="tc-ops">
+                    <button class="tc-btn tc-btn-primary" data-op="encode" data-tool="url"><i data-lucide="lock"></i>URL编码</button>
+                    <button class="tc-btn tc-btn-primary" data-op="decode" data-tool="url"><i data-lucide="unlock"></i>URL解码</button>
+                    <button class="tc-btn tc-btn-ghost tc-copy" data-tool="url"><i data-lucide="copy"></i>复制</button>
+                </div>
+            </div>
+
+            <!-- Unicode -->
+            <div class="tc-pane" id="pane-unicode">
+                <div class="tc-grid">
+                    <div><h3>输入</h3><textarea class="tc-area" id="uniIn" placeholder="你好，世界！\u4f60\u597d"></textarea></div>
+                    <div><h3>输出</h3><textarea class="tc-area" id="uniOut" readonly></textarea></div>
+                </div>
+                <div class="tc-ops">
+                    <button class="tc-btn tc-btn-primary" data-op="encode" data-tool="unicode"><i data-lucide="lock"></i>转为 \uXXXX</button>
+                    <button class="tc-btn tc-btn-primary" data-op="decode" data-tool="unicode"><i data-lucide="unlock"></i>解码 \uXXXX</button>
+                    <button class="tc-btn tc-btn-ghost tc-copy" data-tool="unicode"><i data-lucide="copy"></i>复制</button>
+                </div>
+            </div>
+
+            <!-- 进制转换 -->
+            <div class="tc-pane" id="pane-radix">
+                <div class="tc-radix">
+                    <label><input type="radio" name="radix" value="2">二进制 (2)</label>
+                    <label><input type="radio" name="radix" value="8">八进制 (8)</label>
+                    <label><input type="radio" name="radix" value="10" checked>十进制 (10)</label>
+                    <label><input type="radio" name="radix" value="16">十六进制 (16)</label>
+                </div>
+                <div class="tc-grid">
+                    <div><h3>输入数字</h3><textarea class="tc-area" id="radixIn" placeholder="255 或 0xFF"></textarea></div>
+                    <div><h3>转换结果</h3><textarea class="tc-area" id="radixOut" readonly></textarea></div>
+                </div>
+                <div class="tc-ops">
+                    <button class="tc-btn tc-btn-primary" data-op="convert" data-tool="radix"><i data-lucide="repeat"></i>全部进制互转</button>
+                    <button class="tc-btn tc-btn-ghost tc-copy" data-tool="radix"><i data-lucide="copy"></i>复制</button>
+                </div>
+            </div>
+
+            <!-- 大小写 -->
+            <div class="tc-pane" id="pane-case">
+                <div class="tc-grid">
+                    <div><h3>输入</h3><textarea class="tc-area" id="caseIn" placeholder="hello world, this is a toolbox"></textarea></div>
+                    <div><h3>输出</h3><textarea class="tc-area" id="caseOut" readonly></textarea></div>
+                </div>
+                <div class="tc-ops">
+                    <button class="tc-btn tc-btn-primary" data-op="upper" data-tool="case"><i data-lucide="arrow-up-wide-narrow"></i>全部大写</button>
+                    <button class="tc-btn tc-btn-primary" data-op="lower" data-tool="case"><i data-lucide="arrow-down-wide-narrow"></i>全部小写</button>
+                    <button class="tc-btn tc-btn-primary" data-op="title" data-tool="case"><i data-lucide="case-sensitive"></i>首字母大写</button>
+                    <button class="tc-btn tc-btn-primary" data-op="camel" data-tool="case"><i data-lucide="camel"></i>驼峰命名</button>
+                    <button class="tc-btn tc-btn-primary" data-op="snake" data-tool="case"><i data-lucide="snake"></i>下划线命名</button>
+                    <button class="tc-btn tc-btn-primary" data-op="kebab" data-tool="case"><i data-lucide="minus"></i>短横线命名</button>
+                    <button class="tc-btn tc-btn-ghost tc-copy" data-tool="case"><i data-lucide="copy"></i>复制</button>
+                </div>
+            </div>
+
+            <!-- Base64 -->
+            <div class="tc-pane" id="pane-base64">
+                <div class="tc-grid">
+                    <div><h3>输入</h3><textarea class="tc-area" id="b64In" placeholder="在线工具箱 toolbox"></textarea></div>
+                    <div><h3>输出</h3><textarea class="tc-area" id="b64Out" readonly></textarea></div>
+                </div>
+                <div class="tc-ops">
+                    <button class="tc-btn tc-btn-primary" data-op="encode" data-tool="base64"><i data-lucide="lock"></i>Base64编码</button>
+                    <button class="tc-btn tc-btn-primary" data-op="decode" data-tool="base64"><i data-lucide="unlock"></i>Base64解码</button>
+                    <button class="tc-btn tc-btn-ghost tc-copy" data-tool="base64"><i data-lucide="copy"></i>复制</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (function() {
+            // Tab 切换
+            document.querySelectorAll('.tc-tab').forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tc-tab').forEach(function(t) { t.classList.remove('active'); });
+                    document.querySelectorAll('.tc-pane').forEach(function(p) { p.classList.remove('active'); });
+                    tab.classList.add('active');
+                    document.getElementById('pane-' + tab.getAttribute('data-tab')).classList.add('active');
+                });
+            });
+
+            // 复制
+            document.querySelectorAll('.tc-copy').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var out = document.getElementById(btn.getAttribute('data-tool') + 'Out');
+                    if (!out.value) { Auth.showToast && Auth.showToast('没有可复制的内容', 'error'); return; }
+                    navigator.clipboard.writeText(out.value).then(function() {
+                        Auth.showToast && Auth.showToast('已复制', 'success');
+                    }).catch(function() { out.select(); document.execCommand('copy'); });
+                });
+            });
+
+            // 操作按钮
+            document.querySelectorAll('.tc-btn[data-op]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var tool = btn.getAttribute('data-tool'), op = btn.getAttribute('data-op');
+                    var inEl = document.getElementById(tool + 'In'), outEl = document.getElementById(tool + 'Out');
+                    try {
+                        outEl.value = runTool(tool, op, inEl.value);
+                    } catch (e) {
+                        outEl.value = '';
+                        Auth.showToast && Auth.showToast('处理失败：' + (e.message || e), 'error');
+                    }
+                });
+            });
+
+            function runTool(tool, op, text) {
+                switch (tool) {
+                    case 'entity':
+                        if (op === 'encode') {
+                            var div = document.createElement('div');
+                            div.textContent = text;
+                            return div.innerHTML;
+                        }
+                        var ta = document.createElement('textarea');
+                        ta.innerHTML = text;
+                        return ta.value;
+                    case 'url':
+                        return op === 'encode' ? encodeURIComponent(text) : decodeURIComponent(text);
+                    case 'unicode':
+                        if (op === 'encode') {
+                            var out = '';
+                            for (var i = 0; i < text.length; i++) {
+                                var code = text.charCodeAt(i);
+                                out += code > 127 ? '\\u' + code.toString(16).padStart(4, '0') : text[i];
+                            }
+                            return out;
+                        }
+                        return text.replace(/\\u([0-9a-fA-F]{4})/g, function(m, hex) { return String.fromCharCode(parseInt(hex, 16)); });
+                    case 'radix': {
+                        var v = text.trim();
+                        if (!v) return '';
+                        var base = 10;
+                        if (/^0x/i.test(v)) { base = 16; v = v.slice(2); }
+                        else if (/^0o/.test(v)) { base = 8; v = v.slice(2); }
+                        else if (/^0b/.test(v)) { base = 2; v = v.slice(2); }
+                        var num = parseInt(v, base);
+                        if (isNaN(num)) throw new Error('无法识别的数字');
+                        return '二进制：' + num.toString(2) +
+                            '\n八进制：' + num.toString(8) +
+                            '\n十进制：' + num.toString(10) +
+                            '\n十六进制：0x' + num.toString(16).toUpperCase();
+                    }
+                    case 'case':
+                        if (op === 'upper') return text.toUpperCase();
+                        if (op === 'lower') return text.toLowerCase();
+                        if (op === 'title') return text.toLowerCase().replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
+                        if (op === 'camel') return text.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, function(m, c) { return c.toUpperCase(); });
+                        if (op === 'snake') return text.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '');
+                        if (op === 'kebab') return text.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        return text;
+                    case 'base64':
+                        if (op === 'encode') return btoa(unescape(encodeURIComponent(text)));
+                        return decodeURIComponent(escape(atob(text.trim())));
+                }
+            }
+        })();
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #1D4ED8, #0284C7);">
+                    <i data-lucide="binary"></i>
+                </div>
+                <span>文本编解码</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

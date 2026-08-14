@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF转图片 - PDF转PNG/JPG</title>
+    <meta name="description" content="免费在线PDF转图片工具：将PDF每一页转换为高清PNG或JPG图片，支持缩放倍数调节、单页下载或一键打包下载，本地处理保护隐私">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <style>
+        .pi-hero { padding: 7rem 0 2rem; text-align: center; }
+        .pi-hero .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; background: rgba(245,158,11,0.1); color: #FBBF24;
+            border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem;
+        }
+        .pi-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .pi-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+        .pi-section { padding: 1rem 0 2rem; max-width: 960px; margin: 0 auto; }
+        .pi-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 1.75rem; box-shadow: var(--shadow-lg); margin-bottom: 1.5rem;
+        }
+        .pi-card-title { display: flex; align-items: center; gap: 0.6rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; }
+        .pi-card-title i { width: 20px; height: 20px; color: #FBBF24; }
+
+        .pi-upload {
+            border: 2px dashed var(--border); border-radius: 18px;
+            padding: 2.5rem 1.5rem; text-align: center; cursor: pointer;
+            transition: all 0.25s ease; background: var(--bg);
+        }
+        .pi-upload:hover, .pi-upload.dragover { border-color: #FBBF24; background: rgba(245,158,11,0.06); }
+        .pi-upload i { width: 40px; height: 40px; color: #FBBF24; margin-bottom: 0.75rem; }
+        .pi-upload p { color: var(--text-secondary); font-size: 0.9rem; }
+
+        .pi-controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-top: 1.25rem; }
+        .pi-ctl { flex: 1; min-width: 160px; }
+        .pi-ctl label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.4rem; font-weight: 500; }
+        .pi-ctl input[type="range"] { width: 100%; accent-color: #F59E0B; }
+        .pi-ctl select {
+            width: 100%; padding: 0.45rem; border: 1px solid var(--border); border-radius: 8px;
+            background: var(--bg); color: var(--text); font-family: inherit;
+        }
+        .pi-ctl .val { font-weight: 700; color: #FBBF24; }
+
+        .pi-btn {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            padding: 0.6rem 1.2rem; border: none; border-radius: 12px;
+            font-family: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .pi-btn i { width: 16px; height: 16px; }
+        .pi-btn-primary { background: linear-gradient(135deg, #D97706, #F59E0B); color: #fff; }
+        .pi-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245,158,11,0.35); }
+        .pi-btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .pi-btn-ghost:hover { border-color: #FBBF24; color: #FBBF24; }
+        .pi-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        .pi-progress { display: none; margin-top: 1.25rem; }
+        .pi-progress.visible { display: block; }
+        .pi-progress .bar { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
+        .pi-progress .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #D97706, #F59E0B); border-radius: 999px; transition: width 0.2s; }
+        .pi-progress .txt { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; text-align: center; }
+
+        .pi-pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-top: 1.25rem; }
+        .pi-page { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg); }
+        .pi-page canvas { width: 100%; display: block; }
+        .pi-page .foot { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0.5rem; font-size: 0.72rem; color: var(--text-secondary); }
+        .pi-page .foot button {
+            border: none; background: transparent; color: #FBBF24; cursor: pointer;
+            display: flex; align-items: center; padding: 2px;
+        }
+        .pi-page .foot button i { width: 14px; height: 14px; }
+        .pi-page .foot button:hover { color: #F59E0B; }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <section class="pi-hero">
+        <div class="hero-badge"><i data-lucide="file-image"></i><span>PDF 转图片 · 高清导出 · 本地处理</span></div>
+        <h1 class="hero-title">PDF 转<span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">图片</span></h1>
+        <p class="hero-description">把 PDF 的每一页转成高清 PNG / JPG 图片。可调缩放倍数，支持单页下载或全部打包下载。</p>
+    </section>
+
+    <section class="pi-section">
+        <div class="pi-card">
+            <div class="pi-card-title"><i data-lucide="file-up"></i>上传 PDF</div>
+            <div class="pi-upload" id="uploadZone">
+                <i data-lucide="file-text"></i>
+                <p><strong>点击上传</strong> 或拖拽 PDF 到此处</p>
+                <p>文件在本机处理，不会上传到服务器</p>
+            </div>
+            <input type="file" id="fileInput" accept="application/pdf" hidden>
+
+            <div class="pi-controls">
+                <div class="pi-ctl">
+                    <label>缩放倍数：<span class="val" id="scaleVal">2</span>x</label>
+                    <input type="range" id="scale" min="1" max="4" value="2">
+                </div>
+                <div class="pi-ctl">
+                    <label>输出格式</label>
+                    <select id="format">
+                        <option value="png">PNG（透明/无损）</option>
+                        <option value="jpeg">JPG（文件更小）</option>
+                    </select>
+                </div>
+            </div>
+            <div class="pi-btns" style="margin-top:1.25rem; display:flex; gap:0.6rem; flex-wrap:wrap;">
+                <button class="pi-btn pi-btn-primary" id="btnConvert" disabled><i data-lucide="cog"></i>开始转换</button>
+                <button class="pi-btn pi-btn-ghost" id="btnZip" disabled><i data-lucide="archive"></i>打包下载全部</button>
+            </div>
+
+            <div class="pi-progress" id="progressBox">
+                <div class="bar"><div class="fill" id="progressFill"></div></div>
+                <div class="txt" id="progressTxt">准备中…</div>
+            </div>
+
+            <div class="pi-pages" id="pages"></div>
+        </div>
+    </section>
+
+    <script>
+        (function() {
+            var pdfDoc = null, pageImages = [];
+            var uploadZone = document.getElementById('uploadZone');
+            var scaleInput = document.getElementById('scale');
+            var formatSelect = document.getElementById('format');
+
+            uploadZone.addEventListener('click', function() { document.getElementById('fileInput').click(); });
+            uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('dragover'); });
+            uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('dragover'); });
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault(); uploadZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) loadPdf(e.dataTransfer.files[0]);
+            });
+            document.getElementById('fileInput').addEventListener('change', function() {
+                if (this.files.length) loadPdf(this.files[0]);
+            });
+
+            function loadPdf(file) {
+                if (!/pdf/.test(file.type) && !/\.pdf$/.test(file.name)) {
+                    Auth.showToast && Auth.showToast('请选择 PDF 文件', 'error'); return;
+                }
+                if (typeof pdfjsLib === 'undefined') {
+                    Auth.showToast && Auth.showToast('PDF 解析库加载中，请稍后重试', 'error'); return;
+                }
+                try { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; } catch (e) {}
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(e.target.result) });
+                    loadingTask.promise.then(function(doc) {
+                        pdfDoc = doc;
+                        pageImages = [];
+                        document.getElementById('pages').innerHTML = '';
+                        document.getElementById('btnConvert').disabled = false;
+                        document.getElementById('btnZip').disabled = true;
+                        Auth.showToast && Auth.showToast('PDF 加载成功，共 ' + doc.numPages + ' 页', 'success');
+                    }).catch(function() {
+                        Auth.showToast && Auth.showToast('PDF 解析失败，文件可能已损坏或加密', 'error');
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            function showProgress(pct, txt) {
+                var box = document.getElementById('progressBox');
+                box.classList.add('visible');
+                document.getElementById('progressFill').style.width = pct + '%';
+                document.getElementById('progressTxt').textContent = txt || (pct + '%');
+                if (pct >= 100) setTimeout(function() { box.classList.remove('visible'); }, 900);
+            }
+
+            function pageToCanvas(page, scale) {
+                var viewport = page.getViewport({ scale: scale });
+                var canvas = document.createElement('canvas');
+                canvas.width = viewport.width; canvas.height = viewport.height;
+                var ctx = canvas.getContext('2d');
+                var renderTask = page.render({ canvasContext: ctx, viewport: viewport });
+                return renderTask.promise.then(function() { return canvas; });
+            }
+
+            document.getElementById('btnConvert').addEventListener('click', function() {
+                if (!pdfDoc) return;
+                var scale = parseFloat(scaleInput.value);
+                var fmt = formatSelect.value;
+                var grid = document.getElementById('pages');
+                grid.innerHTML = '';
+                pageImages = [];
+                showProgress(0, '开始转换…');
+
+                var tasks = [];
+                for (var i = 1; i <= pdfDoc.numPages; i++) {
+                    tasks.push(pdfDoc.getPage(i).then(function(page) {
+                        return pageToCanvas(page, scale).then(function(canvas) {
+                            pageImages.push({ canvas: canvas, page: page.pageNumber });
+                            var wrap = document.createElement('div');
+                            wrap.className = 'pi-page';
+                            wrap.appendChild(canvas);
+                            var foot = document.createElement('div');
+                            foot.className = 'foot';
+                            foot.innerHTML = '<span>第 ' + page.pageNumber + ' 页</span><button class="dl-one" title="下载本页"><i data-lucide="download"></i></button>';
+                            foot.querySelector('.dl-one').addEventListener('click', function() {
+                                downloadCanvas(canvas, 'pdf_page_' + page.pageNumber + '.' + (fmt === 'png' ? 'png' : 'jpg'));
+                            });
+                            wrap.appendChild(foot);
+                            grid.appendChild(wrap);
+                            if (window.lucide) lucide.createIcons();
+                            showProgress(Math.round(pageImages.length / pdfDoc.numPages * 100));
+                        });
+                    }));
+                }
+                Promise.all(tasks).then(function() {
+                    showProgress(100, '转换完成！共 ' + pageImages.length + ' 页');
+                    document.getElementById('btnZip').disabled = false;
+                });
+            });
+
+            function downloadCanvas(canvas, filename) {
+                var mime = filename.indexOf('.png') > -1 ? 'image/png' : 'image/jpeg';
+                var a = document.createElement('a');
+                a.download = filename;
+                a.href = canvas.toDataURL(mime, 0.95);
+                a.click();
+            }
+
+            document.getElementById('btnZip').addEventListener('click', function() {
+                if (!pageImages.length) return;
+                if (typeof JSZip === 'undefined') { Auth.showToast && Auth.showToast('打包库加载中，请稍后重试', 'error'); return; }
+                var fmt = formatSelect.value;
+                var ext = fmt === 'png' ? 'png' : 'jpg';
+                var mime = fmt === 'png' ? 'image/png' : 'image/jpeg';
+                var zip = new JSZip();
+                showProgress(10, '正在打包…');
+                pageImages.forEach(function(item) {
+                    zip.file('pdf_page_' + item.page + '.' + ext, item.canvas.toDataURL(mime, 0.95).split(',')[1], { base64: true });
+                });
+                zip.generateAsync({ type: 'blob' }).then(function(blob) {
+                    var a = document.createElement('a');
+                    a.download = 'PDF转图片_' + Date.now() + '.zip';
+                    a.href = URL.createObjectURL(blob);
+                    a.click();
+                    showProgress(100, '打包完成！');
+                });
+            });
+
+            scaleInput.addEventListener('input', function() {
+                document.getElementById('scaleVal').textContent = scaleInput.value;
+            });
+        })();
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #DC2626, #EA580C);">
+                    <i data-lucide="image-down"></i>
+                </div>
+                <span>PDF转图片</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

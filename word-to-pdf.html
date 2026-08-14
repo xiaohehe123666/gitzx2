@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word转PDF - 在线转换工具</title>
+    <meta name="description" content="免费在线Word转PDF工具：上传DOCX文档，浏览器本地解析并预览排版，一键导出PDF，格式保留完整，无需上传服务器">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js" defer></script>
+    <style>
+        .wp-hero { padding: 7rem 0 2rem; text-align: center; }
+        .wp-hero .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; background: rgba(59,130,246,0.1); color: #60A5FA;
+            border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem;
+        }
+        .wp-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .wp-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+        .wp-section { padding: 1rem 0 2rem; max-width: 860px; margin: 0 auto; }
+        .wp-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 1.75rem; box-shadow: var(--shadow-lg); margin-bottom: 1.5rem;
+        }
+        .wp-card-title { display: flex; align-items: center; gap: 0.6rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; }
+        .wp-card-title i { width: 20px; height: 20px; color: #60A5FA; }
+
+        .wp-upload {
+            border: 2px dashed var(--border); border-radius: 18px;
+            padding: 2.5rem 1.5rem; text-align: center; cursor: pointer;
+            transition: all 0.25s ease; background: var(--bg);
+        }
+        .wp-upload:hover, .wp-upload.dragover { border-color: #60A5FA; background: rgba(59,130,246,0.06); }
+        .wp-upload i { width: 40px; height: 40px; color: #60A5FA; margin-bottom: 0.75rem; }
+        .wp-upload p { color: var(--text-secondary); font-size: 0.9rem; }
+
+        .wp-tip {
+            display: flex; gap: 0.6rem; align-items: flex-start;
+            background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 12px; padding: 0.75rem 1rem; margin-top: 1rem;
+            font-size: 0.82rem; color: var(--text-secondary); line-height: 1.6;
+        }
+        .wp-tip i { width: 16px; height: 16px; color: #60A5FA; flex-shrink: 0; margin-top: 2px; }
+
+        .wp-btn {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            padding: 0.6rem 1.2rem; border: none; border-radius: 12px;
+            font-family: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .wp-btn i { width: 16px; height: 16px; }
+        .wp-btn-primary { background: linear-gradient(135deg, #2563EB, #3B82F6); color: #fff; }
+        .wp-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(59,130,246,0.35); }
+        .wp-btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .wp-btn-ghost:hover { border-color: #60A5FA; color: #60A5FA; }
+        .wp-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        .wp-loading { display: none; text-align: center; padding: 2rem; color: var(--text-secondary); }
+        .wp-loading.visible { display: block; }
+        .wp-loading i { width: 28px; height: 28px; animation: wpSpin 1s linear infinite; color: #60A5FA; }
+        @keyframes wpSpin { to { transform: rotate(360deg); } }
+        .wp-loading p { margin-top: 0.75rem; font-size: 0.875rem; }
+
+        .wp-preview { display: none; margin-top: 1.5rem; }
+        .wp-preview.visible { display: block; }
+        .wp-preview .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem; }
+        .wp-preview .head .name { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem; }
+        .wp-preview .head .name i { width: 15px; height: 15px; color: #60A5FA; }
+        .wp-doc {
+            background: #fff; color: #1F2937; border-radius: 12px; border: 1px solid var(--border);
+            padding: 2rem 2.5rem; max-height: 560px; overflow-y: auto;
+            font-family: 'Inter', -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            font-size: 14px; line-height: 1.7;
+        }
+        .wp-doc h1 { font-size: 1.6em; margin: 0.8em 0 0.4em; }
+        .wp-doc h2 { font-size: 1.35em; margin: 0.8em 0 0.4em; }
+        .wp-doc h3 { font-size: 1.15em; margin: 0.7em 0 0.35em; }
+        .wp-doc p { margin: 0.5em 0; }
+        .wp-doc ul, .wp-doc ol { margin: 0.5em 0; padding-left: 1.6em; }
+        .wp-doc img { max-width: 100%; border-radius: 6px; }
+        .wp-doc table { border-collapse: collapse; width: 100%; margin: 0.8em 0; }
+        .wp-doc td, .wp-doc th { border: 1px solid #CBD5E1; padding: 6px 10px; }
+        .wp-doc blockquote { border-left: 4px solid #93C5FD; margin: 0.8em 0; padding: 0.3em 1em; background: #EFF6FF; }
+
+        /* 打印样式：只打印文档内容 */
+        @media print {
+            body * { visibility: hidden; }
+            .wp-doc, .wp-doc * { visibility: visible; }
+            .wp-doc { position: absolute; left: 0; top: 0; width: 100%; max-height: none; border: none; padding: 0; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <section class="wp-hero">
+        <div class="hero-badge"><i data-lucide="file-text"></i><span>Word 转 PDF · 本地解析 · 排版保留</span></div>
+        <h1 class="hero-title">Word 转 <span class="gradient-text" style="background:linear-gradient(135deg,#2563EB,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">PDF</span></h1>
+        <p class="hero-description">上传 .docx 文档，浏览器本地解析排版并预览，确认后一键导出 PDF，文档不会离开你的设备。</p>
+    </section>
+
+    <section class="wp-section">
+        <div class="wp-card">
+            <div class="wp-card-title"><i data-lucide="file-up"></i>上传 Word 文档</div>
+            <div class="wp-upload" id="uploadZone">
+                <i data-lucide="file-text"></i>
+                <p><strong>点击上传</strong> 或拖拽 .docx 文件到此处</p>
+                <p>仅支持 Word 2007+ 的 .docx 格式</p>
+            </div>
+            <input type="file" id="fileInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+            <div class="wp-tip">
+                <i data-lucide="info"></i>
+                <span>提示：转换过程完全在浏览器本地完成，文档不会上传到任何服务器。点击"导出 PDF"后，在打印对话框中选择"另存为 PDF"即可保存。</span>
+            </div>
+        </div>
+
+        <div class="wp-card" id="previewCard" style="display:none;">
+            <div class="wp-card-title"><i data-lucide="eye"></i>预览 &amp; 导出</div>
+            <div class="wp-loading" id="loading"><i data-lucide="loader-2"></i><p>正在解析文档…</p></div>
+            <div class="wp-preview" id="preview">
+                <div class="head">
+                    <span class="name"><i data-lucide="file-text"></i><span id="docName"></span></span>
+                    <button class="wp-btn wp-btn-primary" id="btnExport"><i data-lucide="printer"></i>导出为 PDF</button>
+                </div>
+                <div class="wp-doc" id="docContent"></div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (function() {
+            var uploadZone = document.getElementById('uploadZone');
+            uploadZone.addEventListener('click', function() { document.getElementById('fileInput').click(); });
+            uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('dragover'); });
+            uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('dragover'); });
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault(); uploadZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) loadDoc(e.dataTransfer.files[0]);
+            });
+            document.getElementById('fileInput').addEventListener('change', function() {
+                if (this.files.length) loadDoc(this.files[0]);
+            });
+
+            function loadDoc(file) {
+                if (!/\.docx$/i.test(file.name)) {
+                    Auth.showToast && Auth.showToast('仅支持 .docx 格式（Word 2007+）', 'error'); return;
+                }
+                if (typeof mammoth === 'undefined') {
+                    Auth.showToast && Auth.showToast('解析库加载中，请稍后重试', 'error'); return;
+                }
+                var card = document.getElementById('previewCard');
+                card.style.display = '';
+                document.getElementById('loading').classList.add('visible');
+                document.getElementById('preview').classList.remove('visible');
+                document.getElementById('docName').textContent = file.name;
+
+                mammoth.convertToHtml({ arrayBuffer: file })
+                    .then(function(result) {
+                        document.getElementById('docContent').innerHTML = result.value || '<p style="color:#94A3B8;">（文档内容为空）</p>';
+                        document.getElementById('loading').classList.remove('visible');
+                        document.getElementById('preview').classList.add('visible');
+                        Auth.showToast && Auth.showToast('解析完成，点击"导出为 PDF"', 'success');
+                    })
+                    .catch(function(err) {
+                        document.getElementById('loading').classList.remove('visible');
+                        card.style.display = 'none';
+                        Auth.showToast && Auth.showToast('解析失败：' + (err.message || '文件格式不支持'), 'error');
+                    });
+            }
+
+            document.getElementById('btnExport').addEventListener('click', function() {
+                window.print();
+            });
+        })();
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #DC2626, #EA580C);">
+                    <i data-lucide="file-text"></i>
+                </div>
+                <span>Word转PDF</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

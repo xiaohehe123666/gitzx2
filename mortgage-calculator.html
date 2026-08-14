@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房贷计算器 - 等额本息/等额本金在线计算</title>
+    <meta name="description" content="免费在线房贷计算器：支持等额本息和等额本金两种还款方式，自动计算月供、总利息、还款明细，内置公积金和商业贷款利率快捷填充">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .mg-hero { padding: 7rem 0 2rem; text-align: center; }
+    .mg-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(13, 148, 136, 0.12); color: #0D9488; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .mg-hero .hero-badge i { width: 16px; height: 16px; }
+    .mg-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .mg-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .mg-section { padding: 1rem 0 2rem; }
+    .mg-wrap { display: grid; grid-template-columns: 360px 1fr; gap: 1.25rem; align-items: start; }
+    .mg-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.4rem; box-shadow: var(--shadow-lg); }
+    .mg-field { margin-bottom: 1rem; }
+    .mg-field label { display: block; font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.4rem; font-weight: 600; }
+    .mg-field input { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 0.95rem; background: var(--bg); color: var(--text); }
+    .mg-input-group { display: flex; align-items: center; }
+    .mg-input-group input { flex: 1; }
+    .mg-input-group span { margin-left: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; }
+    .mg-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+    .mg-mode-btn { padding: 0.7rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all .2s; }
+    .mg-mode-btn.active { background: linear-gradient(135deg, #0D9488, #14B8A6); color: #fff; border-color: transparent; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3); }
+    .mg-rate-presets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+    .mg-rate-chip { padding: 0.35rem 0.7rem; border: 1px solid var(--border); border-radius: 999px; font-size: 0.75rem; cursor: pointer; background: var(--bg-card); color: var(--text-secondary); transition: all .2s; }
+    .mg-rate-chip:hover { border-color: #0D9488; color: #0D9488; }
+    .mg-btn { width: 100%; padding: 0.8rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #0D9488, #14B8A6); color: #fff; font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all .2s; }
+    .mg-btn:hover { box-shadow: 0 6px 16px rgba(13, 148, 136, 0.3); transform: translateY(-1px); }
+
+    .mg-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .mg-sum-item { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 0.9rem 1rem; text-align: center; }
+    .mg-sum-item .mg-sum-label { font-size: 0.75rem; color: var(--text-secondary); }
+    .mg-sum-item .mg-sum-value { font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem; color: var(--text); font-variant-numeric: tabular-nums; }
+    .mg-sum-item.hl .mg-sum-value { color: #0D9488; }
+    .mg-detail-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .mg-detail-title i { width: 18px; height: 18px; color: #0D9488; }
+    .mg-table-wrap { max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: 14px; }
+    .mg-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .mg-table th, .mg-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+    .mg-table th { background: var(--bg); font-weight: 600; position: sticky; top: 0; }
+    .mg-table th:first-child, .mg-table td:first-child { text-align: left; }
+    .mg-table tr:last-child td { border-bottom: none; }
+    .mg-note { font-size: 0.78rem; color: var(--text-light); margin-top: 0.75rem; line-height: 1.7; }
+
+    @media (max-width: 900px) {
+        .mg-wrap { grid-template-columns: 1fr; }
+        .mg-summary { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+        .mg-hero { padding: 6rem 0 1.5rem; }
+        .mg-hero h1 { font-size: 1.85rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #0D9488, #14B8A6);">
+                    <i data-lucide="home"></i>
+                </div>
+                <span class="logo-text">房贷计算器</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#mortgage" class="nav-link active">房贷计算器</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="mg-hero">
+            <div class="hero-badge"><i data-lucide="home"></i><span>月供 · 总利息 · 还款明细</span></div>
+            <h1 class="hero-title">房贷<span class="gradient-text" style="background:linear-gradient(135deg,#0D9488,#14B8A6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">计算器</span></h1>
+            <p class="hero-description">等额本息 / 等额本金两种方式，一键算出月供、总利息和完整还款计划，买房贷款心中有数。</p>
+        </section>
+
+        <section id="mortgage" class="mg-section">
+            <div class="container">
+                <div class="mg-wrap">
+                    <div class="mg-card">
+                        <div class="mg-mode">
+                            <button type="button" class="mg-mode-btn active" id="mode-1">等额本息</button>
+                            <button type="button" class="mg-mode-btn" id="mode-2">等额本金</button>
+                        </div>
+                        <div class="mg-field">
+                            <label>贷款总额</label>
+                            <div class="mg-input-group"><input type="number" id="mg-amount" value="100" min="1"><span>万元</span></div>
+                        </div>
+                        <div class="mg-field">
+                            <label>贷款年限</label>
+                            <div class="mg-input-group"><input type="number" id="mg-years" value="30" min="1" max="30"><span>年</span></div>
+                        </div>
+                        <div class="mg-field">
+                            <label>年利率</label>
+                            <div class="mg-input-group"><input type="number" id="mg-rate" value="3.85" step="0.01" min="0.1"><span>%</span></div>
+                        </div>
+                        <div class="mg-rate-presets">
+                            <span class="mg-rate-chip" data-rate="3.1">公积金首套 3.10%</span>
+                            <span class="mg-rate-chip" data-rate="3.575">公积金二套 3.575%</span>
+                            <span class="mg-rate-chip" data-rate="3.85">商贷首套约 3.85%</span>
+                            <span class="mg-rate-chip" data-rate="4.4">商贷二套约 4.40%</span>
+                        </div>
+                        <button type="button" class="mg-btn" id="mg-calc"><i data-lucide="calculator" style="width:16px;height:16px;vertical-align:-2px;"></i>&nbsp;立即计算</button>
+                        <p class="mg-note">提示：贷款利率随政策和城市浮动，实际以银行审批为准。此处利率为年利率。</p>
+                    </div>
+
+                    <div class="mg-card">
+                        <div class="mg-summary" id="mg-summary" style="display:none;">
+                            <div class="mg-sum-item hl"><div class="mg-sum-label">月供</div><div class="mg-sum-value" id="mg-monthly">-</div></div>
+                            <div class="mg-sum-item"><div class="mg-sum-label">总利息</div><div class="mg-sum-value" id="mg-interest">-</div></div>
+                            <div class="mg-sum-item"><div class="mg-sum-label">还款总额</div><div class="mg-sum-value" id="mg-total">-</div></div>
+                            <div class="mg-sum-item"><div class="mg-sum-label">利息占比</div><div class="mg-sum-value" id="mg-ratio">-</div></div>
+                        </div>
+                        <div class="mg-detail-title"><i data-lucide="list"></i>还款明细（前 36 期）</div>
+                        <div class="mg-table-wrap" id="mg-table-wrap" style="display:none;">
+                            <table class="mg-table">
+                                <thead><tr><th>期数</th><th>月供</th><th>本金</th><th>利息</th><th>剩余本金</th></tr></thead>
+                                <tbody id="mg-tbody"></tbody>
+                            </table>
+                        </div>
+                        <div id="mg-placeholder" style="color:var(--text-light);font-size:0.9rem;padding:1.5rem 0;text-align:center;">输入贷款信息后点击"立即计算"</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #0D9488, #14B8A6);">
+                    <i data-lucide="home"></i>
+                </div>
+                <span>房贷计算器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+        var mode = 1; // 1 等额本息 2 等额本金
+
+        document.getElementById('mode-1').addEventListener('click', function() { setMode(1); });
+        document.getElementById('mode-2').addEventListener('click', function() { setMode(2); });
+        function setMode(m) {
+            mode = m;
+            document.getElementById('mode-1').classList.toggle('active', m === 1);
+            document.getElementById('mode-2').classList.toggle('active', m === 2);
+            calc();
+        }
+        document.querySelectorAll('.mg-rate-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                document.getElementById('mg-rate').value = this.getAttribute('data-rate');
+                calc();
+            });
+        });
+        document.getElementById('mg-calc').addEventListener('click', calc);
+        ['mg-amount', 'mg-years', 'mg-rate'].forEach(function(id) {
+            document.getElementById(id).addEventListener('input', function() { calc(); });
+        });
+
+        function fmt(n) {
+            return n.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function calc() {
+            var P = parseFloat(document.getElementById('mg-amount').value) * 10000;
+            var years = parseFloat(document.getElementById('mg-years').value);
+            var annual = parseFloat(document.getElementById('mg-rate').value);
+            if (!P || !years || !annual) return;
+            var n = Math.round(years * 12);
+            var r = annual / 100 / 12;
+            var monthly, rows = [], totalInterest, total;
+            var table = document.getElementById('mg-tbody');
+            table.innerHTML = '';
+            if (mode === 1) {
+                var pow = Math.pow(1 + r, n);
+                monthly = P * r * pow / (pow - 1);
+                total = monthly * n;
+                totalInterest = total - P;
+                var remain = P;
+                for (var i = 1; i <= Math.min(n, 36); i++) {
+                    var interest = remain * r;
+                    var principal = monthly - interest;
+                    remain = remain - principal;
+                    rows.push([i, monthly, principal, interest, Math.max(0, remain)]);
+                }
+            } else {
+                var base = P / n;
+                var firstInterest = P * r;
+                monthly = base + firstInterest;
+                totalInterest = 0;
+                var rem = P;
+                var firstMonthly = null;
+                for (var i = 1; i <= n; i++) {
+                    var int2 = (P - (i - 1) * base) * r;
+                    var pay2 = base + int2;
+                    if (i === 1) firstMonthly = pay2;
+                    if (i <= 36) {
+                        rem = P - i * base;
+                        rows.push([i, pay2, base, int2, Math.max(0, rem)]);
+                    }
+                    totalInterest += int2;
+                }
+                total = P + totalInterest;
+                monthly = firstMonthly;
+            }
+            document.getElementById('mg-summary').style.display = 'grid';
+            document.getElementById('mg-placeholder').style.display = 'none';
+            document.getElementById('mg-table-wrap').style.display = 'block';
+            document.getElementById('mg-monthly').textContent = '¥' + fmt(monthly);
+            document.getElementById('mg-interest').textContent = '¥' + fmt(totalInterest);
+            document.getElementById('mg-total').textContent = '¥' + fmt(total);
+            document.getElementById('mg-ratio').textContent = Math.round(totalInterest / total * 100) + '%';
+            rows.forEach(function(row) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>第 ' + row[0] + ' 期</td><td>¥' + fmt(row[1]) + '</td><td>¥' + fmt(row[2]) + '</td><td>¥' + fmt(row[3]) + '</td><td>¥' + fmt(row[4]) + '</td>';
+                table.appendChild(tr);
+            });
+        }
+        calc();
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页面不存在 - 在线工具箱</title>
+    <meta name="description" content="你访问的页面不存在或已被移除，返回在线工具箱首页寻找更多实用工具">
+    <meta name="robots" content="noindex">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        body {
+            background: #0F172A;
+            color: #E2E8F0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .bg-decoration { display: none; }
+
+        .nf-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+        .nf-inner { max-width: 520px; }
+        .nf-code {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(6rem, 20vw, 11rem);
+            font-weight: 700;
+            line-height: 1;
+            background: linear-gradient(135deg, #6366F1, #A855F7, #EC4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -4px;
+            animation: nfFloat 3.5s ease-in-out infinite;
+        }
+        @keyframes nfFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .nf-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.5rem;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.35);
+        }
+        .nf-icon i { width: 30px; height: 30px; }
+        .nf-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #F1F5F9;
+            margin-bottom: 0.75rem;
+        }
+        .nf-desc {
+            color: #94A3B8;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+        .nf-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .nf-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.4rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .nf-btn-primary {
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+        .nf-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(99, 102, 241, 0.4);
+        }
+        .nf-btn-ghost {
+            background: #1E293B;
+            color: #E2E8F0;
+            border: 1px solid #334155;
+        }
+        .nf-btn-ghost:hover {
+            background: #334155;
+            transform: translateY(-2px);
+        }
+        .nf-btn i { width: 16px; height: 16px; }
+        .nf-footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: #64748B;
+            font-size: 0.8125rem;
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="nf-wrap">
+        <div class="nf-inner">
+            <div class="nf-icon">
+                <i data-lucide="compass"></i>
+            </div>
+            <div class="nf-code">404</div>
+            <h1 class="nf-title">页面走丢了</h1>
+            <p class="nf-desc">你访问的页面不存在或已被移除。可能是链接已失效，或者地址输错了。回到首页，从 50+ 个实用工具里找到你需要的。</p>
+            <div class="nf-actions">
+                <a href="index.html" class="nf-btn nf-btn-primary">
+                    <i data-lucide="home"></i> 返回首页
+                </a>
+                <button type="button" class="nf-btn nf-btn-ghost" onclick="history.back()">
+                    <i data-lucide="arrow-left"></i> 返回上一页
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="nf-footer">在线工具箱 · 免费实用的全能工具集</div>
+</body>
+</html>

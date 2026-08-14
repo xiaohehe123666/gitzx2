@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片格式转换 - PNG/JPG/WebP/BMP 互转</title>
+    <meta name="description" content="免费在线图片格式转换工具，支持 PNG、JPG、WebP、BMP 互转，浏览器本地转换，隐私安全">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #8B5CF6, #A855F7);">
+                    <i data-lucide="image"></i>
+                </div>
+                <span class="logo-text">图片格式转换</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#converter" class="nav-link active">转换</a>
+                <a href="#features" class="nav-link">特性</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="repeat"></i>
+                    <span>PNG · JPG · WebP · BMP 互转</span>
+                </div>
+                <h1 class="hero-title">
+                    图片<span class="gradient-text" style="background:linear-gradient(135deg,#8B5CF6,#A855F7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">格式转换</span>
+                </h1>
+                <p class="hero-description">
+                    基于 Canvas API 的纯前端图片格式转换工具，支持 PNG、JPG、WebP、BMP 互转，
+                    可调整 JPEG/WebP 压缩质量，转换前后文件大小一目了然。所有处理在浏览器本地完成。
+                </p>
+            </div>
+        </section>
+
+        <section id="converter" class="converter-section">
+            <div class="converter-card">
+                <div class="converter-header">
+                    <h2>上传图片</h2>
+                    <p>支持 PNG、JPG、WebP、BMP、GIF，最大 20MB</p>
+                </div>
+
+                <div id="uploadZone" class="upload-zone">
+                    <div class="upload-content">
+                        <div class="upload-icon" style="background: linear-gradient(135deg, #8B5CF6, #A855F7);">
+                            <i data-lucide="image-plus"></i>
+                        </div>
+                        <h3>拖拽图片到此处</h3>
+                        <p>或者点击按钮选择文件</p>
+                        <button id="selectBtn" class="btn-select" style="background: linear-gradient(135deg, #8B5CF6, #A855F7);">
+                            <i data-lucide="folder-open"></i>
+                            选择图片
+                        </button>
+                        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif" hidden>
+                    </div>
+                </div>
+
+                <div id="convertPanel" class="compress-panel hidden">
+                    <div class="preview-container">
+                        <div class="preview-box">
+                            <div class="preview-label">
+                                <span class="preview-tag original-tag">原图</span>
+                                <span id="originalSize" class="preview-size">0 KB</span>
+                            </div>
+                            <div class="preview-image-wrapper">
+                                <img id="originalPreview" alt="原图预览">
+                            </div>
+                        </div>
+                        <div class="preview-box">
+                            <div class="preview-label">
+                                <span class="preview-tag compressed-tag">转换后</span>
+                                <span id="convertedSize" class="preview-size">-</span>
+                            </div>
+                            <div class="preview-image-wrapper">
+                                <img id="convertedPreview" alt="转换后预览">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="compress-controls">
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>原始信息</span>
+                            </label>
+                            <div id="fileInfo" style="font-size:13px;color:#666;line-height:1.6;">
+                                文件名：<span id="fileName">-</span><br>
+                                格式：<span id="fileFormat">-</span> · 尺寸：<span id="fileDimensions">-</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>目标格式</span>
+                            </label>
+                            <div class="format-options">
+                                <button class="format-btn active" data-format="image/png">PNG</button>
+                                <button class="format-btn" data-format="image/jpeg">JPEG</button>
+                                <button class="format-btn" data-format="image/webp">WebP</button>
+                                <button class="format-btn" data-format="image/bmp">BMP</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group" id="qualityGroup">
+                            <label class="control-label">
+                                <span>质量（仅 JPEG/WebP）</span>
+                                <span id="qualityValue" class="control-value">85%</span>
+                            </label>
+                            <input type="range" id="qualitySlider" min="50" max="100" value="85" class="slider">
+                        </div>
+                    </div>
+
+                    <div id="convertStats" class="compress-stats hidden">
+                        <div class="stat-item">
+                            <span class="stat-label">原始大小</span>
+                            <span id="statOriginalSize" class="stat-value">0 KB</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">转换后大小</span>
+                            <span id="statConvertedSize" class="stat-value">0 KB</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">压缩比</span>
+                            <span id="compressRatio" class="stat-value">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">目标格式</span>
+                            <span id="statFormat" class="stat-value">-</span>
+                        </div>
+                    </div>
+
+                    <div class="compress-actions">
+                        <button id="convertBtn" class="btn-download" style="background: linear-gradient(135deg, #8B5CF6, #A855F7);">
+                            <i data-lucide="repeat"></i>
+                            开始转换
+                        </button>
+                        <button id="downloadBtn" class="btn-download" style="background: linear-gradient(135deg, #10B981, #059669); display:none;">
+                            <i data-lucide="download"></i>
+                            下载转换后图片
+                        </button>
+                        <button id="resetBtn" class="btn-secondary">
+                            <i data-lucide="refresh-cw"></i>
+                            重新选择
+                        </button>
+                    </div>
+                </div>
+
+                <div id="errorSection" class="error-section hidden">
+                    <div class="error-icon">
+                        <i data-lucide="alert-circle"></i>
+                    </div>
+                    <h3>处理失败</h3>
+                    <p id="errorMessage">请重试或更换文件</p>
+                    <button id="retryBtn" class="btn-secondary">
+                        <i data-lucide="rotate-ccw"></i>
+                        重新尝试
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、高效、安全的图片格式转换工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1)); color: #8B5CF6;">
+                        <i data-lucide="lock"></i>
+                    </div>
+                    <h3>隐私保护</h3>
+                    <p>所有转换在浏览器本地完成，图片不会上传到任何服务器</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1)); color: #8B5CF6;">
+                        <i data-lucide="repeat"></i>
+                    </div>
+                    <h3>多格式互转</h3>
+                    <p>支持 PNG、JPG、WebP、BMP 之间任意格式互转</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1)); color: #8B5CF6;">
+                        <i data-lucide="sliders"></i>
+                    </div>
+                    <h3>质量可调</h3>
+                    <p>JPEG/WebP 输出质量可调，从 50% 到 100% 自由控制</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1)); color: #8B5CF6;">
+                        <i data-lucide="bar-chart-3"></i>
+                    </div>
+                    <h3>大小对比</h3>
+                    <p>转换前后文件大小直观展示，压缩比一目了然</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1)); color: #8B5CF6;">
+                        <i data-lucide="eye"></i>
+                    </div>
+                    <h3>实时预览</h3>
+                    <p>转换前后双图对比预览，效果立即可见</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1)); color: #8B5CF6;">
+                        <i data-lucide="zap"></i>
+                    </div>
+                    <h3>快速高效</h3>
+                    <p>基于 Canvas 技术，转换速度快，无需等待上传下载</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #8B5CF6, #A855F7);">
+                    <i data-lucide="image"></i>
+                </div>
+                <span>图片格式转换</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var state = {
+            originalFile: null,
+            originalImage: null,
+            convertedBlob: null,
+            targetFormat: 'image/png',
+            quality: 0.85
+        };
+
+        var els = {
+            uploadZone: document.getElementById('uploadZone'),
+            fileInput: document.getElementById('fileInput'),
+            selectBtn: document.getElementById('selectBtn'),
+            convertPanel: document.getElementById('convertPanel'),
+            originalPreview: document.getElementById('originalPreview'),
+            convertedPreview: document.getElementById('convertedPreview'),
+            originalSize: document.getElementById('originalSize'),
+            convertedSize: document.getElementById('convertedSize'),
+            fileName: document.getElementById('fileName'),
+            fileFormat: document.getElementById('fileFormat'),
+            fileDimensions: document.getElementById('fileDimensions'),
+            formatBtns: document.querySelectorAll('.format-btn'),
+            qualityGroup: document.getElementById('qualityGroup'),
+            qualitySlider: document.getElementById('qualitySlider'),
+            qualityValue: document.getElementById('qualityValue'),
+            convertStats: document.getElementById('convertStats'),
+            statOriginalSize: document.getElementById('statOriginalSize'),
+            statConvertedSize: document.getElementById('statConvertedSize'),
+            compressRatio: document.getElementById('compressRatio'),
+            statFormat: document.getElementById('statFormat'),
+            convertBtn: document.getElementById('convertBtn'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            errorSection: document.getElementById('errorSection'),
+            errorMessage: document.getElementById('errorMessage'),
+            retryBtn: document.getElementById('retryBtn')
+        };
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        function show(el) { el.classList.remove('hidden'); }
+        function hide(el) { el.classList.add('hidden'); }
+
+        function showError(msg) {
+            els.errorMessage.textContent = msg;
+            show(els.errorSection);
+            hide(els.convertPanel);
+        }
+
+        function getFormatLabel(mime) {
+            var map = {
+                'image/png': 'PNG',
+                'image/jpeg': 'JPEG',
+                'image/webp': 'WebP',
+                'image/bmp': 'BMP',
+                'image/gif': 'GIF'
+            };
+            return map[mime] || mime;
+        }
+
+        function getExtension(mime) {
+            var map = {
+                'image/png': '.png',
+                'image/jpeg': '.jpg',
+                'image/webp': '.webp',
+                'image/bmp': '.bmp'
+            };
+            return map[mime] || '.png';
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+
+            if (!file.type.match(/^image\/(png|jpeg|webp|bmp|gif)$/)) {
+                showError('请选择 PNG、JPG、WebP、BMP 或 GIF 格式的图片');
+                return;
+            }
+
+            if (file.size > 20 * 1048576) {
+                showError('文件大小超过 20MB 限制');
+                return;
+            }
+
+            hide(els.errorSection);
+            state.originalFile = file;
+            state.convertedBlob = null;
+            els.originalSize.textContent = formatSize(file.size);
+            els.convertedSize.textContent = '-';
+            els.fileName.textContent = file.name;
+            els.fileFormat.textContent = getFormatLabel(file.type);
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    state.originalImage = img;
+                    els.originalPreview.src = e.target.result;
+                    els.fileDimensions.textContent = img.width + '×' + img.height;
+                    show(els.convertPanel);
+                    hide(els.convertStats);
+                    els.downloadBtn.style.display = 'none';
+                    els.convertBtn.style.display = 'inline-flex';
+                };
+                img.onerror = function() {
+                    showError('图片加载失败，请检查文件是否损坏');
+                };
+                img.src = e.target.result;
+            };
+            reader.onerror = function() {
+                showError('文件读取失败');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function canvasToBMP(canvas, callback) {
+            try {
+                var ctx = canvas.getContext('2d');
+                var w = canvas.width;
+                var h = canvas.height;
+                var imageData = ctx.getImageData(0, 0, w, h);
+                var data = imageData.data;
+
+                var rowSize = Math.floor((24 * w + 31) / 32) * 4;
+                var pixelArraySize = rowSize * h;
+                var fileSize = 54 + pixelArraySize;
+
+                var buffer = new ArrayBuffer(fileSize);
+                var view = new DataView(buffer);
+
+                view.setUint8(0, 0x42);
+                view.setUint8(1, 0x4D);
+                view.setUint32(2, fileSize, true);
+                view.setUint32(6, 0, true);
+                view.setUint32(10, 54, true);
+
+                view.setUint32(14, 40, true);
+                view.setInt32(18, w, true);
+                view.setInt32(22, h, true);
+                view.setUint16(26, 1, true);
+                view.setUint16(28, 24, true);
+                view.setUint32(30, 0, true);
+                view.setUint32(34, pixelArraySize, true);
+                view.setInt32(38, 2835, true);
+                view.setInt32(42, 2835, true);
+                view.setUint32(46, 0, true);
+                view.setUint32(50, 0, true);
+
+                var offset = 54;
+                for (var y = h - 1; y >= 0; y--) {
+                    var rowStart = offset + (h - 1 - y) * rowSize;
+                    var padding = rowSize - w * 3;
+                    for (var x = 0; x < w; x++) {
+                        var idx = (y * w + x) * 4;
+                        view.setUint8(rowStart + x * 3, data[idx + 2]);
+                        view.setUint8(rowStart + x * 3 + 1, data[idx + 1]);
+                        view.setUint8(rowStart + x * 3 + 2, data[idx]);
+                    }
+                    for (var p = 0; p < padding; p++) {
+                        view.setUint8(rowStart + w * 3 + p, 0);
+                    }
+                }
+
+                var blob = new Blob([buffer], { type: 'image/bmp' });
+                callback(blob);
+            } catch (err) {
+                callback(null);
+            }
+        }
+
+        function convert() {
+            if (!state.originalImage) return;
+
+            try {
+                var img = state.originalImage;
+                var format = state.targetFormat;
+                var w = img.width;
+                var h = img.height;
+
+                var canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                var ctx = canvas.getContext('2d');
+
+                if (format === 'image/jpeg' || format === 'image/bmp') {
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, w, h);
+                }
+
+                ctx.drawImage(img, 0, 0, w, h);
+
+                if (format === 'image/bmp') {
+                    canvasToBMP(canvas, function(blob) {
+                        if (!blob) {
+                            showError('BMP 转换失败，请尝试其他格式');
+                            return;
+                        }
+                        finishConvert(blob, format);
+                    });
+                    return;
+                }
+
+                var qualityArg = (format === 'image/png') ? undefined : state.quality;
+
+                canvas.toBlob(function(blob) {
+                    if (!blob) {
+                        showError('转换失败，请尝试其他格式或质量设置');
+                        return;
+                    }
+                    finishConvert(blob, format);
+                }, format, qualityArg);
+            } catch (err) {
+                showError('转换过程出错：' + err.message);
+            }
+        }
+
+        function finishConvert(blob, format) {
+            state.convertedBlob = blob;
+            var url = URL.createObjectURL(blob);
+            els.convertedPreview.src = url;
+            els.convertedPreview.onload = function() {
+                URL.revokeObjectURL(url);
+            };
+
+            els.convertedSize.textContent = formatSize(blob.size);
+            els.statOriginalSize.textContent = formatSize(state.originalFile.size);
+            els.statConvertedSize.textContent = formatSize(blob.size);
+            els.statFormat.textContent = getFormatLabel(format);
+
+            var ratio = 0;
+            if (state.originalFile.size > 0) {
+                ratio = Math.round((1 - blob.size / state.originalFile.size) * 100);
+                if (ratio < 0) ratio = Math.round((blob.size / state.originalFile.size - 1) * 100);
+            }
+            els.compressRatio.textContent = (ratio >= 0 ? '-' : '+') + Math.abs(ratio) + '%';
+
+            show(els.convertStats);
+            els.convertBtn.style.display = 'inline-flex';
+            els.downloadBtn.style.display = 'inline-flex';
+        }
+
+        function download() {
+            if (!state.convertedBlob) return;
+
+            try {
+                var format = state.targetFormat;
+                var baseName = state.originalFile.name.replace(/\.[^/.]+$/, '');
+                var fileName = baseName + '_converted' + getExtension(format);
+
+                var url = URL.createObjectURL(state.convertedBlob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+            } catch (err) {
+                showError('下载失败：' + err.message);
+            }
+        }
+
+        function updateQualityGroup() {
+            if (state.targetFormat === 'image/jpeg' || state.targetFormat === 'image/webp') {
+                show(els.qualityGroup);
+            } else {
+                hide(els.qualityGroup);
+            }
+        }
+
+        function reset() {
+            state.originalFile = null;
+            state.originalImage = null;
+            state.convertedBlob = null;
+            els.fileInput.value = '';
+            els.originalPreview.src = '';
+            els.convertedPreview.src = '';
+            hide(els.convertPanel);
+            hide(els.errorSection);
+            hide(els.convertStats);
+            els.downloadBtn.style.display = 'none';
+        }
+
+        els.selectBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            els.fileInput.click();
+        });
+
+        els.uploadZone.addEventListener('click', function(e) {
+            if (e.target === els.selectBtn || e.target.closest('.btn-select')) return;
+            els.fileInput.click();
+        });
+
+        els.fileInput.addEventListener('change', function(e) {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
+
+        els.uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        els.uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        els.uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        });
+
+        els.formatBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                els.formatBtns.forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                state.targetFormat = this.getAttribute('data-format');
+                updateQualityGroup();
+            });
+        });
+
+        els.qualitySlider.addEventListener('input', function() {
+            var val = parseInt(this.value, 10);
+            state.quality = val / 100;
+            els.qualityValue.textContent = val + '%';
+        });
+
+        els.convertBtn.addEventListener('click', convert);
+        els.downloadBtn.addEventListener('click', download);
+        els.resetBtn.addEventListener('click', reset);
+        els.retryBtn.addEventListener('click', reset);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) lucide.createIcons();
+            updateQualityGroup();
+        });
+    })();
+    </script>
+</body>
+</html>

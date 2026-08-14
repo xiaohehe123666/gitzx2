@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本转语音 - 在线文字朗读工具</title>
+    <meta name="description" content="免费在线文本转语音工具，支持中文等多种语言朗读、语速音调调节，基于浏览器原生语音合成，无需安装任何软件">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .tts-hero { padding: 7rem 0 2rem; text-align: center; }
+    .tts-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(37, 99, 235, 0.1); color: #2563EB; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .tts-hero .hero-badge i { width: 16px; height: 16px; }
+    .tts-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .tts-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .tts-section { padding: 1rem 0 2rem; }
+    .tts-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-lg); max-width: 720px; margin: 0 auto; }
+    .tts-textarea { width: 100%; min-height: 200px; border: 1px solid var(--border); border-radius: 16px; padding: 1rem 1.15rem; font-family: inherit; font-size: 1rem; line-height: 1.7; resize: vertical; background: var(--bg); color: var(--text); }
+    .tts-textarea:focus { outline: none; border-color: var(--primary-light); }
+    .tts-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-light); margin-top: 0.5rem; }
+
+    .tts-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.25rem; }
+    .tts-field label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.4rem; font-weight: 600; }
+    .tts-field select { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
+    .tts-range { display: flex; align-items: center; gap: 0.6rem; }
+    .tts-range input[type=range] { flex: 1; accent-color: #2563EB; }
+    .tts-range span { font-size: 0.8rem; color: var(--text-secondary); min-width: 2.4rem; text-align: right; font-variant-numeric: tabular-nums; }
+
+    .tts-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+    .tts-btn { padding: 0.75rem 1.5rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s ease; }
+    .tts-btn i { width: 16px; height: 16px; }
+    .tts-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .tts-btn-primary { background: linear-gradient(135deg, #2563EB, #3B82F6); color: #fff; border: none; }
+    .tts-btn-primary:hover { box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
+    .tts-btn-warn { background: linear-gradient(135deg, #EA580C, #F97316); color: #fff; border: none; }
+    .tts-btn-warn:hover { box-shadow: 0 6px 16px rgba(234, 88, 12, 0.3); }
+    .tts-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .tts-status { margin-top: 1.25rem; padding: 0.9rem 1.1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.6rem; }
+    .tts-status i { width: 18px; height: 18px; color: #2563EB; }
+    .tts-status.speaking { border-color: rgba(37, 99, 235, 0.35); background: rgba(37, 99, 235, 0.05); }
+    .tts-status.speaking i { animation: ttsPulse 1.2s ease-in-out infinite; }
+    @keyframes ttsPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+    .tts-samples { margin-top: 1.25rem; }
+    .tts-samples-title { font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem; }
+    .tts-samples .tts-chip { display: inline-block; padding: 0.35rem 0.85rem; margin: 0.25rem; border: 1px solid var(--border); border-radius: 999px; font-size: 0.8rem; cursor: pointer; transition: all .2s; background: var(--bg-card); color: var(--text); }
+    .tts-samples .tts-chip:hover { border-color: var(--primary-light); color: var(--primary-light); }
+    .tts-hint { margin-top: 1rem; font-size: 0.78rem; color: var(--text-light); line-height: 1.7; }
+
+    @media (max-width: 768px) {
+        .tts-hero { padding: 6rem 0 1.5rem; }
+        .tts-hero h1 { font-size: 1.85rem; }
+        .tts-controls { grid-template-columns: 1fr; }
+        .tts-card { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #2563EB, #3B82F6);">
+                    <i data-lucide="volume-2"></i>
+                </div>
+                <span class="logo-text">文本转语音</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#tts" class="nav-link active">文本转语音</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="tts-hero">
+            <div class="hero-badge"><i data-lucide="volume-2"></i><span>文字朗读 · 多语种 · 免安装</span></div>
+            <h1 class="hero-title">文本<span class="gradient-text" style="background:linear-gradient(135deg,#2563EB,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">转语音</span></h1>
+            <p class="hero-description">把文字变成语音朗读出来，支持中文、英文、日语等，可调节语速音调。所有内容在本地处理，无需上传。</p>
+        </section>
+
+        <section id="tts" class="tts-section">
+            <div class="container">
+                <div class="tts-card">
+                    <textarea class="tts-textarea" id="tts-text" placeholder="在这里输入或粘贴要朗读的文字……&#10;例如：你好，欢迎使用在线工具箱！"></textarea>
+                    <div class="tts-meta"><span id="tts-count">0 字</span><span>按 Ctrl+Enter 快速朗读</span></div>
+
+                    <div class="tts-controls">
+                        <div class="tts-field"><label>语音（语言）</label><select id="tts-voice"><option value="">加载中…</option></select></div>
+                        <div class="tts-field"><label>语速</label>
+                            <div class="tts-range"><input type="range" id="tts-rate" min="0.5" max="2" step="0.1" value="1"><span id="tts-rate-val">1.0x</span></div>
+                        </div>
+                        <div class="tts-field"><label>音调</label>
+                            <div class="tts-range"><input type="range" id="tts-pitch" min="0.5" max="2" step="0.1" value="1"><span id="tts-pitch-val">1.0</span></div>
+                        </div>
+                        <div class="tts-field"><label>音量</label>
+                            <div class="tts-range"><input type="range" id="tts-volume" min="0" max="1" step="0.1" value="1"><span id="tts-volume-val">100%</span></div>
+                        </div>
+                    </div>
+
+                    <div class="tts-actions">
+                        <button type="button" class="tts-btn tts-btn-primary" id="btn-speak"><i data-lucide="play"></i>朗读</button>
+                        <button type="button" class="tts-btn" id="btn-pause" style="display:none;"><i data-lucide="pause"></i>暂停</button>
+                        <button type="button" class="tts-btn" id="btn-resume" style="display:none;"><i data-lucide="play"></i>继续</button>
+                        <button type="button" class="tts-btn tts-btn-warn" id="btn-stop" style="display:none;"><i data-lucide="square"></i>停止</button>
+                        <button type="button" class="tts-btn" id="btn-demo"><i data-lucide="flask-conical"></i>试听语音</button>
+                    </div>
+
+                    <div class="tts-status" id="tts-status"><i data-lucide="info"></i><span id="tts-status-text">就绪，等待朗读</span></div>
+
+                    <div class="tts-samples">
+                        <div class="tts-samples-title">常用示例</div>
+                        <span class="tts-chip">你好，欢迎使用在线工具箱！</span>
+                        <span class="tts-chip">今天天气真好，适合出去走走。</span>
+                        <span class="tts-chip">注意，前方 200 米请左转。</span>
+                        <span class="tts-chip">好好学习，天天向上。</span>
+                    </div>
+
+                    <p class="tts-hint">提示：语音由你的操作系统/浏览器提供，不同设备的音色略有差异。朗读功能基于 Web Speech API，无需联网也能使用。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #2563EB, #3B82F6);">
+                    <i data-lucide="volume-2"></i>
+                </div>
+                <span>文本转语音</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+        var voices = [];
+        var synth = window.speechSynthesis;
+        var utter = null;
+        var paused = false;
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        function loadVoices() {
+            voices = synth.getVoices() || [];
+            var sel = document.getElementById('tts-voice');
+            if (!voices.length) {
+                sel.innerHTML = '<option value="">（无可用语音）</option>';
+                return;
+            }
+            var zhFirst = voices.slice().sort(function(a, b) {
+                var az = /^zh|^cmn|Chinese/.test(a.lang + ' ' + a.name);
+                var bz = /^zh|^cmn|Chinese/.test(b.lang + ' ' + b.name);
+                if (az !== bz) return az ? -1 : 1;
+                return a.name.localeCompare(b.name);
+            });
+            sel.innerHTML = '';
+            var preferred = null;
+            zhFirst.forEach(function(v, i) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = v.name + '（' + v.lang + '）' + (v.localService ? '' : ' · 在线');
+                sel.appendChild(opt);
+                if (!preferred && /zh-CN|zh_CN|Chinese \(China\)|普通话/i.test(v.lang + ' ' + v.name)) preferred = i;
+            });
+            if (preferred !== null) sel.selectedIndex = preferred;
+            // 重新加载后可能没有及时触发，再补一次
+            if (!loadVoices._done) {
+                loadVoices._done = true;
+                setTimeout(loadVoices, 300);
+            }
+        }
+        if (synth) {
+            loadVoices();
+            synth.onvoiceschanged = loadVoices;
+        }
+
+        function getSelectedVoice() {
+            var sel = document.getElementById('tts-voice');
+            var idx = parseInt(sel.value);
+            return (voices[idx] || null);
+        }
+
+        function setStatus(text, speaking) {
+            var el = document.getElementById('tts-status');
+            var t = document.getElementById('tts-status-text');
+            t.textContent = text;
+            el.className = 'tts-status' + (speaking ? ' speaking' : '');
+        }
+
+        function toggleBtns(speaking) {
+            document.getElementById('btn-speak').style.display = speaking ? 'none' : '';
+            document.getElementById('btn-pause').style.display = speaking ? '' : 'none';
+            document.getElementById('btn-resume').style.display = 'none';
+            document.getElementById('btn-stop').style.display = speaking ? '' : 'none';
+        }
+
+        function speak(text, auto) {
+            if (!synth) { showToast('当前浏览器不支持语音合成', 'error'); return; }
+            if (!text.trim()) { showToast('请先输入要朗读的文字', 'error'); return; }
+            synth.cancel();
+            utter = new SpeechSynthesisUtterance(text);
+            var v = getSelectedVoice();
+            if (v) { utter.voice = v; utter.lang = v.lang; }
+            utter.rate = parseFloat(document.getElementById('tts-rate').value);
+            utter.pitch = parseFloat(document.getElementById('tts-pitch').value);
+            utter.volume = parseFloat(document.getElementById('tts-volume').value);
+            utter.onstart = function() { setStatus('正在朗读：' + v ? v.name : '', true); toggleBtns(true); };
+            utter.onend = function() { setStatus('朗读完成', false); toggleBtns(false); paused = false; };
+            utter.onerror = function() { setStatus('朗读出错或已中断', false); toggleBtns(false); paused = false; };
+            synth.speak(utter);
+            if (auto !== false) setStatus('开始朗读…', true);
+            paused = false;
+        }
+
+        document.getElementById('btn-speak').addEventListener('click', function() {
+            speak(document.getElementById('tts-text').value);
+        });
+        document.getElementById('btn-pause').addEventListener('click', function() {
+            if (!synth || !utter) return;
+            synth.pause();
+            paused = true;
+            document.getElementById('btn-pause').style.display = 'none';
+            document.getElementById('btn-resume').style.display = '';
+            setStatus('已暂停', true);
+        });
+        document.getElementById('btn-resume').addEventListener('click', function() {
+            synth.resume();
+            paused = false;
+            document.getElementById('btn-pause').style.display = '';
+            document.getElementById('btn-resume').style.display = 'none';
+            setStatus('继续朗读', true);
+        });
+        document.getElementById('btn-stop').addEventListener('click', function() {
+            synth.cancel();
+            toggleBtns(false);
+            setStatus('已停止', false);
+        });
+        document.getElementById('btn-demo').addEventListener('click', function() {
+            speak('你好，欢迎使用在线工具箱。这是一段试听语音，用来测试声音效果。', false);
+        });
+        document.getElementById('tts-text').addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                speak(this.value);
+            }
+        });
+        document.getElementById('tts-text').addEventListener('input', function() {
+            var n = this.value.length;
+            var c = this.value.replace(/\s/g, '').length;
+            document.getElementById('tts-count').textContent = '共 ' + n + ' 字符（不含空格 ' + c + '）';
+        });
+        document.querySelectorAll('.tts-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                document.getElementById('tts-text').value = chip.textContent;
+                speak(chip.textContent);
+            });
+        });
+
+        var rate = document.getElementById('tts-rate');
+        rate.addEventListener('input', function() { document.getElementById('tts-rate-val').textContent = parseFloat(this.value).toFixed(1) + 'x'; });
+        var pitch = document.getElementById('tts-pitch');
+        pitch.addEventListener('input', function() { document.getElementById('tts-pitch-val').textContent = parseFloat(this.value).toFixed(1); });
+        var vol = document.getElementById('tts-volume');
+        vol.addEventListener('input', function() { document.getElementById('tts-volume-val').textContent = Math.round(this.value * 100) + '%'; });
+
+        document.getElementById('tts-text').value = '你好，欢迎使用在线工具箱！在这里输入文字，点击"朗读"按钮即可把文字转成语音。';
+        document.getElementById('tts-text').dispatchEvent(new Event('input'));
+    })();
+    </script>
+</body>
+</html>

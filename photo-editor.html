@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线PS - 在线工具箱</title>
+    <meta name="description" content="免费在线图片编辑器，支持亮度、对比度、饱和度、色相调整，一键滤镜、裁剪、旋转翻转、缩放与多种格式导出，纯前端处理，隐私安全">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .ps-section { padding: 1rem 0 3.5rem; }
+
+        .ps-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        /* 上传区 */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 18px;
+            padding: 3rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: var(--bg);
+            margin: 0;
+        }
+        .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary-light); background: rgba(59,130,246,.04); }
+        .upload-zone .upload-icon {
+            width: 64px; height: 64px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem;
+            color: #fff;
+        }
+        .upload-zone .upload-icon i { width: 28px; height: 28px; }
+        .upload-zone h3 { font-size: 1.15rem; color: var(--text); margin-bottom: .35rem; }
+        .upload-zone p { font-size: .85rem; color: var(--text-secondary); margin-bottom: 1.1rem; }
+        .btn-select {
+            display: inline-flex; align-items: center; gap: .45rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff; border: none; border-radius: 12px;
+            padding: .65rem 1.4rem; font-size: .9rem; font-weight: 600;
+            cursor: pointer; font-family: inherit; transition: all .2s ease;
+            box-shadow: var(--shadow);
+        }
+        .btn-select:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .btn-select i { width: 17px; height: 17px; }
+        .upload-tips { margin-top: 1rem; font-size: .78rem; color: var(--text-light); display: flex; align-items: center; justify-content: center; gap: .35rem; }
+        .upload-tips i { width: 13px; height: 13px; }
+
+        /* 编辑器布局 */
+        .ps-editor { display: none; }
+        .ps-editor.show { display: block; }
+        .ps-layout {
+            display: grid;
+            grid-template-columns: 64px 1fr 300px;
+            min-height: 540px;
+        }
+
+        /* 左侧工具条 */
+        .ps-toolbar {
+            display: flex;
+            flex-direction: column;
+            gap: .35rem;
+            padding: .75rem .5rem;
+            background: var(--bg);
+            border-right: 1px solid var(--border);
+        }
+        .ps-tool-btn {
+            width: 48px; height: 48px;
+            border: none; border-radius: 12px;
+            background: transparent; color: var(--text-secondary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all .2s ease; position: relative;
+        }
+        .ps-tool-btn i { width: 21px; height: 21px; }
+        .ps-tool-btn:hover { background: var(--bg-card); color: var(--primary); }
+        .ps-tool-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff; box-shadow: var(--shadow-sm);
+        }
+        .ps-tool-btn.disabled { opacity: .35; cursor: not-allowed; }
+        .ps-tool-divider { height: 1px; background: var(--border); margin: .35rem 0; }
+
+        /* 画布区 */
+        .ps-canvas-area { display: flex; flex-direction: column; min-width: 0; }
+        .ps-canvas-wrap {
+            flex: 1;
+            background: var(--bg);
+            position: relative;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+        }
+        .ps-stage { position: relative; line-height: 0; display: none; }
+        .ps-stage.show { display: inline-block; }
+        #psCanvas {
+            max-width: 100%;
+            max-height: 62vh;
+            border-radius: 8px;
+            display: block;
+            background:
+                linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
+                linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
+                linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* 裁剪框 */
+        .crop-box {
+            position: absolute;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+            cursor: move;
+            user-select: none;
+            -webkit-user-select: none;
+            display: none;
+        }
+        .crop-box.show { display: block; }
+        .crop-grid {
+            position: absolute; inset: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,.45), rgba(255,255,255,.45)),
+                linear-gradient(rgba(255,255,255,.45), rgba(255,255,255,.45)),
+                linear-gradient(rgba(255,255,255,.45), rgba(255,255,255,.45)),
+                linear-gradient(rgba(255,255,255,.45), rgba(255,255,255,.45));
+            background-size: 1px 100%, 1px 100%, 100% 1px, 100% 1px;
+            background-position: 33.33% 0, 66.66% 0, 0 33.33%, 0 66.66%;
+            background-repeat: no-repeat;
+        }
+        .crop-handle {
+            position: absolute; width: 12px; height: 12px;
+            background: #fff; border: 1px solid var(--primary); border-radius: 2px; z-index: 2;
+        }
+        .crop-handle[data-handle="nw"] { top: -6px; left: -6px; cursor: nwse-resize; }
+        .crop-handle[data-handle="ne"] { top: -6px; right: -6px; cursor: nesw-resize; }
+        .crop-handle[data-handle="sw"] { bottom: -6px; left: -6px; cursor: nesw-resize; }
+        .crop-handle[data-handle="se"] { bottom: -6px; right: -6px; cursor: nwse-resize; }
+        .crop-size-label {
+            position: absolute; top: -28px; left: 0;
+            background: var(--primary); color: #fff;
+            padding: 2px 8px; border-radius: 6px;
+            font-size: .75rem; font-weight: 600;
+            white-space: nowrap; font-family: 'Space Grotesk', sans-serif;
+            line-height: 1.4;
+        }
+
+        /* 状态栏 */
+        .ps-statusbar {
+            display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+            padding: .5rem .9rem;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            font-size: .8rem; color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+        .ps-statusbar .info-tag {
+            display: inline-flex; align-items: center; gap: .4rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            padding: .3rem .65rem; border-radius: 8px;
+        }
+        .ps-statusbar .info-tag i { width: 13px; height: 13px; }
+        .ps-statusbar strong { color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+        .zoom-controls { display: flex; align-items: center; gap: .35rem; }
+        .zoom-btn {
+            width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 8px;
+            background: var(--bg-card); color: var(--text-secondary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: all .2s ease; padding: 0;
+        }
+        .zoom-btn:hover { border-color: var(--primary-light); color: var(--primary); }
+        .zoom-btn i { width: 14px; height: 14px; }
+        #zoomLabel { min-width: 52px; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: .78rem; }
+
+        /* 右侧面板 */
+        .ps-panel {
+            border-left: 1px solid var(--border);
+            background: var(--bg);
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: 640px;
+        }
+        .ps-panel-title {
+            font-size: .8rem; font-weight: 600; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: .05em;
+            margin-bottom: .9rem; display: flex; align-items: center; gap: .4rem;
+        }
+        .ps-panel-title i { width: 14px; height: 14px; }
+        .ps-panel-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: .9rem;
+            margin-bottom: .75rem;
+        }
+        .ps-panel-block:last-child { margin-bottom: 0; }
+
+        .control-group { margin-bottom: .85rem; }
+        .control-group:last-child { margin-bottom: 0; }
+        .control-label {
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: .8rem; color: var(--text); margin-bottom: .4rem; font-weight: 500;
+        }
+        .control-value { color: var(--primary); font-weight: 600; font-family: 'Space Grotesk', sans-serif; font-size: .8rem; }
+        .slider {
+            width: 100%; height: 5px; border-radius: 999px;
+            background: var(--border);
+            appearance: none; -webkit-appearance: none; outline: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 17px; height: 17px; border-radius: 50%;
+            background: var(--primary); cursor: pointer;
+            border: 3px solid #fff; box-shadow: var(--shadow-sm);
+        }
+        .slider::-moz-range-thumb {
+            width: 17px; height: 17px; border-radius: 50%;
+            background: var(--primary); cursor: pointer;
+            border: 3px solid #fff; box-shadow: var(--shadow-sm);
+        }
+
+        /* 滤镜网格 */
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .5rem;
+        }
+        .filter-item {
+            border: 1px solid var(--border); border-radius: 10px;
+            background: var(--bg); cursor: pointer; overflow: hidden;
+            padding: 0; transition: all .2s ease; position: relative;
+        }
+        .filter-item:hover { border-color: var(--primary-light); transform: translateY(-2px); }
+        .filter-item.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59,130,246,.25); }
+        .filter-thumb {
+            width: 100%; aspect-ratio: 1;
+            background-size: cover; background-position: center;
+            display: block;
+        }
+        .filter-name {
+            display: block; text-align: center;
+            font-size: .68rem; color: var(--text-secondary);
+            padding: .3rem .2rem; background: var(--bg-card);
+        }
+        .filter-item.active .filter-name { color: var(--primary); font-weight: 600; }
+
+        /* 按钮 */
+        .btn-primary {
+            display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+            width: 100%; padding: .65rem 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff; border: none; border-radius: 11px;
+            font-size: .88rem; font-weight: 600; cursor: pointer; font-family: inherit;
+            transition: all .2s ease;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+        .btn-primary i { width: 16px; height: 16px; }
+        .btn-secondary {
+            display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+            width: 100%; padding: .6rem 1rem;
+            background: var(--bg-card); color: var(--text-secondary);
+            border: 1px solid var(--border); border-radius: 11px;
+            font-size: .84rem; font-weight: 500; cursor: pointer; font-family: inherit;
+            transition: all .2s ease;
+        }
+        .btn-secondary:hover { border-color: var(--primary-light); color: var(--primary); }
+        .btn-secondary i { width: 15px; height: 15px; }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .5rem; }
+
+        .format-options { display: flex; gap: .4rem; }
+        .format-btn {
+            flex: 1; padding: .5rem; border: 1px solid var(--border); border-radius: 9px;
+            background: var(--bg); color: var(--text-secondary); font-size: .82rem; font-weight: 600;
+            cursor: pointer; font-family: inherit; transition: all .2s ease;
+        }
+        .format-btn.active { background: var(--primary); color: #fff; border-color: transparent; }
+
+        .ps-tip { font-size: .75rem; color: var(--text-light); line-height: 1.6; margin-top: .5rem; }
+        .ps-tip i { width: 12px; height: 12px; display: inline-block; vertical-align: -2px; }
+
+        @media (max-width: 900px) {
+            .ps-layout { grid-template-columns: 56px 1fr; }
+            .ps-toolbar { grid-column: 1; grid-row: 1; }
+            .ps-canvas-area { grid-column: 2; grid-row: 1; }
+            .ps-panel { grid-column: 1 / -1; grid-row: 2; border-left: none; border-top: 1px solid var(--border); max-height: none; }
+            .ps-panel-inner { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .75rem; }
+        }
+        @media (max-width: 640px) {
+            .ps-card { border-radius: 16px; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon"><i data-lucide="wrench"></i></div>
+                <span class="logo-text">在线工具箱</span>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="wand-2"></i>
+                    <span>纯前端 · 滤镜调色 · 隐私安全</span>
+                </div>
+                <h1 class="hero-title">
+                    在线 <span class="gradient-text">PS 图片编辑器</span>
+                </h1>
+                <p class="hero-description">
+                    基于 Canvas API 的在线图片编辑器，支持亮度、对比度、饱和度、色相等精细调节，
+                    内置多种一键滤镜，支持裁剪、旋转翻转、缩放预览，图片全程在本地处理，绝不上传。
+                </p>
+            </div>
+        </section>
+
+        <section class="ps-section">
+            <div class="ps-card">
+                <div id="uploadZone" class="upload-zone">
+                    <div class="upload-content">
+                        <div class="upload-icon"><i data-lucide="image-plus"></i></div>
+                        <h3>拖拽图片到此处开始编辑</h3>
+                        <p>支持 PNG、JPG、WebP、GIF（首帧），最大 25MB</p>
+                        <button type="button" id="selectBtn" class="btn-select">
+                            <i data-lucide="folder-open"></i> 选择图片
+                        </button>
+                        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+                        <div class="upload-tips">
+                            <i data-lucide="lock"></i> 所有处理均在浏览器本地完成，不会上传图片
+                        </div>
+                    </div>
+                </div>
+
+                <div id="psEditor" class="ps-editor">
+                    <div class="ps-layout">
+                        <!-- 左侧工具条 -->
+                        <div class="ps-toolbar">
+                            <button type="button" class="ps-tool-btn" data-tool="adjust" title="调整">
+                                <i data-lucide="sliders-horizontal"></i>
+                            </button>
+                            <button type="button" class="ps-tool-btn" data-tool="filter" title="滤镜">
+                                <i data-lucide="wand-2"></i>
+                            </button>
+                            <button type="button" class="ps-tool-btn" data-tool="crop" title="裁剪">
+                                <i data-lucide="crop"></i>
+                            </button>
+                            <div class="ps-tool-divider"></div>
+                            <button type="button" class="ps-tool-btn" data-tool="rotate" title="旋转翻转">
+                                <i data-lucide="rotate-cw"></i>
+                            </button>
+                            <div class="ps-tool-divider"></div>
+                            <button type="button" id="undoBtn" class="ps-tool-btn disabled" title="撤销">
+                                <i data-lucide="undo-2"></i>
+                            </button>
+                            <button type="button" id="redoBtn" class="ps-tool-btn disabled" title="重做">
+                                <i data-lucide="redo-2"></i>
+                            </button>
+                            <div class="ps-tool-divider"></div>
+                            <button type="button" class="ps-tool-btn" data-tool="export" title="导出">
+                                <i data-lucide="download"></i>
+                            </button>
+                            <button type="button" id="reloadBtn" class="ps-tool-btn" title="重新上传">
+                                <i data-lucide="refresh-cw"></i>
+                            </button>
+                        </div>
+
+                        <!-- 中间画布 -->
+                        <div class="ps-canvas-area">
+                            <div class="ps-canvas-wrap" id="canvasWrap">
+                                <div class="ps-stage" id="psStage">
+                                    <canvas id="psCanvas"></canvas>
+                                    <div class="crop-box" id="cropBox">
+                                        <div class="crop-grid"></div>
+                                        <div class="crop-size-label" id="cropSizeLabel">0×0</div>
+                                        <div class="crop-handle" data-handle="nw"></div>
+                                        <div class="crop-handle" data-handle="ne"></div>
+                                        <div class="crop-handle" data-handle="sw"></div>
+                                        <div class="crop-handle" data-handle="se"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ps-statusbar">
+                                <span class="info-tag"><i data-lucide="image"></i> <strong id="curDims">0×0</strong></span>
+                                <span class="info-tag"><i data-lucide="layers"></i> <strong id="origDims">0×0</strong></span>
+                                <span class="zoom-controls">
+                                    <button type="button" id="zoomOutBtn" class="zoom-btn" title="缩小"><i data-lucide="minus"></i></button>
+                                    <span id="zoomLabel">100%</span>
+                                    <button type="button" id="zoomInBtn" class="zoom-btn" title="放大"><i data-lucide="plus"></i></button>
+                                    <button type="button" id="zoomFitBtn" class="zoom-btn" title="适应窗口"><i data-lucide="maximize"></i></button>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 右侧面板 -->
+                        <div class="ps-panel">
+                            <div class="ps-panel-inner">
+
+                                <!-- 调整 -->
+                                <div class="ps-panel-block" id="panelAdjust">
+                                    <div class="ps-panel-title"><i data-lucide="sliders-horizontal"></i> 调整</div>
+                                    <div class="control-group">
+                                        <label class="control-label"><span>亮度</span><span id="brightVal" class="control-value">0</span></label>
+                                        <input type="range" id="brightSlider" class="slider" min="-100" max="100" value="0">
+                                    </div>
+                                    <div class="control-group">
+                                        <label class="control-label"><span>对比度</span><span id="contrastVal" class="control-value">0</span></label>
+                                        <input type="range" id="contrastSlider" class="slider" min="-100" max="100" value="0">
+                                    </div>
+                                    <div class="control-group">
+                                        <label class="control-label"><span>饱和度</span><span id="saturateVal" class="control-value">0</span></label>
+                                        <input type="range" id="saturateSlider" class="slider" min="-100" max="100" value="0">
+                                    </div>
+                                    <div class="control-group">
+                                        <label class="control-label"><span>色相</span><span id="hueVal" class="control-value">0°</span></label>
+                                        <input type="range" id="hueSlider" class="slider" min="-180" max="180" value="0">
+                                    </div>
+                                    <div class="btn-row">
+                                        <button type="button" id="adjustResetBtn" class="btn-secondary"><i data-lucide="rotate-ccw"></i> 重置</button>
+                                        <button type="button" id="adjustApplyBtn" class="btn-primary"><i data-lucide="check"></i> 应用</button>
+                                    </div>
+                                    <p class="ps-tip"><i data-lucide="info"></i> 拖动滑块实时预览，点击「应用」后生效并可撤销。</p>
+                                </div>
+
+                                <!-- 滤镜 -->
+                                <div class="ps-panel-block" id="panelFilter">
+                                    <div class="ps-panel-title"><i data-lucide="wand-2"></i> 滤镜</div>
+                                    <div class="filter-grid" id="filterGrid"></div>
+                                    <div class="btn-row">
+                                        <button type="button" id="filterResetBtn" class="btn-secondary"><i data-lucide="rotate-ccw"></i> 还原</button>
+                                        <button type="button" id="filterApplyBtn" class="btn-primary"><i data-lucide="check"></i> 应用滤镜</button>
+                                    </div>
+                                    <p class="ps-tip"><i data-lucide="info"></i> 点击滤镜卡片实时预览，点击「应用」后生效。</p>
+                                </div>
+
+                                <!-- 裁剪 -->
+                                <div class="ps-panel-block" id="panelCrop">
+                                    <div class="ps-panel-title"><i data-lucide="crop"></i> 裁剪</div>
+                                    <div class="control-group">
+                                        <label class="control-label"><span>裁剪比例</span></label>
+                                        <div class="format-options" id="cropRatios">
+                                            <button type="button" class="format-btn active" data-ratio="free">自由</button>
+                                            <button type="button" class="format-btn" data-ratio="1:1">1:1</button>
+                                            <button type="button" class="format-btn" data-ratio="4:3">4:3</button>
+                                            <button type="button" class="format-btn" data-ratio="16:9">16:9</button>
+                                        </div>
+                                    </div>
+                                    <div class="btn-row">
+                                        <button type="button" id="cropCancelBtn" class="btn-secondary"><i data-lucide="x"></i> 取消</button>
+                                        <button type="button" id="cropApplyBtn" class="btn-primary"><i data-lucide="check"></i> 裁剪</button>
+                                    </div>
+                                    <p class="ps-tip"><i data-lucide="info"></i> 拖动裁剪框调整区域，可拖拽四角缩放。</p>
+                                </div>
+
+                                <!-- 旋转翻转 -->
+                                <div class="ps-panel-block" id="panelRotate">
+                                    <div class="ps-panel-title"><i data-lucide="rotate-cw"></i> 旋转翻转</div>
+                                    <div class="control-group">
+                                        <label class="control-label"><span>旋转</span></label>
+                                        <div class="btn-row">
+                                            <button type="button" id="rotateLBtn" class="btn-secondary"><i data-lucide="rotate-ccw"></i> 左转90°</button>
+                                            <button type="button" id="rotateRBtn" class="btn-primary"><i data-lucide="rotate-cw"></i> 右转90°</button>
+                                        </div>
+                                    </div>
+                                    <div class="control-group">
+                                        <label class="control-label"><span>翻转</span></label>
+                                        <div class="btn-row">
+                                            <button type="button" id="flipHBtn" class="btn-secondary"><i data-lucide="move-horizontal"></i> 水平翻转</button>
+                                            <button type="button" id="flipVBtn" class="btn-secondary"><i data-lucide="move-vertical"></i> 垂直翻转</button>
+                                        </div>
+                                    </div>
+                                    <p class="ps-tip"><i data-lucide="info"></i> 操作立即生效，可通过撤销按钮回退。</p>
+                                </div>
+
+                                <!-- 导出 -->
+                                <div class="ps-panel-block" id="panelExport">
+                                    <div class="ps-panel-title"><i data-lucide="download"></i> 导出</div>
+                                    <div class="control-group">
+                                        <label class="control-label"><span>导出格式</span></label>
+                                        <div class="format-options" id="exportFormats">
+                                            <button type="button" class="format-btn active" data-format="png">PNG</button>
+                                            <button type="button" class="format-btn" data-format="jpeg">JPG</button>
+                                            <button type="button" class="format-btn" data-format="webp">WEBP</button>
+                                        </div>
+                                    </div>
+                                    <div class="control-group" id="qualityGroup">
+                                        <label class="control-label"><span>质量</span><span id="qualityVal" class="control-value">92%</span></label>
+                                        <input type="range" id="qualitySlider" class="slider" min="10" max="100" value="92">
+                                    </div>
+                                    <button type="button" id="exportBtn" class="btn-primary">
+                                        <i data-lucide="download"></i> 下载图片
+                                    </button>
+                                    <p class="ps-tip"><i data-lucide="info"></i> 导出时应用当前所有调整与滤镜效果。</p>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #1D4ED8, #0284C7);">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <span>在线 PS 图片编辑器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var state = {
+            original: null,      // 原始图片
+            base: null,          // 当前基准 canvas（已应用的效果）
+            preview: null,       // 预览中的 canvas（调整/滤镜未应用时）
+            adjusting: false,    // 是否有未应用的调整/滤镜
+            tool: 'adjust',
+            cropRatio: 'free',
+            crop: { x: 0, y: 0, w: 0, h: 0 },
+            drag: null,
+            zoom: 1,
+            displayScale: 1,
+            undoStack: [],
+            redoStack: [],
+            exportFormat: 'png',
+            filters: []
+        };
+
+        var FILTER_PRESETS = [
+            { id: 'none', name: '原图', css: '' },
+            { id: 'gray', name: '黑白', css: 'grayscale(1)' },
+            { id: 'vintage', name: '复古', css: 'sepia(.55) contrast(1.15) brightness(1.02)' },
+            { id: 'warm', name: '暖阳', css: 'sepia(.3) saturate(1.5) brightness(1.08)' },
+            { id: 'cool', name: '冷调', css: 'hue-rotate(180deg) saturate(.85)' },
+            { id: 'invert', name: '反色', css: 'invert(1)' },
+            { id: 'film', name: '胶片', css: 'contrast(1.15) saturate(.85) sepia(.25)' },
+            { id: 'bleach', name: '漂白', css: 'contrast(1.5) brightness(1.1) saturate(1.1)' },
+            { id: 'blur', name: '模糊', css: 'blur(3px)' }
+        ];
+
+        var $ = function(id) { return document.getElementById(id); };
+        var els = {};
+
+        function bind() {
+            els = {
+                uploadZone: $('uploadZone'),
+                fileInput: $('fileInput'),
+                selectBtn: $('selectBtn'),
+                psEditor: $('psEditor'),
+                psStage: $('psStage'),
+                psCanvas: $('psCanvas'),
+                cropBox: $('cropBox'),
+                cropSizeLabel: $('cropSizeLabel'),
+                curDims: $('curDims'),
+                origDims: $('origDims'),
+                zoomLabel: $('zoomLabel'),
+                undoBtn: $('undoBtn'),
+                redoBtn: $('redoBtn'),
+                reloadBtn: $('reloadBtn'),
+                toolBtns: document.querySelectorAll('.ps-tool-btn[data-tool]'),
+                // 调整
+                brightSlider: $('brightSlider'), brightVal: $('brightVal'),
+                contrastSlider: $('contrastSlider'), contrastVal: $('contrastVal'),
+                saturateSlider: $('saturateSlider'), saturateVal: $('saturateVal'),
+                hueSlider: $('hueSlider'), hueVal: $('hueVal'),
+                adjustResetBtn: $('adjustResetBtn'), adjustApplyBtn: $('adjustApplyBtn'),
+                // 滤镜
+                filterGrid: $('filterGrid'),
+                filterResetBtn: $('filterResetBtn'), filterApplyBtn: $('filterApplyBtn'),
+                // 裁剪
+                cropRatios: $('cropRatios'),
+                cropCancelBtn: $('cropCancelBtn'), cropApplyBtn: $('cropApplyBtn'),
+                // 旋转
+                rotateLBtn: $('rotateLBtn'), rotateRBtn: $('rotateRBtn'),
+                flipHBtn: $('flipHBtn'), flipVBtn: $('flipVBtn'),
+                // 导出
+                exportFormats: $('exportFormats'),
+                qualityGroup: $('qualityGroup'),
+                qualitySlider: $('qualitySlider'), qualityVal: $('qualityVal'),
+                exportBtn: $('exportBtn')
+            };
+        }
+
+        function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+        function show(el) { el.classList.remove('hidden'); }
+        function hide(el) { el.classList.add('hidden'); }
+
+        function toast(msg, type) {
+            if (window.Auth && typeof Auth.showToast === 'function') {
+                Auth.showToast(msg, type || 'success');
+            }
+        }
+
+        /* ============ 上传 ============ */
+        function handleFile(file) {
+            if (!file) return;
+            if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type)) {
+                toast('请选择 PNG、JPG、WebP 或 GIF 图片', 'error');
+                return;
+            }
+            if (file.size > 25 * 1048576) {
+                toast('文件大小超过 25MB 限制', 'error');
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    if (img.width > 4096 || img.height > 4096) {
+                        toast('图片尺寸过大（建议不超过 4096×4096）', 'error');
+                        return;
+                    }
+                    state.original = img;
+                    var c = document.createElement('canvas');
+                    c.width = img.width; c.height = img.height;
+                    c.getContext('2d').drawImage(img, 0, 0);
+                    state.base = c;
+                    state.preview = null;
+                    state.adjusting = false;
+                    state.undoStack = [];
+                    state.redoStack = [];
+                    state.zoom = 1;
+                    resetSliders();
+                    resetCrop();
+                    els.origDims.textContent = img.width + '×' + img.height;
+                    els.uploadZone.style.display = 'none';
+                    els.psEditor.classList.add('show');
+                    switchTool('adjust');
+                    buildFilterThumbs();
+                    render();
+                    updateUndoRedo();
+                    if (window.lucide) lucide.createIcons();
+                    toast('图片已加载，开始编辑');
+                };
+                img.onerror = function() { toast('图片加载失败，请检查文件是否损坏', 'error'); };
+                img.src = e.target.result;
+            };
+            reader.onerror = function() { toast('文件读取失败', 'error'); };
+            reader.readAsDataURL(file);
+        }
+
+        /* ============ 渲染 ============ */
+        function getSource() {
+            return state.preview || state.base;
+        }
+
+        function getCssFilter() {
+            var parts = [];
+            if (state.brightSlider) {
+                var b = parseInt(state.brightSlider.value, 10);
+                if (b !== 0) parts.push('brightness(' + (1 + b / 100).toFixed(3) + ')');
+                var ct = parseInt(state.contrastSlider.value, 10);
+                if (ct !== 0) parts.push('contrast(' + (1 + ct / 100).toFixed(3) + ')');
+                var st = parseInt(state.saturateSlider.value, 10);
+                if (st !== 0) parts.push('saturate(' + (1 + st / 100).toFixed(3) + ')');
+                var h = parseInt(state.hueSlider.value, 10);
+                if (h !== 0) parts.push('hue-rotate(' + h + 'deg)');
+            }
+            for (var i = 0; i < state.filters.length; i++) {
+                if (state.filters[i].css) parts.push(state.filters[i].css);
+            }
+            return parts.join(' ');
+        }
+
+        function hasAdjust() {
+            var v = function(slider) { return parseInt(slider.value, 10); };
+            return v(state.brightSlider) !== 0 || v(state.contrastSlider) !== 0 ||
+                v(state.saturateSlider) !== 0 || v(state.hueSlider) !== 0 || state.filters.length > 0;
+        }
+
+        function render() {
+            if (!state.base) return;
+            var src = getSource();
+            var wrap = $('canvasWrap');
+            var maxW = Math.max(wrap.clientWidth - 48, 120);
+            var maxH = Math.max(wrap.clientHeight - 48, 200);
+            var fit = Math.min(maxW / src.width, maxH / src.height);
+            var scale = Math.min(state.zoom, 4) * fit;
+            if (state.zoom <= 0.05) scale = fit;
+
+            var dW = Math.max(1, Math.round(src.width * scale));
+            var dH = Math.max(1, Math.round(src.height * scale));
+            var canvas = els.psCanvas;
+            canvas.width = dW; canvas.height = dH;
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, dW, dH);
+            var filter = getCssFilter();
+            ctx.filter = filter || 'none';
+            ctx.drawImage(src, 0, 0, dW, dH);
+            ctx.filter = 'none';
+
+            els.psStage.style.display = 'inline-block';
+            els.curDims.textContent = src.width + '×' + src.height;
+            state.displayScale = scale;
+            els.zoomLabel.textContent = Math.round(scale * 100 / fit * 100) + '%';
+
+            // 裁剪框
+            if (state.tool === 'crop') {
+                updateCropBox();
+            }
+        }
+
+        /* ============ 应用调整/滤镜 ============ */
+        function applyAdjustments() {
+            if (!state.base) return;
+            var src = getSource();
+            var filter = getCssFilter();
+            var c = document.createElement('canvas');
+            c.width = src.width; c.height = src.height;
+            var ctx = c.getContext('2d');
+            ctx.filter = filter || 'none';
+            ctx.drawImage(src, 0, 0);
+            ctx.filter = 'none';
+            pushHistory();
+            state.base = c;
+            state.preview = null;
+            state.adjusting = false;
+            resetSliders();
+            render();
+            toast('已应用');
+        }
+
+        function resetSliders() {
+            state.filters = [];
+            if (els.brightSlider) {
+                els.brightSlider.value = 0; els.brightVal.textContent = '0';
+                els.contrastSlider.value = 0; els.contrastVal.textContent = '0';
+                els.saturateSlider.value = 0; els.saturateVal.textContent = '0';
+                els.hueSlider.value = 0; els.hueVal.textContent = '0°';
+            }
+            var items = document.querySelectorAll('.filter-item');
+            for (var i = 0; i < items.length; i++) items[i].classList.remove('active');
+            var first = document.querySelector('.filter-item[data-id="none"]');
+            if (first) first.classList.add('active');
+        }
+
+        /* ============ 撤销/重做 ============ */
+        function pushHistory() {
+            if (state.undoStack.length >= 20) state.undoStack.shift();
+            state.undoStack.push(state.base.toDataURL('image/png'));
+            state.redoStack = [];
+            updateUndoRedo();
+        }
+
+        function undo() {
+            if (!state.undoStack.length) return;
+            state.redoStack.push(state.base.toDataURL('image/png'));
+            loadFromDataURL(state.undoStack.pop());
+            updateUndoRedo();
+        }
+
+        function redo() {
+            if (!state.redoStack.length) return;
+            state.undoStack.push(state.base.toDataURL('image/png'));
+            loadFromDataURL(state.redoStack.pop());
+            updateUndoRedo();
+        }
+
+        function updateUndoRedo() {
+            els.undoBtn.classList.toggle('disabled', !state.undoStack.length);
+            els.redoBtn.classList.toggle('disabled', !state.redoStack.length);
+        }
+
+        function loadFromDataURL(dataURL) {
+            var img = new Image();
+            img.onload = function() {
+                var c = document.createElement('canvas');
+                c.width = img.width; c.height = img.height;
+                c.getContext('2d').drawImage(img, 0, 0);
+                state.base = c;
+                state.preview = null;
+                state.adjusting = false;
+                resetSliders();
+                resetCrop();
+                render();
+                toast('已恢复');
+            };
+            img.src = dataURL;
+        }
+
+        /* ============ 旋转/翻转 ============ */
+        function rotate(deg) {
+            if (!state.base) return;
+            var src = getSource();
+            pushHistory();
+            var w = src.width, h = src.height;
+            var c = document.createElement('canvas');
+            if (deg === 90 || deg === -90) { c.width = h; c.height = w; } else { c.width = w; c.height = h; }
+            var ctx = c.getContext('2d');
+            ctx.translate(c.width / 2, c.height / 2);
+            ctx.rotate(deg * Math.PI / 180);
+            ctx.drawImage(src, -w / 2, -h / 2);
+            state.base = c;
+            state.preview = null;
+            resetCrop();
+            render();
+            toast('已旋转');
+        }
+
+        function flip(axis) {
+            if (!state.base) return;
+            var src = getSource();
+            pushHistory();
+            var c = document.createElement('canvas');
+            c.width = src.width; c.height = src.height;
+            var ctx = c.getContext('2d');
+            ctx.translate(axis === 'h' ? c.width : 0, axis === 'h' ? 0 : c.height);
+            ctx.scale(axis === 'h' ? -1 : 1, axis === 'h' ? 1 : -1);
+            ctx.drawImage(src, 0, 0);
+            state.base = c;
+            state.preview = null;
+            resetCrop();
+            render();
+            toast('已翻转');
+        }
+
+        /* ============ 裁剪 ============ */
+        function resetCrop() {
+            if (!state.base) return;
+            var src = getSource();
+            state.crop = { x: 0, y: 0, w: src.width, h: src.height };
+            updateCropBox();
+        }
+
+        function setCropRatio(ratio) {
+            state.cropRatio = ratio;
+            if (ratio === 'free') { resetCrop(); return; }
+            var src = getSource();
+            var IW = src.width, IH = src.height;
+            var parts = ratio.split(':');
+            var r = parseInt(parts[0], 10) / parseInt(parts[1], 10);
+            var w, h;
+            if (IW / IH > r) { h = IH; w = h * r; } else { w = IW; h = w / r; }
+            state.crop = { x: (IW - w) / 2, y: (IH - h) / 2, w: w, h: h };
+            updateCropBox();
+        }
+
+        function updateCropBox() {
+            var s = state.displayScale || 1;
+            var c = state.crop;
+            els.cropBox.style.left = (c.x * s) + 'px';
+            els.cropBox.style.top = (c.y * s) + 'px';
+            els.cropBox.style.width = (c.w * s) + 'px';
+            els.cropBox.style.height = (c.h * s) + 'px';
+            els.cropSizeLabel.textContent = Math.round(c.w) + '×' + Math.round(c.h);
+        }
+
+        function getPoint(e) {
+            if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            if (e.changedTouches && e.changedTouches[0]) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+            return { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrag(e) {
+            if (!state.base || state.tool !== 'crop') return;
+            e.preventDefault();
+            e.stopPropagation();
+            var handle = e.target.getAttribute && e.target.getAttribute('data-handle');
+            var p = getPoint(e);
+            state.drag = {
+                handle: handle,
+                startX: p.x, startY: p.y,
+                startCrop: { x: state.crop.x, y: state.crop.y, w: state.crop.w, h: state.crop.h }
+            };
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchmove', onDrag, { passive: false });
+            document.addEventListener('touchend', endDrag);
+        }
+
+        function onDrag(e) {
+            if (!state.drag) return;
+            e.preventDefault();
+            var p = getPoint(e);
+            var s = state.displayScale || 1;
+            var dx = (p.x - state.drag.startX) / s;
+            var dy = (p.y - state.drag.startY) / s;
+            var src = getSource();
+            var IW = src.width, IH = src.height;
+            var sc = state.drag.startCrop;
+
+            if (!state.drag.handle) {
+                state.crop = {
+                    x: clamp(sc.x + dx, 0, IW - sc.w),
+                    y: clamp(sc.y + dy, 0, IH - sc.h),
+                    w: sc.w, h: sc.h
+                };
+            } else {
+                var nc = resizeCrop(sc, state.drag.handle, dx, dy, IW, IH);
+                state.crop = nc;
+            }
+            updateCropBox();
+        }
+
+        function endDrag() {
+            state.drag = null;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', endDrag);
+            document.removeEventListener('touchmove', onDrag);
+            document.removeEventListener('touchend', endDrag);
+        }
+
+        function resizeCrop(sc, handle, dx, dy, IW, IH) {
+            var left = sc.x, top = sc.y, right = sc.x + sc.w, bottom = sc.y + sc.h;
+            if (handle.indexOf('w') > -1) left = sc.x + dx;
+            if (handle.indexOf('e') > -1) right = sc.x + sc.w + dx;
+            if (handle.indexOf('n') > -1) top = sc.y + dy;
+            if (handle.indexOf('s') > -1) bottom = sc.y + sc.h + dy;
+            if (right < left) { var t = left; left = right; right = t; }
+            if (bottom < top) { var t2 = top; top = bottom; bottom = t2; }
+            left = clamp(left, 0, IW); right = clamp(right, 0, IW);
+            top = clamp(top, 0, IH); bottom = clamp(bottom, 0, IH);
+
+            var w = Math.max(10, right - left);
+            var h = Math.max(10, bottom - top);
+
+            if (state.cropRatio !== 'free') {
+                var parts = state.cropRatio.split(':');
+                var r = parseInt(parts[0], 10) / parseInt(parts[1], 10);
+                var anchored = { left: left, top: top };
+                if (handle.indexOf('w') > -1) anchored.left = right - w;
+                if (handle.indexOf('n') > -1) anchored.top = bottom - h;
+                h = w / r;
+                left = anchored.left; top = anchored.top;
+                if (left + w > IW) left = IW - w;
+                if (top + h > IH) top = IH - h;
+                if (left < 0) left = 0;
+                if (top < 0) top = 0;
+            }
+            return { x: left, y: top, w: w, h: h };
+        }
+
+        function applyCrop() {
+            if (!state.base) return;
+            var src = getSource();
+            var c = state.crop;
+            var cw = Math.round(c.w), ch = Math.round(c.h);
+            if (cw < 10 || ch < 10) { toast('裁剪区域过小', 'error'); return; }
+            pushHistory();
+            var canvas = document.createElement('canvas');
+            canvas.width = cw; canvas.height = ch;
+            var ctx = canvas.getContext('2d');
+            var filter = getCssFilter();
+            ctx.filter = filter || 'none';
+            ctx.drawImage(src, Math.round(c.x), Math.round(c.y), cw, ch, 0, 0, cw, ch);
+            ctx.filter = 'none';
+            state.base = canvas;
+            state.preview = null;
+            resetSliders();
+            resetCrop();
+            render();
+            toast('裁剪完成');
+        }
+
+        function cancelCrop() {
+            state.crop = { x: 0, y: 0, w: state.base.width, h: state.base.height };
+            updateCropBox();
+        }
+
+        /* ============ 工具切换 ============ */
+        function switchTool(tool) {
+            state.tool = tool;
+            var panels = { adjust: 'panelAdjust', filter: 'panelFilter', crop: 'panelCrop', rotate: 'panelRotate', export: 'panelExport' };
+            for (var key in panels) {
+                var p = $(panels[key]);
+                if (p) p.style.display = (key === tool) ? '' : 'none';
+            }
+            for (var i = 0; i < els.toolBtns.length; i++) {
+                els.toolBtns[i].classList.toggle('active', els.toolBtns[i].getAttribute('data-tool') === tool);
+            }
+            if (tool === 'crop') {
+                els.cropBox.classList.add('show');
+                resetCrop();
+            } else {
+                els.cropBox.classList.remove('show');
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        /* ============ 滤镜渲染 ============ */
+        function buildFilterThumbs() {
+            var src = getSource();
+            if (!src) return;
+            var size = 140;
+            var dataURL = src.toDataURL('image/jpeg', 0.7);
+            var grid = els.filterGrid;
+            var html = '';
+            for (var i = 0; i < FILTER_PRESETS.length; i++) {
+                var f = FILTER_PRESETS[i];
+                html += '<button type="button" class="filter-item' + (f.id === 'none' ? ' active' : '') + '" data-id="' + f.id + '">' +
+                    '<span class="filter-thumb" style="background-image:url(' + dataURL + ');' + (f.css ? 'filter:' + f.css + ';' : '') + '"></span>' +
+                    '<span class="filter-name">' + f.name + '</span></button>';
+            }
+            grid.innerHTML = html;
+            var items = grid.querySelectorAll('.filter-item');
+            for (var j = 0; j < items.length; j++) {
+                items[j].addEventListener('click', function() {
+                    var id = this.getAttribute('data-id');
+                    toggleFilter(id);
+                });
+            }
+        }
+
+        function toggleFilter(id) {
+            var items = document.querySelectorAll('.filter-item');
+            if (id === 'none') {
+                state.filters = [];
+                for (var i = 0; i < items.length; i++) items[i].classList.toggle('active', items[i].getAttribute('data-id') === 'none');
+            } else {
+                // 单选滤镜，互斥
+                var found = false;
+                for (var j = 0; j < state.filters.length; j++) {
+                    if (state.filters[j].id === id) { found = true; break; }
+                }
+                state.filters = found ? [] : [];
+                var preset = null;
+                for (var k = 0; k < FILTER_PRESETS.length; k++) {
+                    if (FILTER_PRESETS[k].id === id) preset = FILTER_PRESETS[k];
+                }
+                if (!found && preset) state.filters.push(preset);
+                for (var m = 0; m < items.length; m++) {
+                    items[m].classList.toggle('active', items[m].getAttribute('data-id') === id && !found);
+                }
+            }
+            state.adjusting = true;
+            render();
+        }
+
+        /* ============ 导出 ============ */
+        function exportImage() {
+            if (!state.base) return;
+            var src = getSource();
+            var c = document.createElement('canvas');
+            c.width = src.width; c.height = src.height;
+            var ctx = c.getContext('2d');
+            if (state.exportFormat === 'jpeg') {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, c.width, c.height);
+            }
+            var filter = getCssFilter();
+            ctx.filter = filter || 'none';
+            ctx.drawImage(src, 0, 0);
+            ctx.filter = 'none';
+            var mime = state.exportFormat === 'png' ? 'image/png' : (state.exportFormat === 'jpeg' ? 'image/jpeg' : 'image/webp');
+            var quality = state.exportFormat === 'png' ? undefined : parseInt(state.qualitySlider.value, 10) / 100;
+            c.toBlob(function(blob) {
+                if (!blob) { toast('导出失败，请重试', 'error'); return; }
+                var ext = '.' + state.exportFormat;
+                var name = 'edited-image-' + Date.now() + ext;
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url; a.download = name;
+                document.body.appendChild(a); a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                toast('图片已导出');
+            }, mime, quality);
+        }
+
+        /* ============ 事件 ============ */
+        function initEvents() {
+            els.selectBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                els.fileInput.click();
+            });
+            els.uploadZone.addEventListener('click', function(e) {
+                if (e.target.closest('.btn-select')) return;
+                els.fileInput.click();
+            });
+            els.fileInput.addEventListener('change', function(e) {
+                if (e.target.files[0]) handleFile(e.target.files[0]);
+            });
+            els.uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            els.uploadZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            els.uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+            });
+
+            // 工具切换
+            for (var i = 0; i < els.toolBtns.length; i++) {
+                (function(btn) {
+                    btn.addEventListener('click', function() {
+                        switchTool(this.getAttribute('data-tool'));
+                    });
+                })(els.toolBtns[i]);
+            }
+
+            // 撤销重做
+            els.undoBtn.addEventListener('click', function() { if (!this.classList.contains('disabled')) undo(); });
+            els.redoBtn.addEventListener('click', function() { if (!this.classList.contains('disabled')) redo(); });
+            els.reloadBtn.addEventListener('click', function() {
+                els.uploadZone.style.display = '';
+                els.psEditor.classList.remove('show');
+                els.fileInput.value = '';
+                state.base = null; state.preview = null;
+            });
+
+            // 调整滑块
+            var sliders = [
+                ['brightSlider', 'brightVal', function(v) { return v > 0 ? '+' + v : v; }],
+                ['contrastSlider', 'contrastVal', function(v) { return v > 0 ? '+' + v : v; }],
+                ['saturateSlider', 'saturateVal', function(v) { return v > 0 ? '+' + v : v; }],
+                ['hueSlider', 'hueVal', function(v) { return v + '°'; }]
+            ];
+            for (var s = 0; s < sliders.length; s++) {
+                (function(conf) {
+                    var slider = $(conf[0]);
+                    slider.addEventListener('input', function() {
+                        $(conf[1]).textContent = conf[2](parseInt(this.value, 10));
+                        state.adjusting = true;
+                        render();
+                    });
+                })(sliders[s]);
+            }
+
+            els.adjustResetBtn.addEventListener('click', function() {
+                resetSliders();
+                state.adjusting = false;
+                render();
+            });
+            els.adjustApplyBtn.addEventListener('click', applyAdjustments);
+
+            // 滤镜
+            els.filterResetBtn.addEventListener('click', function() {
+                resetSliders();
+                state.adjusting = false;
+                render();
+            });
+            els.filterApplyBtn.addEventListener('click', applyAdjustments);
+
+            // 裁剪
+            els.cropRatios.querySelectorAll('.format-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    els.cropRatios.querySelectorAll('.format-btn').forEach(function(b) { b.classList.remove('active'); });
+                    this.classList.add('active');
+                    setCropRatio(this.getAttribute('data-ratio'));
+                });
+            });
+            els.cropBox.addEventListener('mousedown', startDrag);
+            els.cropBox.addEventListener('touchstart', startDrag, { passive: false });
+            els.cropApplyBtn.addEventListener('click', applyCrop);
+            els.cropCancelBtn.addEventListener('click', cancelCrop);
+
+            // 旋转翻转
+            els.rotateLBtn.addEventListener('click', function() { rotate(-90); });
+            els.rotateRBtn.addEventListener('click', function() { rotate(90); });
+            els.flipHBtn.addEventListener('click', function() { flip('h'); });
+            els.flipVBtn.addEventListener('click', function() { flip('v'); });
+
+            // 缩放
+            $('zoomInBtn').addEventListener('click', function() { state.zoom = clamp(state.zoom + 0.15, 0.1, 4); render(); });
+            $('zoomOutBtn').addEventListener('click', function() { state.zoom = clamp(state.zoom - 0.15, 0.1, 4); render(); });
+            $('zoomFitBtn').addEventListener('click', function() { state.zoom = 1; render(); });
+
+            // 导出
+            els.exportFormats.querySelectorAll('.format-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    els.exportFormats.querySelectorAll('.format-btn').forEach(function(b) { b.classList.remove('active'); });
+                    this.classList.add('active');
+                    state.exportFormat = this.getAttribute('data-format');
+                    els.qualityGroup.style.display = state.exportFormat === 'png' ? 'none' : '';
+                });
+            });
+            els.qualitySlider.addEventListener('input', function() {
+                els.qualityVal.textContent = this.value + '%';
+            });
+            els.exportBtn.addEventListener('click', exportImage);
+
+            // 键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if (!state.base) return;
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                    e.preventDefault();
+                    if (e.shiftKey) redo(); else undo();
+                }
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                    e.preventDefault();
+                    redo();
+                }
+            });
+
+            // 窗口大小变化
+            var resizeTimer = null;
+            window.addEventListener('resize', function() {
+                if (!state.base) return;
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(render, 150);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            bind();
+            initEvents();
+            buildFilterThumbs();
+            if (window.lucide) lucide.createIcons();
+        });
+
+        // 兜底：lucide 加载完成后重新渲染
+        window.addEventListener('load', function() {
+            if (window.lucide) lucide.createIcons();
+        });
+    })();
+    </script>
+</body>
+</html>

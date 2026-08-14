@@ -1,0 +1,2244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>番茄钟 - 专注工作计时器</title>
+    <meta name="description" content="免费在线番茄钟计时器，基于番茄工作法，支持专注/短休息/长休息模式、任务记录与历史统计">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    /* ============ 番茄钟页面专属样式 ============ */
+    .pm-hero {
+        padding: 7rem 0 2rem;
+        text-align: center;
+    }
+    .pm-hero .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        background: rgba(220, 38, 38, 0.1);
+        color: #DC2626;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+    .pm-hero .hero-badge i { width: 16px; height: 16px; }
+    .pm-hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .pm-hero p {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    .pm-section { padding: 1rem 0 2rem; }
+
+    .pm-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* 主体两栏布局 */
+    .pm-body {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        min-height: 560px;
+    }
+
+    /* 左侧计时区 */
+    .pm-timer-panel {
+        padding: 2rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        border-right: 1px solid var(--border);
+    }
+
+    /* 模式切换标签 */
+    .pm-mode-tabs {
+        display: inline-flex;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.3rem;
+        gap: 0.25rem;
+    }
+    .pm-mode-tab {
+        border: none;
+        background: transparent;
+        padding: 0.5rem 1.1rem;
+        border-radius: 999px;
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+    .pm-mode-tab:hover { color: var(--text); }
+    .pm-mode-tab.active {
+        background: linear-gradient(135deg, #DC2626, #EF4444);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+    .pm-mode-tab.custom.active {
+        background: linear-gradient(135deg, #7C3AED, #A855F7);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+
+    /* 自定义时间输入面板 */
+    .pm-custom-panel {
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        margin-top: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    .pm-custom-panel.visible {
+        display: flex;
+    }
+    .pm-custom-panel i {
+        width: 16px;
+        height: 16px;
+        color: #7C3AED;
+    }
+    .pm-custom-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
+    .pm-custom-input-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .pm-custom-input {
+        width: 52px;
+        height: 32px;
+        text-align: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg-card);
+        color: var(--text);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        outline: none;
+        -moz-appearance: textfield;
+    }
+    .pm-custom-input::-webkit-outer-spin-button,
+    .pm-custom-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .pm-custom-input:focus {
+        border-color: #7C3AED;
+        box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
+    }
+    .pm-custom-sep {
+        font-weight: 700;
+        color: var(--text-light);
+    }
+    .pm-custom-unit {
+        font-size: 0.75rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+    .pm-custom-apply {
+        height: 32px;
+        padding: 0 0.875rem;
+        background: linear-gradient(135deg, #7C3AED, #A855F7);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .pm-custom-apply:hover {
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+    }
+
+    /* 设置按钮（齿轮图标） */
+    .pm-settings-btn {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+        margin-left: 0.375rem;
+    }
+    .pm-settings-btn:hover {
+        color: #7C3AED;
+        border-color: #A855F7;
+    }
+    .pm-settings-btn i { width: 16px; height: 16px; }
+
+    /* 设置模态框 */
+    .pm-settings-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 1rem;
+    }
+    .pm-settings-modal.visible {
+        display: flex;
+    }
+    .pm-settings-content {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        width: 100%;
+        max-width: 420px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    .pm-settings-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .pm-settings-header h3 {
+        font-size: 1.0625rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .pm-settings-header h3 i { width: 20px; height: 20px; color: #7C3AED; }
+    .pm-settings-close {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+    }
+    .pm-settings-close:hover {
+        background: var(--bg);
+        color: var(--text);
+    }
+    .pm-settings-body {
+        padding: 1.25rem 1.5rem;
+    }
+    .pm-settings-group {
+        margin-bottom: 1.25rem;
+    }
+    .pm-settings-group-title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+    .pm-settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .pm-settings-row:last-child {
+        border-bottom: none;
+    }
+    .pm-settings-row-label {
+        font-size: 0.9rem;
+        color: var(--text);
+        font-weight: 500;
+    }
+    .pm-settings-row-input {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .pm-settings-row-input input {
+        width: 60px;
+        height: 32px;
+        text-align: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        outline: none;
+        -moz-appearance: textfield;
+    }
+    .pm-settings-row-input input::-webkit-outer-spin-button,
+    .pm-settings-row-input input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .pm-settings-row-input input:focus {
+        border-color: #7C3AED;
+    }
+    .pm-settings-row-input span {
+        font-size: 0.75rem;
+        color: var(--text-light);
+    }
+
+    /* 声音设置 - 开关 */
+    .pm-settings-row-switch {
+        border-bottom: 1px solid var(--border);
+    }
+    .pm-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+        cursor: pointer;
+    }
+    .pm-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .pm-switch-slider {
+        position: absolute;
+        inset: 0;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        transition: all 0.2s ease;
+    }
+    .pm-switch-slider:before {
+        content: '';
+        position: absolute;
+        height: 18px;
+        width: 18px;
+        left: 2px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--text-secondary);
+        border-radius: 50%;
+        transition: all 0.2s ease;
+    }
+    .pm-switch input:checked + .pm-switch-slider {
+        background: #7C3AED;
+        border-color: #7C3AED;
+    }
+    .pm-switch input:checked + .pm-switch-slider:before {
+        transform: translateY(-50%) translateX(20px);
+        background: white;
+    }
+
+    /* 音量滑块 */
+    .pm-settings-row-volume {
+        border-bottom: none;
+    }
+    .pm-volume-control {
+        gap: 0.75rem !important;
+    }
+    .pm-volume-control input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 120px;
+        height: 6px;
+        background: var(--bg);
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+    }
+    .pm-volume-control input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #7C3AED;
+        cursor: pointer;
+        border: 2px solid white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .pm-volume-control input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #7C3AED;
+        cursor: pointer;
+        border: 2px solid white;
+    }
+    .pm-volume-control span {
+        min-width: 38px;
+        text-align: right;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    /* 试听按钮 */
+    .pm-settings-test {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-top: 0.5rem;
+        padding: 0.5rem 0.85rem;
+        background: linear-gradient(135deg, #7C3AED, #6D28D9);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .pm-settings-test:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+    }
+    .pm-settings-test:active {
+        transform: translateY(0);
+    }
+
+    /* 音乐源选择 */
+    .pm-music-source {
+        display: flex;
+        gap: 0.5rem;
+        margin: 0.75rem 0 0.5rem;
+    }
+    .pm-source-option {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.6rem;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+        background: var(--bg);
+    }
+    .pm-source-option input {
+        display: none;
+    }
+    .pm-source-radio {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid var(--border);
+        position: relative;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+    }
+    .pm-source-option input:checked + .pm-source-radio {
+        border-color: #7C3AED;
+    }
+    .pm-source-option input:checked + .pm-source-radio::after {
+        content: '';
+        position: absolute;
+        inset: 2px;
+        border-radius: 50%;
+        background: #7C3AED;
+    }
+    .pm-source-option:has(input:checked) {
+        border-color: #7C3AED;
+        color: #7C3AED;
+        background: rgba(124, 58, 237, 0.08);
+    }
+
+    /* 上传区域 */
+    .pm-upload-area {
+        margin: 0.5rem 0 0.75rem;
+    }
+    .pm-upload-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 1.25rem 1rem;
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        background: var(--bg);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+    .pm-upload-box:hover,
+    .pm-upload-box.dragover {
+        border-color: #7C3AED;
+        background: rgba(124, 58, 237, 0.06);
+    }
+    .pm-upload-box i {
+        color: var(--text-light);
+    }
+    .pm-upload-box:hover i,
+    .pm-upload-box.dragover i {
+        color: #7C3AED;
+    }
+    .pm-upload-text {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text);
+    }
+    .pm-upload-hint {
+        font-size: 0.7rem;
+        color: var(--text-light);
+    }
+    .pm-upload-info {
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg);
+    }
+    .pm-upload-info-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--text);
+        margin-bottom: 0.6rem;
+        overflow: hidden;
+    }
+    .pm-upload-info-row i {
+        color: #7C3AED;
+        flex-shrink: 0;
+    }
+    #pmUploadFileName {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 500;
+    }
+    .pm-upload-filesize {
+        color: var(--text-light);
+        font-size: 0.75rem;
+        flex-shrink: 0;
+    }
+    .pm-upload-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .pm-upload-btn {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        padding: 0.4rem 0.6rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .pm-upload-btn:hover {
+        border-color: #7C3AED;
+        color: #7C3AED;
+    }
+    .pm-upload-btn-danger:hover {
+        border-color: #EF4444;
+        color: #EF4444;
+    }
+    .pm-settings-hint {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        margin-top: 0.75rem;
+        line-height: 1.6;
+    }
+    .pm-settings-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+    .pm-settings-reset {
+        height: 36px;
+        padding: 0 1rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text-secondary);
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .pm-settings-reset:hover {
+        border-color: #EF4444;
+        color: #EF4444;
+    }
+    .pm-settings-save {
+        height: 36px;
+        padding: 0 1.25rem;
+        background: linear-gradient(135deg, #7C3AED, #A855F7);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .pm-settings-save:hover {
+        filter: brightness(1.05);
+    }
+
+    /* 移动端响应式补充 */
+    @media (max-width: 480px) {
+        .pm-custom-panel {
+            flex-wrap: wrap;
+            gap: 0.375rem;
+            padding: 0.5rem 0.75rem;
+        }
+        .pm-custom-label {
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
+        .pm-custom-apply {
+            flex: 1;
+        }
+        .pm-mode-tabs {
+            flex-wrap: wrap;
+            gap: 0.125rem;
+        }
+        .pm-mode-tab {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.78rem;
+        }
+    }
+
+    /* 计时器圆圈 */
+    .pm-timer-wrap {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .pm-timer-svg {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg); /* 从顶部开始 */
+    }
+    .pm-timer-track {
+        fill: none;
+        stroke: var(--border);
+        stroke-width: 12;
+    }
+    .pm-timer-progress {
+        fill: none;
+        stroke: url(#pmGradient);
+        stroke-width: 12;
+        stroke-linecap: round;
+        stroke-dasharray: 816.8141;
+        stroke-dashoffset: 816.8141;
+        transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+    }
+    .pm-timer-display {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .pm-time {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+    }
+    .pm-mode-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+    .pm-mode-label.focus { color: #DC2626; }
+    .pm-mode-label.short { color: #059669; }
+    .pm-mode-label.long { color: #2563EB; }
+
+    /* 控制按钮 */
+    .pm-controls {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .pm-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        height: 46px;
+        padding: 0 1.4rem;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.18s ease;
+    }
+    .pm-btn i { width: 18px; height: 18px; }
+    .pm-btn-primary {
+        background: linear-gradient(135deg, #DC2626, #EF4444);
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(220, 38, 38, 0.35);
+        min-width: 140px;
+    }
+    .pm-btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    .pm-btn-secondary {
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        border-color: var(--border);
+    }
+    .pm-btn-secondary:hover { color: #DC2626; border-color: #FECACA; }
+
+    /* 任务输入 */
+    .pm-task-input-wrap {
+        width: 100%;
+        max-width: 420px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        height: 44px;
+        padding: 0 0.85rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        transition: border-color 0.18s ease;
+    }
+    .pm-task-input-wrap:focus-within { border-color: #EF4444; }
+    .pm-task-input-wrap i { width: 16px; height: 16px; color: var(--text-light); flex-shrink: 0; }
+    .pm-task-input-wrap input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-family: inherit;
+        font-size: 0.9rem;
+        color: var(--text);
+    }
+    .pm-task-input-wrap input::placeholder { color: var(--text-light); }
+
+    /* 右侧统计 + 历史 */
+    .pm-side-panel {
+        padding: 1.5rem 1.25rem;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        overflow-y: auto;
+    }
+    .pm-side-panel::-webkit-scrollbar { width: 8px; }
+    .pm-side-panel::-webkit-scrollbar-track { background: transparent; }
+    .pm-side-panel::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+
+    .pm-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    .pm-stat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1rem;
+        text-align: center;
+    }
+    .pm-stat-icon {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+    }
+    .pm-stat-icon.tomato {
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.12), rgba(239, 68, 68, 0.12));
+        color: #DC2626;
+    }
+    .pm-stat-icon.clock {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(59, 130, 246, 0.12));
+        color: #2563EB;
+    }
+    .pm-stat-icon i { width: 18px; height: 18px; }
+    .pm-stat-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1.1;
+    }
+    .pm-stat-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 0.2rem;
+    }
+
+    /* 历史记录 */
+    .pm-history-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+    .pm-history-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+    .pm-history-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .pm-history-title i { width: 16px; height: 16px; color: #DC2626; }
+    .pm-history-clear {
+        border: none;
+        background: transparent;
+        color: var(--text-light);
+        font-size: 0.75rem;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        transition: all 0.18s ease;
+    }
+    .pm-history-clear:hover { color: #DC2626; background: rgba(220, 38, 38, 0.06); }
+
+    .pm-history-list {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .pm-history-list::-webkit-scrollbar { width: 6px; }
+    .pm-history-list::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+
+    .pm-history-item {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.7rem 0.8rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+    }
+    .pm-history-dot {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #DC2626, #EF4444);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        flex-shrink: 0;
+    }
+    .pm-history-dot i { width: 14px; height: 14px; }
+    .pm-history-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .pm-history-task {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pm-history-meta {
+        font-size: 0.72rem;
+        color: var(--text-light);
+        margin-top: 0.15rem;
+    }
+
+    .pm-empty-history {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--text-light);
+    }
+    .pm-empty-history i { width: 40px; height: 40px; opacity: 0.5; margin-bottom: 0.5rem; }
+    .pm-empty-history p { font-size: 0.85rem; margin: 0; }
+
+    /* Toast */
+    .pm-toast {
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        background: #0F172A;
+        color: #fff;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: pmToastDown 0.3s ease;
+    }
+    .pm-toast.hidden { display: none; }
+    .pm-toast i { width: 20px; height: 20px; color: #10B981; }
+    .pm-toast.error i { color: #EF4444; }
+    @keyframes pmToastDown {
+        from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* 移动端响应式 */
+    @media (max-width: 768px) {
+        .pm-hero { padding: 6rem 0 1.5rem; }
+        .pm-hero h1 { font-size: 1.85rem; }
+        .pm-body { grid-template-columns: 1fr; }
+        .pm-timer-panel { border-right: none; border-bottom: 1px solid var(--border); padding: 1.5rem 1rem; }
+        .pm-timer-wrap { width: 260px; height: 260px; }
+        .pm-time { font-size: 2.75rem; }
+        .pm-side-panel { padding: 1.25rem 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #DC2626, #EF4444);">
+                    <i data-lucide="timer"></i>
+                </div>
+                <span class="logo-text">番茄钟</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#pomodoro" class="nav-link active">番茄钟</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="pm-hero">
+            <div class="hero-badge">
+                <i data-lucide="timer"></i>
+                <span>番茄工作法 · 专注计时 · 效率提升</span>
+            </div>
+            <h1 class="hero-title">
+                番茄<span class="gradient-text" style="background:linear-gradient(135deg,#DC2626,#EF4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">钟</span>
+            </h1>
+            <p class="hero-description">基于番茄工作法的专注计时器，25分钟专注 + 5分钟休息，帮你保持高效节奏。任务记录与历史统计本地保存，保护隐私。</p>
+        </section>
+
+        <section id="pomodoro" class="pm-section">
+            <div class="pm-card">
+                <div class="pm-body">
+                    <!-- 左侧计时区 -->
+                    <div class="pm-timer-panel">
+                        <!-- 模式切换 -->
+                        <div class="pm-mode-tabs" id="modeTabs">
+                            <button type="button" class="pm-mode-tab active" data-mode="focus" onclick="pmSwitchMode('focus')">专注 25:00</button>
+                            <button type="button" class="pm-mode-tab" data-mode="short" onclick="pmSwitchMode('short')">短休息 5:00</button>
+                            <button type="button" class="pm-mode-tab" data-mode="long" onclick="pmSwitchMode('long')">长休息 15:00</button>
+                            <button type="button" class="pm-mode-tab custom" data-mode="custom" onclick="pmSwitchMode('custom')">自定义</button>
+                            <button type="button" class="pm-settings-btn" title="设置时长" onclick="pmOpenSettings()">
+                                <i data-lucide="settings"></i>
+                            </button>
+                        </div>
+
+                        <!-- 自定义时间输入面板 -->
+                        <div class="pm-custom-panel" id="customPanel">
+                            <i data-lucide="timer"></i>
+                            <span class="pm-custom-label">设置时间</span>
+                            <div class="pm-custom-input-wrap">
+                                <input type="number" class="pm-custom-input" id="customMin" min="0" max="180" value="25" oninput="pmValidateCustom()">
+                                <span class="pm-custom-unit">分</span>
+                                <span class="pm-custom-sep">:</span>
+                                <input type="number" class="pm-custom-input" id="customSec" min="0" max="59" value="0" oninput="pmValidateCustom()">
+                                <span class="pm-custom-unit">秒</span>
+                            </div>
+                            <button type="button" class="pm-custom-apply" onclick="pmApplyCustom()">应用</button>
+                        </div>
+
+                        <!-- 计时器圆圈 -->
+                        <div class="pm-timer-wrap">
+                            <svg class="pm-timer-svg" viewBox="0 0 300 300">
+                                <defs>
+                                    <linearGradient id="pmGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#DC2626" />
+                                        <stop offset="100%" stop-color="#EF4444" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="pm-timer-track" cx="150" cy="150" r="130" />
+                                <circle class="pm-timer-progress" id="timerProgress" cx="150" cy="150" r="130" />
+                            </svg>
+                            <div class="pm-timer-display">
+                                <span class="pm-time" id="timeDisplay">25:00</span>
+                                <span class="pm-mode-label focus" id="modeLabel">FOCUS</span>
+                            </div>
+                        </div>
+
+                        <!-- 控制按钮 -->
+                        <div class="pm-controls">
+                            <button type="button" class="pm-btn pm-btn-primary" id="startBtn" onclick="pmToggleTimer()">
+                                <i data-lucide="play"></i>
+                                <span id="startBtnText">开始</span>
+                            </button>
+                            <button type="button" class="pm-btn pm-btn-secondary" id="resetBtn" title="重置" onclick="pmResetTimer()">
+                                <i data-lucide="rotate-ccw"></i>
+                                <span>重置</span>
+                            </button>
+                            <button type="button" class="pm-btn pm-btn-secondary" id="skipBtn" title="跳过当前阶段" onclick="pmSkipTimer()">
+                                <i data-lucide="skip-forward"></i>
+                                <span>跳过</span>
+                            </button>
+                        </div>
+
+                        <!-- 任务输入 -->
+                        <div class="pm-task-input-wrap">
+                            <i data-lucide="target"></i>
+                            <input type="text" id="taskInput" placeholder="当前在做什么？（选填）" maxlength="60" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <!-- 右侧统计 + 历史 -->
+                    <div class="pm-side-panel">
+                        <!-- 今日统计 -->
+                        <div class="pm-stats">
+                            <div class="pm-stat-card">
+                                <div class="pm-stat-icon tomato">
+                                    <i data-lucide="check-circle"></i>
+                                </div>
+                                <div class="pm-stat-value" id="statCount">0</div>
+                                <div class="pm-stat-label">今日番茄</div>
+                            </div>
+                            <div class="pm-stat-card">
+                                <div class="pm-stat-icon clock">
+                                    <i data-lucide="clock"></i>
+                                </div>
+                                <div class="pm-stat-value" id="statMinutes">0</div>
+                                <div class="pm-stat-label">专注分钟</div>
+                            </div>
+                        </div>
+
+                        <!-- 历史记录 -->
+                        <div class="pm-history-section">
+                            <div class="pm-history-header">
+                                <span class="pm-history-title">
+                                    <i data-lucide="history"></i>
+                                    今日记录
+                                </span>
+                                <button type="button" class="pm-history-clear" id="clearHistoryBtn" title="清空历史" onclick="pmClearHistory()">清空</button>
+                            </div>
+                            <div class="pm-history-list" id="historyList">
+                                <!-- 由 JS 渲染 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #DC2626, #EF4444);">
+                    <i data-lucide="timer"></i>
+                </div>
+                <span>番茄钟</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <!-- 设置模态框 -->
+    <div id="pmSettingsModal" class="pm-settings-modal" onclick="if(event.target===this)pmCloseSettings()">
+        <div class="pm-settings-content">
+            <div class="pm-settings-header">
+                <h3><i data-lucide="settings"></i>时长设置</h3>
+                <button type="button" class="pm-settings-close" onclick="pmCloseSettings()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="pm-settings-body">
+                <div class="pm-settings-group">
+                    <div class="pm-settings-group-title">
+                        <i data-lucide="clock" style="width:14px;height:14px;"></i>
+                        默认时长（分钟）
+                    </div>
+                    <div class="pm-settings-row">
+                        <span class="pm-settings-row-label">专注</span>
+                        <div class="pm-settings-row-input">
+                            <input type="number" id="setFocus" min="1" max="180" value="25">
+                            <span>分钟</span>
+                        </div>
+                    </div>
+                    <div class="pm-settings-row">
+                        <span class="pm-settings-row-label">短休息</span>
+                        <div class="pm-settings-row-input">
+                            <input type="number" id="setShort" min="1" max="60" value="5">
+                            <span>分钟</span>
+                        </div>
+                    </div>
+                    <div class="pm-settings-row">
+                        <span class="pm-settings-row-label">长休息</span>
+                        <div class="pm-settings-row-input">
+                            <input type="number" id="setLong" min="1" max="60" value="15">
+                            <span>分钟</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="pm-settings-group">
+                    <div class="pm-settings-group-title">
+                        <i data-lucide="user" style="width:14px;height:14px;"></i>
+                        自定义时长
+                    </div>
+                    <div class="pm-settings-row">
+                        <span class="pm-settings-row-label">上次自定义</span>
+                        <div class="pm-settings-row-input">
+                            <input type="number" id="setCustomMin" min="0" max="180" value="25">
+                            <span>分</span>
+                            <input type="number" id="setCustomSec" min="0" max="59" value="0">
+                            <span>秒</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="pm-settings-group">
+                    <div class="pm-settings-group-title">
+                        <i data-lucide="music" style="width:14px;height:14px;"></i>
+                        完成提醒音乐
+                    </div>
+                    <!-- 声音开关 -->
+                    <div class="pm-settings-row pm-settings-row-switch">
+                        <span class="pm-settings-row-label">播放提醒音乐</span>
+                        <label class="pm-switch">
+                            <input type="checkbox" id="setSoundEnabled" checked>
+                            <span class="pm-switch-slider"></span>
+                        </label>
+                    </div>
+                    <!-- 音乐源选择 -->
+                    <div class="pm-music-source">
+                        <label class="pm-source-option">
+                            <input type="radio" name="pmMusicSource" value="builtin" checked>
+                            <span class="pm-source-radio"></span>
+                            <span>内置轻音乐</span>
+                        </label>
+                        <label class="pm-source-option">
+                            <input type="radio" name="pmMusicSource" value="custom">
+                            <span class="pm-source-radio"></span>
+                            <span>自定义音乐</span>
+                        </label>
+                    </div>
+                    <!-- 上传区域 -->
+                    <div id="pmUploadArea" class="pm-upload-area" style="display:none;">
+                        <div class="pm-upload-box" id="pmUploadBox">
+                            <input type="file" id="pmMusicFile" accept="audio/*" hidden>
+                            <i data-lucide="upload-cloud" style="width:28px;height:28px;"></i>
+                            <span class="pm-upload-text">点击或拖拽上传音乐文件</span>
+                            <span class="pm-upload-hint">支持 MP3 / WAV / OGG / M4A，建议时长 ≤ 60 秒</span>
+                        </div>
+                        <div id="pmUploadInfo" class="pm-upload-info" style="display:none;">
+                            <div class="pm-upload-info-row">
+                                <i data-lucide="file-audio" style="width:16px;height:16px;"></i>
+                                <span id="pmUploadFileName">—</span>
+                                <span id="pmUploadFileSize" class="pm-upload-filesize">—</span>
+                            </div>
+                            <div class="pm-upload-actions">
+                                <button type="button" class="pm-upload-btn" onclick="pmPreviewCustom()">
+                                    <i data-lucide="play" style="width:14px;height:14px;"></i>播放
+                                </button>
+                                <button type="button" class="pm-upload-btn pm-upload-btn-danger" onclick="pmRemoveCustomMusic()">
+                                    <i data-lucide="trash-2" style="width:14px;height:14px;"></i>移除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 音量 -->
+                    <div class="pm-settings-row pm-settings-row-volume">
+                        <span class="pm-settings-row-label">音量</span>
+                        <div class="pm-settings-row-input pm-volume-control">
+                            <input type="range" id="setVolume" min="0" max="1" step="0.05" value="0.3">
+                            <span id="volumeLabel">30%</span>
+                        </div>
+                    </div>
+                    <!-- 试听 -->
+                    <button type="button" class="pm-settings-test" onclick="pmTestMelody()">
+                        <i data-lucide="play" style="width:14px;height:14px;"></i>
+                        试听
+                    </button>
+                </div>
+                <p class="pm-settings-hint">修改后点保存，下次打开自动应用。自定义时间可随时在主界面调整。</p>
+            </div>
+            <div class="pm-settings-footer">
+                <button type="button" class="pm-settings-reset" onclick="pmResetSettings()">恢复默认</button>
+                <button type="button" class="pm-settings-save" onclick="pmSaveSettings()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // 番茄钟 - 使用全局函数 + inline 事件绑定，确保最大兼容性
+    var PM_MODES = {
+        focus: { duration: 25 * 60, label: 'FOCUS', cn: '专注', cls: 'focus' },
+        short: { duration: 5 * 60, label: 'SHORT BREAK', cn: '短休息', cls: 'short' },
+        long:  { duration: 15 * 60, label: 'LONG BREAK', cn: '长休息', cls: 'long' },
+        custom: { duration: 25 * 60, label: 'CUSTOM', cn: '自定义', cls: 'focus' }
+    };
+    var PM_CIRCUMFERENCE = 2 * Math.PI * 130;
+    var pmCurrentMode = 'focus';
+    var pmTotalSeconds = PM_MODES.focus.duration;
+    var pmTimeLeft = pmTotalSeconds;
+    var pmIsRunning = false;
+    var pmTimerInterval = null;
+    var pmAudioCtx = null;
+    var PM_SETTINGS_KEY = 'toolbox_pomodoro_settings';
+    var PM_DB_NAME = 'pomodoro_db';
+    var PM_DB_STORE = 'custom_music';
+    var pmCustomMusicBlob = null;
+    var pmCustomMusicName = '';
+    var pmCustomMusicSize = 0;
+    var pmCustomAudio = null;
+    var pmPreviewPlaying = false;
+
+    function pmGetUsername() {
+        try {
+            if (window.Auth && typeof window.Auth.getCurrentUser === 'function') {
+                return window.Auth.getCurrentUser() || 'guest';
+            }
+        } catch (e) {}
+        return 'guest';
+    }
+
+    function pmStorageKey() { return 'toolbox_pomodoro_' + pmGetUsername(); }
+
+    function pmEsc(str) {
+        if (!str) return '';
+        var div = document.createElement('div');
+        div.textContent = '' + str;
+        return div.innerHTML;
+    }
+
+    function pmFormatTime(seconds) {
+        seconds = Math.max(0, Math.floor(seconds));
+        var m = Math.floor(seconds / 60);
+        var s = seconds % 60;
+        return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+    }
+
+    function pmIsToday(ts) {
+        try {
+            var d = new Date(ts), now = new Date();
+            return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+        } catch (e) { return false; }
+    }
+
+    function pmShowToast(msg) {
+        var toast = document.getElementById('toast');
+        var toastMsg = document.getElementById('toastMessage');
+        if (!toast || !toastMsg) return;
+        toastMsg.textContent = msg;
+        toast.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+        clearTimeout(pmShowToast._t);
+        pmShowToast._t = setTimeout(function() { toast.classList.add('hidden'); }, 2200);
+    }
+
+    function pmPlayBeep() {
+        try {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            if (!pmAudioCtx) pmAudioCtx = new AC();
+            // 简单提示音 - 柔和的双音
+            var notes = [523.25, 659.25];
+            for (var i = 0; i < notes.length; i++) {
+                (function(idx) {
+                    var t = pmAudioCtx.currentTime + idx * 0.5;
+                    var osc = pmAudioCtx.createOscillator();
+                    var gain = pmAudioCtx.createGain();
+                    osc.connect(gain); gain.connect(pmAudioCtx.destination);
+                    osc.type = 'sine'; osc.frequency.value = notes[idx];
+                    gain.gain.setValueAtTime(0.0001, t);
+                    gain.gain.exponentialRampToValueAtTime(0.25, t + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+                    osc.start(t); osc.stop(t + 0.42);
+                })(i);
+            }
+        } catch (e) {}
+    }
+
+    // 轻音乐 - 使用 Web Audio API 合成悦耳旋律
+    var PM_MELODY_NOTES = [
+        // [频率Hz, 时长秒]
+        [523.25, 0.5],  // C5
+        [659.25, 0.5],  // E5
+        [783.99, 0.5],  // G5
+        [659.25, 0.5],  // E5
+        [587.33, 0.5],  // D5
+        [523.25, 1.0],  // C5
+        [440.00, 0.5],  // A4
+        [523.25, 1.0],  // C5
+        [587.33, 0.5],  // D5
+        [659.25, 0.5],  // E5
+        [783.99, 0.5],  // G5
+        [880.00, 0.75], // A5
+        [783.99, 0.75], // G5
+        [659.25, 1.0],  // E5
+        [523.25, 1.2]   // C5 (结束)
+    ];
+
+    function pmPlayMelody() {
+        try {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            if (!pmAudioCtx) pmAudioCtx = new AC();
+
+            var settings = pmLoadSettings() || {};
+            if (settings.soundEnabled === false) return;
+            var volume = settings.volume !== undefined ? settings.volume : 0.3;
+            volume = Math.max(0, Math.min(1, volume));
+
+            var t = pmAudioCtx.currentTime + 0.05;
+            var masterGain = pmAudioCtx.createGain();
+            masterGain.gain.value = volume;
+            masterGain.connect(pmAudioCtx.destination);
+
+            for (var i = 0; i < PM_MELODY_NOTES.length; i++) {
+                var note = PM_MELODY_NOTES[i];
+                var freq = note[0];
+                var dur = note[1];
+
+                var osc = pmAudioCtx.createOscillator();
+                var noteGain = pmAudioCtx.createGain();
+                osc.connect(noteGain);
+                noteGain.connect(masterGain);
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, t);
+
+                // ADSR 包络：快速 attack，平滑 decay/release
+                noteGain.gain.setValueAtTime(0.0001, t);
+                noteGain.exponentialRampToValueAtTime(0.8, t + 0.03);
+                noteGain.exponentialRampToValueAtTime(0.5, t + dur * 0.5);
+                noteGain.exponentialRampToValueAtTime(0.0001, t + dur * 0.95);
+
+                osc.start(t);
+                osc.stop(t + dur);
+                t += dur;
+            }
+        } catch (e) {}
+    }
+
+    // ===== IndexedDB 存储自定义音乐 =====
+    function pmOpenDB() {
+        return new Promise(function(resolve, reject) {
+            try {
+                var req = indexedDB.open(PM_DB_NAME, 1);
+                req.onupgradeneeded = function(e) {
+                    var db = e.target.result;
+                    if (!db.objectStoreNames.contains(PM_DB_STORE)) {
+                        db.createObjectStore(PM_DB_STORE, { keyPath: 'id' });
+                    }
+                };
+                req.onsuccess = function(e) { resolve(e.target.result); };
+                req.onerror = function(e) { reject(e.target.error); };
+            } catch (e) { reject(e); }
+        });
+    }
+
+    function pmSaveMusicToDB(blob, meta) {
+        return pmOpenDB().then(function(db) {
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction(PM_DB_STORE, 'readwrite');
+                tx.objectStore(PM_DB_STORE).put({
+                    id: 'custom_music',
+                    blob: blob,
+                    name: meta.name,
+                    size: meta.size,
+                    type: meta.type,
+                    savedAt: Date.now()
+                });
+                tx.oncomplete = function() { resolve(); };
+                tx.onerror = function(e) { reject(e.target.error); };
+            });
+        });
+    }
+
+    function pmLoadMusicFromDB() {
+        return pmOpenDB().then(function(db) {
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction(PM_DB_STORE, 'readonly');
+                var req = tx.objectStore(PM_DB_STORE).get('custom_music');
+                req.onsuccess = function() { resolve(req.result || null); };
+                req.onerror = function(e) { reject(e.target.error); };
+            });
+        }).catch(function() { return null; });
+    }
+
+    function pmDeleteMusicFromDB() {
+        return pmOpenDB().then(function(db) {
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction(PM_DB_STORE, 'readwrite');
+                tx.objectStore(PM_DB_STORE).delete('custom_music');
+                tx.oncomplete = function() { resolve(); };
+                tx.onerror = function(e) { reject(e.target.error); };
+            });
+        }).catch(function() {});
+    }
+
+    // ===== 自定义音乐管理 =====
+    function pmFormatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(2) + ' MB';
+    }
+
+    function pmLoadCustomMusic() {
+        pmLoadMusicFromDB().then(function(record) {
+            if (record && record.blob) {
+                pmCustomMusicBlob = record.blob;
+                pmCustomMusicName = record.name || 'custom.mp3';
+                pmCustomMusicSize = record.size || 0;
+                pmShowUploadedInfo();
+            }
+        });
+    }
+
+    function pmShowUploadedInfo() {
+        var uploadBox = document.getElementById('pmUploadBox');
+        var uploadInfo = document.getElementById('pmUploadInfo');
+        var fileName = document.getElementById('pmUploadFileName');
+        var fileSize = document.getElementById('pmUploadFileSize');
+        if (!uploadBox || !uploadInfo) return;
+        if (pmCustomMusicBlob) {
+            uploadBox.style.display = 'none';
+            uploadInfo.style.display = 'block';
+            if (fileName) fileName.textContent = pmCustomMusicName;
+            if (fileSize) fileSize.textContent = pmFormatFileSize(pmCustomMusicSize);
+        } else {
+            uploadBox.style.display = 'flex';
+            uploadInfo.style.display = 'none';
+        }
+    }
+
+    function pmHandleFileUpload(file) {
+        if (!file) return;
+        if (!file.type.startsWith('audio/')) {
+            pmShowToast('请选择音频文件');
+            return;
+        }
+        if (file.size > 20 * 1024 * 1024) {
+            pmShowToast('文件过大（最大 20MB）');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var blob = new Blob([e.target.result], { type: file.type });
+            pmSaveMusicToDB(blob, { name: file.name, size: file.size, type: file.type }).then(function() {
+                pmCustomMusicBlob = blob;
+                pmCustomMusicName = file.name;
+                pmCustomMusicSize = file.size;
+                pmShowUploadedInfo();
+                pmShowToast('音乐上传成功');
+            }).catch(function(err) {
+                pmShowToast('保存失败：' + (err.message || '未知错误'));
+            });
+        };
+        reader.onerror = function() {
+            pmShowToast('文件读取失败');
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function pmPreviewCustom() {
+        if (!pmCustomMusicBlob) {
+            pmShowToast('请先上传音乐文件');
+            return;
+        }
+        if (pmPreviewPlaying) {
+            if (pmCustomAudio) {
+                pmCustomAudio.pause();
+                pmCustomAudio.currentTime = 0;
+            }
+            pmPreviewPlaying = false;
+            return;
+        }
+        try {
+            var url = URL.createObjectURL(pmCustomMusicBlob);
+            pmCustomAudio = new Audio(url);
+            var settings = pmLoadSettings() || {};
+            var volume = settings.volume !== undefined ? settings.volume : 0.3;
+            pmCustomAudio.volume = Math.max(0, Math.min(1, volume));
+            pmCustomAudio.play();
+            pmPreviewPlaying = true;
+            pmCustomAudio.onended = function() {
+                pmPreviewPlaying = false;
+                URL.revokeObjectURL(url);
+            };
+            pmCustomAudio.onpause = function() {
+                pmPreviewPlaying = false;
+            };
+        } catch (e) {
+            pmShowToast('播放失败');
+        }
+    }
+
+    function pmRemoveCustomMusic() {
+        if (!confirm('确定移除已上传的音乐吗？')) return;
+        pmDeleteMusicFromDB().then(function() {
+            pmCustomMusicBlob = null;
+            pmCustomMusicName = '';
+            pmCustomMusicSize = 0;
+            if (pmCustomAudio) {
+                pmCustomAudio.pause();
+                pmCustomAudio = null;
+            }
+            pmShowUploadedInfo();
+            pmShowToast('已移除自定义音乐');
+        });
+    }
+
+    function pmPlayCustomMusic() {
+        if (!pmCustomMusicBlob) {
+            pmPlayMelody();
+            return;
+        }
+        try {
+            var settings = pmLoadSettings() || {};
+            if (settings.soundEnabled === false) return;
+            var volume = settings.volume !== undefined ? settings.volume : 0.3;
+            var url = URL.createObjectURL(pmCustomMusicBlob);
+            var audio = new Audio(url);
+            audio.volume = Math.max(0, Math.min(1, volume));
+            audio.play();
+            audio.onended = function() { URL.revokeObjectURL(url); };
+            audio.onerror = function() {
+                URL.revokeObjectURL(url);
+                pmPlayMelody();
+            };
+        } catch (e) {
+            pmPlayMelody();
+        }
+    }
+
+    function pmSetupUploadListeners() {
+        var uploadBox = document.getElementById('pmUploadBox');
+        var fileInput = document.getElementById('pmMusicFile');
+        if (!uploadBox || !fileInput) return;
+
+        uploadBox.addEventListener('click', function() { fileInput.click(); });
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                pmHandleFileUpload(e.target.files[0]);
+            }
+            e.target.value = '';
+        });
+
+        uploadBox.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadBox.classList.add('dragover');
+        });
+        uploadBox.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadBox.classList.remove('dragover');
+        });
+        uploadBox.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadBox.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                pmHandleFileUpload(e.dataTransfer.files[0]);
+            }
+        });
+
+        // 音乐源切换
+        var radios = document.querySelectorAll('input[name="pmMusicSource"]');
+        for (var i = 0; i < radios.length; i++) {
+            radios[i].addEventListener('change', function() {
+                var uploadArea = document.getElementById('pmUploadArea');
+                if (!uploadArea) return;
+                if (this.value === 'custom') {
+                    uploadArea.style.display = 'block';
+                    pmShowUploadedInfo();
+                } else {
+                    uploadArea.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    function pmGetSelectedSource() {
+        var checked = document.querySelector('input[name="pmMusicSource"]:checked');
+        return checked ? checked.value : 'builtin';
+    }
+
+    function pmLoadHistory() {
+        try {
+            var raw = localStorage.getItem(pmStorageKey());
+            if (raw) { var p = JSON.parse(raw); if (Array.isArray(p)) return p; }
+        } catch (e) {}
+        return [];
+    }
+
+    function pmSaveHistory(h) {
+        try { localStorage.setItem(pmStorageKey(), JSON.stringify(h)); } catch (e) {}
+    }
+
+    function pmAddHistory(task, duration) {
+        try {
+            var h = pmLoadHistory();
+            h.unshift({ task: task || '未命名任务', duration: duration, completedAt: Date.now() });
+            if (h.length > 200) h = h.slice(0, 200);
+            pmSaveHistory(h);
+        } catch (e) {}
+    }
+
+    function pmUpdateDisplay() {
+        var el = document.getElementById('timeDisplay');
+        var prog = document.getElementById('timerProgress');
+        if (el) el.textContent = pmFormatTime(pmTimeLeft);
+        if (prog) {
+            var progress = (pmTotalSeconds - pmTimeLeft) / pmTotalSeconds;
+            prog.style.strokeDashoffset = PM_CIRCUMFERENCE * (1 - progress);
+        }
+    }
+
+    function pmUpdateModeLabel() {
+        var el = document.getElementById('modeLabel');
+        if (!el) return;
+        var cfg = PM_MODES[pmCurrentMode];
+        el.textContent = cfg.label;
+        el.className = 'pm-mode-label ' + cfg.cls;
+    }
+
+    function pmUpdateStartBtn() {
+        var btnText = document.getElementById('startBtnText');
+        var btn = document.getElementById('startBtn');
+        if (!btnText || !btn) return;
+        if (pmIsRunning) {
+            btnText.textContent = '暂停';
+            var icon = btn.querySelector('i');
+            if (icon) icon.setAttribute('data-lucide', 'pause');
+        } else {
+            btnText.textContent = pmTimeLeft < pmTotalSeconds ? '继续' : '开始';
+            var icon2 = btn.querySelector('i');
+            if (icon2) icon2.setAttribute('data-lucide', 'play');
+        }
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function pmRenderStats() {
+        var h = pmLoadHistory();
+        var count = 0, secs = 0;
+        for (var i = 0; i < h.length; i++) {
+            if (pmIsToday(h[i].completedAt)) { count++; secs += h[i].duration || 0; }
+        }
+        var sc = document.getElementById('statCount');
+        var sm = document.getElementById('statMinutes');
+        if (sc) sc.textContent = count;
+        if (sm) sm.textContent = Math.round(secs / 60);
+    }
+
+    function pmRenderHistory() {
+        var list = document.getElementById('historyList');
+        if (!list) return;
+        var h = pmLoadHistory();
+        var today = [];
+        for (var i = 0; i < h.length; i++) {
+            if (pmIsToday(h[i].completedAt)) today.push(h[i]);
+        }
+        if (today.length === 0) {
+            list.innerHTML = '<div class="pm-empty-history"><i data-lucide="clock"></i><p>今天还没有完成番茄<br>开始第一个专注吧！</p></div>';
+            if (window.lucide) lucide.createIcons();
+            return;
+        }
+        var html = '';
+        for (var j = 0; j < today.length; j++) {
+            var item = today[j];
+            var mins = Math.round((item.duration || 0) / 60);
+            var d = new Date(item.completedAt);
+            var timeStr = (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+            html += '<div class="pm-history-item">' +
+                '<div class="pm-history-dot"><i data-lucide="check"></i></div>' +
+                '<div class="pm-history-info">' +
+                    '<div class="pm-history-task">' + pmEsc(item.task) + '</div>' +
+                    '<div class="pm-history-meta">' + mins + ' 分钟 · ' + timeStr + '</div>' +
+                '</div>' +
+            '</div>';
+        }
+        list.innerHTML = html;
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function pmStartTimer() {
+        if (pmIsRunning) return;
+        pmIsRunning = true;
+        pmUpdateStartBtn();
+        pmTimerInterval = setInterval(function() {
+            pmTimeLeft--;
+            if (pmTimeLeft <= 0) {
+                pmTimeLeft = 0;
+                pmUpdateDisplay();
+                pmCompleteSession();
+                return;
+            }
+            pmUpdateDisplay();
+        }, 1000);
+    }
+
+    function pmStopTimer() {
+        if (pmTimerInterval) { clearInterval(pmTimerInterval); pmTimerInterval = null; }
+        pmIsRunning = false;
+    }
+
+    function pmToggleTimer() {
+        if (pmIsRunning) { pmStopTimer(); pmUpdateStartBtn(); }
+        else { pmStartTimer(); }
+    }
+
+    function pmResetTimer() {
+        pmStopTimer();
+        pmTimeLeft = pmTotalSeconds;
+        pmUpdateDisplay();
+        pmUpdateStartBtn();
+        pmShowToast('已重置');
+    }
+
+    function pmSkipTimer() {
+        pmStopTimer();
+        var cfg = PM_MODES[pmCurrentMode];
+        pmShowToast('已跳过' + cfg.cn + '阶段');
+        pmTimeLeft = pmTotalSeconds;
+        pmUpdateDisplay();
+        pmUpdateStartBtn();
+    }
+
+    function pmCompleteSession() {
+        pmStopTimer();
+        var settings = pmLoadSettings() || {};
+        if (settings.musicSource === 'custom') {
+            pmPlayCustomMusic();
+        } else {
+            pmPlayMelody();
+        }
+        var cfg = PM_MODES[pmCurrentMode];
+        if (pmCurrentMode === 'focus') {
+            var taskInput = document.getElementById('taskInput');
+            var task = taskInput ? taskInput.value.trim() : '';
+            pmAddHistory(task, pmTotalSeconds);
+            pmRenderStats();
+            pmRenderHistory();
+            pmShowToast('完成一个番茄！休息一下吧');
+            if (taskInput) taskInput.value = '';
+        } else {
+            pmShowToast(cfg.cn + '结束，开始专注吧！');
+        }
+        pmTimeLeft = pmTotalSeconds;
+        pmUpdateDisplay();
+        pmUpdateStartBtn();
+    }
+
+    function pmSwitchMode(mode) {
+        if (pmIsRunning) {
+            if (!confirm('当前计时进行中，确定要切换模式吗？')) return;
+        }
+        pmCurrentMode = mode;
+        var cfg = PM_MODES[mode];
+        pmTotalSeconds = cfg.duration;
+        pmTimeLeft = pmTotalSeconds;
+        pmStopTimer();
+        pmUpdateModeLabel();
+        pmUpdateDisplay();
+        pmUpdateStartBtn();
+
+        // 显示/隐藏自定义面板
+        var customPanel = document.getElementById('customPanel');
+        if (customPanel) {
+            if (mode === 'custom') {
+                customPanel.classList.add('visible');
+                // 填入当前值
+                var mins = Math.floor(cfg.duration / 60);
+                var secs = cfg.duration % 60;
+                var minInput = document.getElementById('customMin');
+                var secInput = document.getElementById('customSec');
+                if (minInput) minInput.value = mins;
+                if (secInput) secInput.value = secs;
+            } else {
+                customPanel.classList.remove('visible');
+            }
+        }
+
+        // 更新标签文字（显示时长）
+        var tabs = document.querySelectorAll('.pm-mode-tab');
+        for (var i = 0; i < tabs.length; i++) {
+            var tabMode = tabs[i].getAttribute('data-mode');
+            if (tabMode === mode) tabs[i].classList.add('active');
+            else tabs[i].classList.remove('active');
+            // 更新按钮文字
+            var labelMap = {
+                focus: '专注',
+                short: '短休息',
+                long: '长休息',
+                custom: '自定义'
+            };
+            if (labelMap[tabMode] && tabMode !== 'custom') {
+                var dur = PM_MODES[tabMode].duration;
+                var m = Math.floor(dur / 60);
+                tabs[i].textContent = labelMap[tabMode] + ' ' + m + ':00';
+            }
+        }
+    }
+
+    function pmValidateCustom() {
+        var minInput = document.getElementById('customMin');
+        var secInput = document.getElementById('customSec');
+        if (!minInput || !secInput) return;
+        var m = parseInt(minInput.value, 10) || 0;
+        var s = parseInt(secInput.value, 10) || 0;
+        if (m > 180) m = 180;
+        if (s > 59) s = 59;
+        if (m < 0) m = 0;
+        if (s < 0) s = 0;
+        minInput.value = m;
+        secInput.value = s;
+    }
+
+    function pmApplyCustom() {
+        var minInput = document.getElementById('customMin');
+        var secInput = document.getElementById('customSec');
+        if (!minInput || !secInput) return;
+        var m = parseInt(minInput.value, 10) || 0;
+        var s = parseInt(secInput.value, 10) || 0;
+        var total = m * 60 + s;
+        if (total <= 0) {
+            pmShowToast('请设置大于 0 的时间');
+            return;
+        }
+        // 保存到 custom 模式
+        PM_MODES.custom.duration = total;
+        pmCurrentMode = 'custom';
+        pmTotalSeconds = total;
+        pmTimeLeft = total;
+        pmStopTimer();
+        pmUpdateModeLabel();
+        pmUpdateDisplay();
+        pmUpdateStartBtn();
+        pmShowToast('已设置 ' + pmFormatTime(total));
+        // 更新按钮文字
+        var customTab = document.querySelector('.pm-mode-tab[data-mode="custom"]');
+        if (customTab) {
+            customTab.textContent = '自定义 ' + pmFormatTime(total);
+        }
+        // 保存到 localStorage
+        pmSaveCustomTime(m, s);
+    }
+
+    // ===== 设置存储 =====
+    function pmLoadSettings() {
+        try {
+            var raw = localStorage.getItem(PM_SETTINGS_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return null;
+    }
+
+    function pmSaveSettingsData(settings) {
+        try { localStorage.setItem(PM_SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}
+    }
+
+    function pmSaveCustomTime(m, s) {
+        var settings = pmLoadSettings() || {};
+        settings.customMin = m;
+        settings.customSec = s;
+        pmSaveSettingsData(settings);
+    }
+
+    function pmApplySettingsToModes() {
+        var s = pmLoadSettings();
+        if (!s) return;
+        if (s.focus) PM_MODES.focus.duration = s.focus * 60;
+        if (s.short) PM_MODES.short.duration = s.short * 60;
+        if (s.long) PM_MODES.long.duration = s.long * 60;
+        if (s.customMin !== undefined) {
+            var cm = parseInt(s.customMin, 10) || 0;
+            var cs = parseInt(s.customSec, 10) || 0;
+            PM_MODES.custom.duration = cm * 60 + cs;
+        }
+        // 更新按钮文字
+        var tabMap = { focus: '专注', short: '短休息', long: '长休息' };
+        for (var key in tabMap) {
+            var tab = document.querySelector('.pm-mode-tab[data-mode="' + key + '"]');
+            if (tab) {
+                var dur = PM_MODES[key].duration;
+                var m = Math.floor(dur / 60);
+                tab.textContent = tabMap[key] + ' ' + m + ':00';
+            }
+        }
+        var customTab = document.querySelector('.pm-mode-tab[data-mode="custom"]');
+        if (customTab) {
+            var cd = PM_MODES.custom.duration;
+            customTab.textContent = '自定义 ' + pmFormatTime(cd);
+        }
+    }
+
+    // ===== 设置模态框 =====
+    function pmOpenSettings() {
+        var modal = document.getElementById('pmSettingsModal');
+        if (!modal) return;
+        var s = pmLoadSettings() || {};
+        document.getElementById('setFocus').value = s.focus || Math.round(PM_MODES.focus.duration / 60);
+        document.getElementById('setShort').value = s.short || Math.round(PM_MODES.short.duration / 60);
+        document.getElementById('setLong').value = s.long || Math.round(PM_MODES.long.duration / 60);
+        document.getElementById('setCustomMin').value = s.customMin !== undefined ? s.customMin : Math.floor(PM_MODES.custom.duration / 60);
+        document.getElementById('setCustomSec').value = s.customSec !== undefined ? s.customSec : (PM_MODES.custom.duration % 60);
+        // 声音设置
+        var soundChk = document.getElementById('setSoundEnabled');
+        if (soundChk) soundChk.checked = s.soundEnabled !== false;
+        var vol = s.volume !== undefined ? s.volume : 0.3;
+        var volInput = document.getElementById('setVolume');
+        if (volInput) {
+            volInput.value = vol;
+            volInput.oninput = function() {
+                var lbl = document.getElementById('volumeLabel');
+                if (lbl) lbl.textContent = Math.round(this.value * 100) + '%';
+            };
+            volInput.oninput();
+        }
+        // 音乐源
+        var source = s.musicSource || 'builtin';
+        var radios = document.querySelectorAll('input[name="pmMusicSource"]');
+        var uploadArea = document.getElementById('pmUploadArea');
+        for (var i = 0; i < radios.length; i++) {
+            radios[i].checked = (radios[i].value === source);
+        }
+        if (uploadArea) {
+            uploadArea.style.display = (source === 'custom') ? 'block' : 'none';
+        }
+        pmShowUploadedInfo();
+        modal.classList.add('visible');
+    }
+
+    function pmCloseSettings() {
+        var modal = document.getElementById('pmSettingsModal');
+        if (modal) modal.classList.remove('visible');
+    }
+
+    function pmSaveSettings() {
+        var focus = parseInt(document.getElementById('setFocus').value, 10) || 25;
+        var short = parseInt(document.getElementById('setShort').value, 10) || 5;
+        var long = parseInt(document.getElementById('setLong').value, 10) || 15;
+        var cm = parseInt(document.getElementById('setCustomMin').value, 10) || 0;
+        var cs = parseInt(document.getElementById('setCustomSec').value, 10) || 0;
+        // 限制范围
+        focus = Math.max(1, Math.min(180, focus));
+        short = Math.max(1, Math.min(60, short));
+        long = Math.max(1, Math.min(60, long));
+        cm = Math.max(0, Math.min(180, cm));
+        cs = Math.max(0, Math.min(59, cs));
+
+        var soundEnabled = true;
+        var volume = 0.3;
+        var soundChk = document.getElementById('setSoundEnabled');
+        if (soundChk) soundEnabled = soundChk.checked;
+        var volInput = document.getElementById('setVolume');
+        if (volInput) volume = Math.max(0, Math.min(1, parseFloat(volInput.value) || 0.3));
+
+        var settings = {
+            focus: focus,
+            short: short,
+            long: long,
+            customMin: cm,
+            customSec: cs,
+            soundEnabled: soundEnabled,
+            volume: volume,
+            musicSource: pmGetSelectedSource()
+        };
+        pmSaveSettingsData(settings);
+
+        // 立即应用
+        PM_MODES.focus.duration = focus * 60;
+        PM_MODES.short.duration = short * 60;
+        PM_MODES.long.duration = long * 60;
+        PM_MODES.custom.duration = cm * 60 + cs;
+
+        // 如果当前处于对应模式，更新计时
+        if (pmCurrentMode === 'focus' || pmCurrentMode === 'short' || pmCurrentMode === 'long' || pmCurrentMode === 'custom') {
+            pmTotalSeconds = PM_MODES[pmCurrentMode].duration;
+            if (!pmIsRunning) {
+                pmTimeLeft = pmTotalSeconds;
+                pmUpdateDisplay();
+            }
+        }
+
+        // 更新自定义面板输入
+        var minInput = document.getElementById('customMin');
+        var secInput = document.getElementById('customSec');
+        if (minInput) minInput.value = cm;
+        if (secInput) secInput.value = cs;
+
+        // 更新标签
+        pmApplySettingsToModes();
+
+        pmCloseSettings();
+        pmShowToast('设置已保存');
+    }
+
+    function pmResetSettings() {
+        if (!confirm('确定恢复默认时长吗？')) return;
+        localStorage.removeItem(PM_SETTINGS_KEY);
+        // 恢复默认
+        PM_MODES.focus.duration = 25 * 60;
+        PM_MODES.short.duration = 5 * 60;
+        PM_MODES.long.duration = 15 * 60;
+        PM_MODES.custom.duration = 25 * 60;
+        if (pmCurrentMode === 'focus' || pmCurrentMode === 'short' || pmCurrentMode === 'long' || pmCurrentMode === 'custom') {
+            pmTotalSeconds = PM_MODES[pmCurrentMode].duration;
+            if (!pmIsRunning) {
+                pmTimeLeft = pmTotalSeconds;
+                pmUpdateDisplay();
+            }
+        }
+        // 更新表单
+        document.getElementById('setFocus').value = 25;
+        document.getElementById('setShort').value = 5;
+        document.getElementById('setLong').value = 15;
+        document.getElementById('setCustomMin').value = 25;
+        document.getElementById('setCustomSec').value = 0;
+        var soundChk = document.getElementById('setSoundEnabled');
+        if (soundChk) soundChk.checked = true;
+        var volInput = document.getElementById('setVolume');
+        if (volInput) {
+            volInput.value = 0.3;
+            var lbl = document.getElementById('volumeLabel');
+            if (lbl) lbl.textContent = '30%';
+        }
+        // 重置音乐源
+        var radios = document.querySelectorAll('input[name="pmMusicSource"]');
+        var uploadArea = document.getElementById('pmUploadArea');
+        for (var i = 0; i < radios.length; i++) {
+            radios[i].checked = (radios[i].value === 'builtin');
+        }
+        if (uploadArea) uploadArea.style.display = 'none';
+        // 重置试听
+        pmCustomMusicBlob = null;
+        pmCustomMusicName = '';
+        pmCustomMusicSize = 0;
+        pmShowUploadedInfo();
+        // 更新面板输入
+        var minInput = document.getElementById('customMin');
+        var secInput = document.getElementById('customSec');
+        if (minInput) minInput.value = 25;
+        if (secInput) secInput.value = 0;
+        // 更新标签
+        pmApplySettingsToModes();
+        pmShowToast('已恢复默认');
+    }
+
+    function pmClearHistory() {
+        if (!confirm('确定要清空所有历史记录吗？')) return;
+        pmSaveHistory([]);
+        pmRenderStats();
+        pmRenderHistory();
+        pmShowToast('已清空历史记录');
+    }
+
+    function pmTestMelody() {
+        var soundChk = document.getElementById('setSoundEnabled');
+        var volInput = document.getElementById('setVolume');
+        var saved = pmLoadSettings() || {};
+        var testSettings = {
+            soundEnabled: soundChk ? soundChk.checked : (saved.soundEnabled !== false),
+            volume: volInput ? Math.max(0, Math.min(1, parseFloat(volInput.value) || 0.3)) : (saved.volume || 0.3)
+        };
+        var source = pmGetSelectedSource();
+        if (source === 'custom') {
+            if (!pmCustomMusicBlob) {
+                pmShowToast('请先上传自定义音乐');
+                return;
+            }
+            // 用临时设置播放自定义音乐
+            var origLoad = pmLoadSettings;
+            pmLoadSettings = function() { return testSettings; };
+            pmPlayCustomMusic();
+            pmLoadSettings = origLoad;
+        } else {
+            var origLoad2 = pmLoadSettings;
+            pmLoadSettings = function() { return testSettings; };
+            pmPlayMelody();
+            pmLoadSettings = origLoad2;
+        }
+    }
+
+    // 全局暴露
+    window.pmToggleTimer = pmToggleTimer;
+    window.pmResetTimer = pmResetTimer;
+    window.pmSkipTimer = pmSkipTimer;
+    window.pmSwitchMode = pmSwitchMode;
+    window.pmClearHistory = pmClearHistory;
+    window.pmValidateCustom = pmValidateCustom;
+    window.pmApplyCustom = pmApplyCustom;
+    window.pmOpenSettings = pmOpenSettings;
+    window.pmCloseSettings = pmCloseSettings;
+    window.pmSaveSettings = pmSaveSettings;
+    window.pmResetSettings = pmResetSettings;
+    window.pmTestMelody = pmTestMelody;
+    window.pmPreviewCustom = pmPreviewCustom;
+    window.pmRemoveCustomMusic = pmRemoveCustomMusic;
+
+    // 初始化 - 在 DOMContentLoaded 后执行，确保 auth.js 和 lucide 已加载
+    function pmInit() {
+        // 加载保存的设置
+        pmApplySettingsToModes();
+
+        var prog = document.getElementById('timerProgress');
+        if (prog) {
+            prog.style.strokeDasharray = PM_CIRCUMFERENCE;
+            prog.style.strokeDashoffset = PM_CIRCUMFERENCE;
+        }
+        pmUpdateModeLabel();
+        pmUpdateDisplay();
+        pmUpdateStartBtn();
+        pmRenderStats();
+        pmRenderHistory();
+
+        // 设置上传监听器和加载自定义音乐
+        pmSetupUploadListeners();
+        pmLoadCustomMusic();
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', pmInit);
+    } else {
+        pmInit();
+    }
+    </script>
+</body>
+</html>

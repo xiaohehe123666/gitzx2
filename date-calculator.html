@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日期计算器 - 日期间隔计算/日期加减</title>
+    <meta name="description" content="免费在线日期计算器：计算两个日期之间的天数差，支持日期加减天数、计算N天后是星期几，倒计时到目标日期，实用生活小工具">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .dt-hero { padding: 7rem 0 2rem; text-align: center; }
+        .dt-hero .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; background: rgba(20,184,166,0.1); color: #2DD4BF;
+            border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem;
+        }
+        .dt-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .dt-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+        .dt-section { padding: 1rem 0 2rem; max-width: 900px; margin: 0 auto; }
+        .dt-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 1.75rem; box-shadow: var(--shadow-lg); margin-bottom: 1.5rem;
+        }
+        .dt-card-title { display: flex; align-items: center; gap: 0.6rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; }
+        .dt-card-title i { width: 20px; height: 20px; color: #2DD4BF; }
+
+        .dt-tabs { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 0.3rem; gap: 0.25rem; margin-bottom: 1.5rem; }
+        .dt-tab {
+            border: none; background: transparent; padding: 0.5rem 1.2rem;
+            border-radius: 999px; font-family: inherit; font-size: 0.85rem; font-weight: 600;
+            color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+        }
+        .dt-tab i { width: 15px; height: 15px; }
+        .dt-tab.active { background: linear-gradient(135deg, #0D9488, #14B8A6); color: #fff; box-shadow: 0 4px 12px rgba(20,184,166,0.3); }
+
+        .dt-pane { display: none; }
+        .dt-pane.active { display: block; }
+
+        .dt-fields { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.25rem; }
+        .dt-field label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.4rem; font-weight: 500; }
+        .dt-field input {
+            padding: 0.6rem 0.9rem; background: var(--bg); color: var(--text);
+            border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 0.9rem;
+        }
+        .dt-field input:focus { outline: none; border-color: #2DD4BF; }
+
+        .dt-btn {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            padding: 0.6rem 1.2rem; border: none; border-radius: 12px;
+            font-family: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .dt-btn i { width: 16px; height: 16px; }
+        .dt-btn-primary { background: linear-gradient(135deg, #0D9488, #14B8A6); color: #fff; }
+        .dt-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(20,184,166,0.35); }
+
+        .dt-result {
+            display: none; margin-top: 1.25rem; padding: 1.25rem;
+            background: rgba(20,184,166,0.06); border: 1px solid rgba(20,184,166,0.25);
+            border-radius: 14px;
+        }
+        .dt-result.visible { display: block; }
+        .dt-result .big { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: #2DD4BF; margin-bottom: 0.5rem; }
+        .dt-result .lines { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.9; }
+
+        .dt-countdown { display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .dt-count-num {
+            flex: 1; min-width: 100px; text-align: center; padding: 1rem 0.5rem;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 14px;
+        }
+        .dt-count-num .v { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: #2DD4BF; font-variant-numeric: tabular-nums; }
+        .dt-count-num .k { font-size: 0.75rem; color: var(--text-light); margin-top: 0.25rem; }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <section class="dt-hero">
+        <div class="hero-badge"><i data-lucide="calendar-days"></i><span>日期计算 · 间隔天数 · 日期加减 · 倒计时</span></div>
+        <h1 class="hero-title">日期<span class="gradient-text" style="background:linear-gradient(135deg,#0D9488,#14B8A6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">计算器</span></h1>
+        <p class="hero-description">计算日期相差天数、日期加减天数、目标日倒计时，轻松搞定日程规划。</p>
+    </section>
+
+    <section class="dt-section">
+        <div class="dt-card">
+            <div class="dt-tabs">
+                <button class="dt-tab active" data-tab="diff" onclick="dtSwitch('diff')"><i data-lucide="arrow-right-left"></i>日期间隔</button>
+                <button class="dt-tab" data-tab="add" onclick="dtSwitch('add')"><i data-lucide="plus"></i>日期加减</button>
+                <button class="dt-tab" data-tab="count" onclick="dtSwitch('count')"><i data-lucide="hourglass"></i>倒计时</button>
+            </div>
+
+            <!-- 日期间隔 -->
+            <div class="dt-pane active" id="pane-diff">
+                <div class="dt-fields">
+                    <div class="dt-field"><label>开始日期</label><input type="date" id="diffStart"></div>
+                    <div class="dt-field"><label>结束日期</label><input type="date" id="diffEnd"></div>
+                    <button class="dt-btn dt-btn-primary" id="btnDiff"><i data-lucide="calculator"></i>计算间隔</button>
+                </div>
+                <div class="dt-result" id="diffResult"></div>
+            </div>
+
+            <!-- 日期加减 -->
+            <div class="dt-pane" id="pane-add">
+                <div class="dt-fields">
+                    <div class="dt-field"><label>基准日期</label><input type="date" id="addBase"></div>
+                    <div class="dt-field"><label>天数</label><input type="number" id="addDays" value="30" style="width:100px;"></div>
+                    <button class="dt-btn dt-btn-primary" id="btnAdd"><i data-lucide="plus-minus"></i>计算（正加负减）</button>
+                </div>
+                <div class="dt-result" id="addResult"></div>
+            </div>
+
+            <!-- 倒计时 -->
+            <div class="dt-pane" id="pane-count">
+                <div class="dt-fields">
+                    <div class="dt-field"><label>目标日期</label><input type="date" id="countTarget"></div>
+                    <button class="dt-btn dt-btn-primary" id="btnCount"><i data-lucide="timer"></i>开始倒计时</button>
+                </div>
+                <div class="dt-result" id="countResult"></div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        window.dtSwitch = function(tab) {
+            document.querySelectorAll('.dt-tab').forEach(function(t) { t.classList.toggle('active', t.getAttribute('data-tab') === tab); });
+            document.querySelectorAll('.dt-pane').forEach(function(p) { p.classList.remove('active'); });
+            document.getElementById('pane-' + tab).classList.add('active');
+        };
+
+        function today() { return new Date(); }
+        function iso(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+        function parseDate(s) {
+            if (!s) return null;
+            var parts = s.split('-').map(Number);
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+        var week = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+
+        // 初始默认值
+        var now = today();
+        document.getElementById('diffEnd').value = iso(new Date(now.getTime() + 3 * 86400000));
+        document.getElementById('diffStart').value = iso(now);
+        document.getElementById('addBase').value = iso(now);
+        document.getElementById('countTarget').value = iso(new Date(now.getTime() + 30 * 86400000));
+
+        // 日期间隔
+        document.getElementById('btnDiff').addEventListener('click', function() {
+            var a = parseDate(document.getElementById('diffStart').value);
+            var b = parseDate(document.getElementById('diffEnd').value);
+            if (!a || !b) { Auth.showToast && Auth.showToast('请选择有效的日期', 'error'); return; }
+            var ms = Math.abs(b - a);
+            var days = Math.round(ms / 86400000);
+            var result = document.getElementById('diffResult');
+            result.classList.add('visible');
+            var weeks = Math.floor(days / 7), remDays = days % 7;
+            result.innerHTML =
+                '<div class="big">相差 ' + days + ' 天</div>' +
+                '<div class="lines">' +
+                '≈ ' + (days / 30.44).toFixed(1) + ' 个月 · ≈ ' + (days / 365).toFixed(2) + ' 年<br>' +
+                '= ' + weeks + ' 周 ' + remDays + ' 天<br>' +
+                '开始日期：' + iso(a) + '（' + week[a.getDay()] + '）<br>' +
+                '结束日期：' + iso(b) + '（' + week[b.getDay()] + '）' +
+                '</div>';
+        });
+
+        // 日期加减
+        document.getElementById('btnAdd').addEventListener('click', function() {
+            var base = parseDate(document.getElementById('addBase').value);
+            var n = parseInt(document.getElementById('addDays').value) || 0;
+            if (!base) { Auth.showToast && Auth.showToast('请选择基准日期', 'error'); return; }
+            var res = new Date(base.getTime() + n * 86400000);
+            var result = document.getElementById('addResult');
+            result.classList.add('visible');
+            var sign = n >= 0 ? '+' : '';
+            result.innerHTML =
+                '<div class="big">' + iso(base) + ' ' + sign + n + ' 天 = ' + iso(res) + '</div>' +
+                '<div class="lines">' + week[res.getDay()] + '</div>';
+        });
+
+        // 倒计时
+        var countInt = null;
+        document.getElementById('btnCount').addEventListener('click', function() {
+            var target = parseDate(document.getElementById('countTarget').value);
+            if (!target) { Auth.showToast && Auth.showToast('请选择目标日期', 'error'); return; }
+            var result = document.getElementById('countResult');
+            result.classList.add('visible');
+            if (countInt) clearInterval(countInt);
+            var box = document.createElement('div');
+            result.innerHTML = '<div class="lines" style="margin-bottom:0.5rem;">距离 ' + iso(target) + '（' + week[target.getDay()] + '）还有：</div>';
+            box.innerHTML =
+                '<div class="dt-countdown">' +
+                    '<div class="dt-count-num"><div class="v" id="cdD">0</div><div class="k">天</div></div>' +
+                    '<div class="dt-count-num"><div class="v" id="cdH">0</div><div class="k">小时</div></div>' +
+                    '<div class="dt-count-num"><div class="v" id="cdM">0</div><div class="k">分钟</div></div>' +
+                    '<div class="dt-count-num"><div class="v" id="cdS">0</div><div class="k">秒</div></div>' +
+                '</div>';
+            result.appendChild(box);
+            function tick() {
+                var diff = target.getTime() - Date.now();
+                if (diff < 0) { diff = 0; if (countInt) clearInterval(countInt); }
+                var d = Math.floor(diff / 86400000);
+                var h = Math.floor(diff % 86400000 / 3600000);
+                var m = Math.floor(diff % 3600000 / 60000);
+                var s = Math.floor(diff % 60000 / 1000);
+                document.getElementById('cdD').textContent = d;
+                document.getElementById('cdH').textContent = h;
+                document.getElementById('cdM').textContent = m;
+                document.getElementById('cdS').textContent = s;
+            }
+            tick();
+            countInt = setInterval(tick, 1000);
+        });
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #0EA5E9, #38BDF8);">
+                    <i data-lucide="calendar"></i>
+                </div>
+                <span>日期计算器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

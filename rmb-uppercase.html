@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人民币大写转换 - 数字金额转中文大写</title>
+    <meta name="description" content="免费在线人民币大写转换工具：数字金额一键转中文大写，支持元角分、负数、小数点后精确到分，符合财务报销规范，浏览器本地计算">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .rmb-hero { padding: 7rem 0 2rem; text-align: center; }
+    .rmb-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(217, 119, 6, 0.1); color: #D97706; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .rmb-hero .hero-badge i { width: 16px; height: 16px; }
+    .rmb-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .rmb-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .rmb-section { padding: 1rem 0 2rem; }
+    .rmb-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-lg); max-width: 680px; margin: 0 auto; }
+    .rmb-symbol { position: relative; }
+    .rmb-symbol i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--text-secondary); pointer-events: none; }
+    .rmb-input { width: 100%; padding: 0.9rem 1rem 0.9rem 2.8rem; border: 1px solid var(--border); border-radius: 14px; font-family: inherit; font-size: 1.2rem; font-weight: 600; background: var(--bg); color: var(--text); box-sizing: border-box; }
+    .rmb-input:focus { outline: none; border-color: var(--primary-light); }
+    .rmb-actions { display: flex; gap: 0.75rem; margin-top: 1rem; justify-content: center; flex-wrap: wrap; }
+    .rmb-btn { padding: 0.65rem 1.4rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s; }
+    .rmb-btn i { width: 16px; height: 16px; }
+    .rmb-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .rmb-btn-primary { background: linear-gradient(135deg, #D97706, #F59E0B); color: #fff; border: none; }
+    .rmb-btn-primary:hover { box-shadow: 0 6px 16px rgba(217, 119, 6, 0.3); }
+
+    .rmb-result { display: none; margin-top: 1.25rem; }
+    .rmb-result.show { display: block; animation: rmbFadeIn .25s ease; }
+    @keyframes rmbFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .rmb-result-label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+    .rmb-result-label i { width: 15px; height: 15px; }
+    .rmb-result-box { width: 100%; min-height: 90px; border: 1px solid rgba(217, 119, 6, 0.3); border-radius: 14px; padding: 1rem 1.1rem; font-family: inherit; font-size: 1.15rem; line-height: 1.9; background: rgba(217, 119, 6, 0.05); color: var(--text); box-sizing: border-box; letter-spacing: 1px; }
+    .rmb-result-actions { display: flex; gap: 0.6rem; margin-top: 0.75rem; }
+
+    .rmb-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.1rem; }
+    .rmb-chip { padding: 0.4rem 0.95rem; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); font-size: 0.85rem; cursor: pointer; transition: all .2s; color: var(--text); }
+    .rmb-chip:hover { border-color: var(--primary-light); color: var(--primary-light); }
+
+    .rmb-tips { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.85rem; }
+    .rmb-tip { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1rem 1.1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+    .rmb-tip i { width: 18px; height: 18px; color: var(--primary-light); flex-shrink: 0; margin-top: 2px; }
+    .rmb-tip b { display: block; font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .rmb-tip p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; }
+
+    @media (max-width: 768px) {
+        .rmb-hero { padding: 6rem 0 1.5rem; }
+        .rmb-hero h1 { font-size: 1.85rem; }
+        .rmb-card { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="banknote"></i>
+                </div>
+                <span class="logo-text">人民币大写</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#rmb" class="nav-link active">人民币大写</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="rmb-hero">
+            <div class="hero-badge"><i data-lucide="banknote"></i><span>财务报销 · 金额大写</span></div>
+            <h1 class="hero-title">人民币<span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">大写转换</span></h1>
+            <p class="hero-description">数字金额一键转换为财务规范的中文大写，精确到分，零填充完整。</p>
+        </section>
+
+        <section id="rmb" class="rmb-section">
+            <div class="container">
+                <div class="rmb-card">
+                    <div class="rmb-symbol">
+                        <i data-lucide="yen"></i>
+                        <input type="text" id="amountInput" class="rmb-input" placeholder="请输入金额，如 12345.67" inputmode="decimal">
+                    </div>
+                    <div class="rmb-actions">
+                        <button type="button" class="rmb-btn rmb-btn-primary" id="btnConvert"><i data-lucide="refresh-cw"></i>转换</button>
+                        <button type="button" class="rmb-btn" id="btnCopy"><i data-lucide="copy"></i>复制结果</button>
+                        <button type="button" class="rmb-btn" id="btnClear"><i data-lucide="trash-2"></i>清空</button>
+                    </div>
+
+                    <div class="rmb-chips">
+                        <span style="font-size:0.8rem;color:var(--text-secondary);align-self:center;">常用：</span>
+                        <button type="button" class="rmb-chip" data-amount="100">¥100</button>
+                        <button type="button" class="rmb-chip" data-amount="1000">¥1,000</button>
+                        <button type="button" class="rmb-chip" data-amount="10000">¥10,000</button>
+                        <button type="button" class="rmb-chip" data-amount="12345.67">¥12,345.67</button>
+                        <button type="button" class="rmb-chip" data-amount="888888.88">¥888,888.88</button>
+                    </div>
+
+                    <div class="rmb-result" id="resultBox">
+                        <div class="rmb-result-label"><i data-lucide="check-circle"></i>中文大写</div>
+                        <div class="rmb-result-box" id="resultText"></div>
+                        <div class="rmb-result-actions">
+                            <button type="button" class="rmb-btn" id="btnCopy2"><i data-lucide="copy"></i>复制大写</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rmb-tips">
+                    <div class="rmb-tip"><i data-lucide="book-open"></i><div><b>大写规则</b><p>符合《会计基础工作规范》：壹贰叁肆伍陆柒捌玖拾佰仟万亿。</p></div></div>
+                    <div class="rmb-tip"><i data-lucide="check-check"></i><div><b>零的省略</b><p>中间连续零只写一个"零"，角位为0且分位不为0时补"零"。</p></div></div>
+                    <div class="rmb-tip"><i data-lucide="shield-check"></i><div><b>本地计算</b><p>转换在浏览器本地完成，不涉及任何网络请求。</p></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="banknote"></i>
+                </div>
+                <span>人民币大写</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+
+        var DIGITS = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
+        var UNITS = ['', '拾', '佰', '仟'];
+
+        function convertRmb(input) {
+            input = (input || '').replace(/,/g, '').trim();
+            if (!input) return '请输入金额';
+
+            if (isNaN(parseFloat(input)) || !/^\d+(\.\d{1,2})?$/.test(input)) {
+                return '金额格式不正确：请输入数字，小数最多两位';
+            }
+
+            var negative = false;
+            if (input.charAt(0) === '-') {
+                negative = true;
+                input = input.substring(1);
+            }
+
+            var parts = input.split('.');
+            var intPart = parts[0].replace(/^0+(?=\d)/, '');
+            var decPart = parts[1] || '';
+            if (decPart.length === 1) decPart += '0';
+            if (!intPart) intPart = '0';
+
+            var intStr = convertInteger(intPart);
+            var decStr = convertDecimal(decPart);
+
+            var result = negative ? '负' : '';
+            if (decStr === '') {
+                result += intStr + '元整';
+            } else if (intStr === '零') {
+                result += decStr;
+            } else {
+                result += intStr + '元' + decStr;
+            }
+            return result;
+        }
+
+        function convertInteger(num) {
+            if (num === '0') return '零';
+            var len = num.length;
+            var s = '';
+            var zero = false;
+            for (var i = 0; i < len; i++) {
+                var d = parseInt(num.charAt(i), 10);
+                var pos = len - i - 1;
+                if (d === 0) {
+                    zero = true;
+                } else {
+                    if (zero) { s += '零'; zero = false; }
+                    s += DIGITS[d] + UNITS[pos % 4];
+                }
+                if (pos === 4 && !/零$/.test(s)) s += '万';
+                if (pos === 8 && !/零$/.test(s)) s += '亿';
+            }
+            // 处理尾部多余的单位（万/亿后无内容时去掉）
+            s = s.replace(/零+$/, '');
+            return s;
+        }
+
+        function convertDecimal(dec) {
+            var jiao = parseInt(dec.charAt(0), 10);
+            var fen = parseInt(dec.charAt(1), 10);
+            if (jiao === 0 && fen === 0) return '';
+            var s = '';
+            if (jiao !== 0) {
+                s += DIGITS[jiao] + '角';
+            } else if (fen !== 0) {
+                s += '零';
+            }
+            if (fen !== 0) s += DIGITS[fen] + '分';
+            return s;
+        }
+
+        function doConvert() {
+            var input = document.getElementById('amountInput').value;
+            var result = convertRmb(input);
+            if (result === '请输入金额') { showToast('请先输入金额', 'error'); return; }
+            if (result.indexOf('格式不正确') !== -1) { showToast(result, 'error'); return; }
+            document.getElementById('resultText').textContent = result;
+            document.getElementById('resultBox').classList.add('show');
+            showToast('转换完成', 'success');
+        }
+
+        document.getElementById('btnConvert').addEventListener('click', doConvert);
+        document.getElementById('btnClear').addEventListener('click', function() {
+            document.getElementById('amountInput').value = '';
+            document.getElementById('resultBox').classList.remove('show');
+        });
+
+        function copyText(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function() { showToast('已复制到剪贴板', 'success'); });
+            } else {
+                var t = document.createElement('textarea');
+                t.value = text; document.body.appendChild(t); t.select();
+                document.execCommand('copy'); document.body.removeChild(t);
+                showToast('已复制到剪贴板', 'success');
+            }
+        }
+
+        document.getElementById('btnCopy').addEventListener('click', function() {
+            var text = document.getElementById('resultText').textContent;
+            if (!text) { showToast('请先转换金额', 'error'); return; }
+            copyText(text);
+        });
+        document.getElementById('btnCopy2').addEventListener('click', function() {
+            var text = document.getElementById('resultText').textContent;
+            if (!text) { showToast('请先转换金额', 'error'); return; }
+            copyText(text);
+        });
+
+        document.querySelectorAll('.rmb-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                document.getElementById('amountInput').value = chip.getAttribute('data-amount');
+                doConvert();
+            });
+        });
+
+        document.getElementById('amountInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') doConvert();
+        });
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 工具 - 合并 / 拆分 / 转 JSON CSV</title>
+    <meta name="description" content="免费在线 Excel 表格处理工具：多表合并、按工作表拆分、Excel 转 JSON/CSV、JSON/CSV 转 Excel，数据本地处理不上传">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .xl-hero { padding: 7rem 0 2rem; text-align: center; }
+    .xl-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(22, 163, 74, 0.12); color: #16A34A; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .xl-hero .hero-badge i { width: 16px; height: 16px; }
+    .xl-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .xl-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .xl-section { padding: 1rem 0 2rem; }
+    .xl-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-lg); }
+    .xl-tabs { display: flex; gap: 0.25rem; padding: 1rem 1.5rem 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .xl-tab { border: none; background: transparent; padding: 0.7rem 1.15rem; border-radius: 12px 12px 0 0; font-family: inherit; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; border-bottom: 2px solid transparent; transition: all 0.2s ease; }
+    .xl-tab i { width: 16px; height: 16px; }
+    .xl-tab:hover { color: var(--text); }
+    .xl-tab.active { color: #16A34A; border-bottom-color: #16A34A; background: rgba(22, 163, 74, 0.05); }
+    .xl-panel { padding: 1.5rem; display: none; }
+    .xl-panel.active { display: block; animation: tbFadeIn .25s ease; }
+
+    .xl-dropzone { border: 2px dashed var(--border); border-radius: 16px; padding: 2.2rem 1.5rem; text-align: center; cursor: pointer; transition: all .25s ease; background: var(--bg); }
+    .xl-dropzone:hover, .xl-dropzone.drag { border-color: #16A34A; background: rgba(22, 163, 74, 0.04); }
+    .xl-dropzone i { width: 40px; height: 40px; color: var(--text-light); margin-bottom: 0.65rem; }
+    .xl-dropzone p { color: var(--text-secondary); font-size: 0.9rem; }
+    .xl-dropzone strong { color: #16A34A; }
+    .xl-dropzone.multiple p.sub { margin-top: 0.3rem; font-size: 0.8rem; color: var(--text-light); }
+
+    .xl-file-list { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .xl-file-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; font-size: 0.85rem; }
+    .xl-file-item i { color: #16A34A; width: 16px; height: 16px; }
+    .xl-file-item .xl-file-size { margin-left: auto; color: var(--text-light); font-size: 0.8rem; }
+    .xl-file-item button { border: none; background: none; cursor: pointer; color: var(--text-light); padding: 0.2rem; }
+    .xl-file-item button:hover { color: var(--error); }
+
+    .xl-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .xl-btn { padding: 0.7rem 1.4rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s ease; }
+    .xl-btn i { width: 16px; height: 16px; }
+    .xl-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .xl-btn-primary { background: linear-gradient(135deg, #16A34A, #22C55E); color: #fff; border: none; }
+    .xl-btn-primary:hover { box-shadow: 0 6px 16px rgba(22, 163, 74, 0.3); }
+    .xl-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .xl-result { margin-top: 1rem; padding: 1rem 1.25rem; background: rgba(22, 163, 74, 0.08); border: 1px solid rgba(22, 163, 74, 0.3); border-radius: 14px; font-size: 0.9rem; display: none; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .xl-result.show { display: flex; }
+    .xl-result i { color: var(--success); width: 18px; height: 18px; }
+    .xl-result a { margin-left: auto; }
+
+    .xl-field { margin-top: 1rem; }
+    .xl-field label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem; font-weight: 600; }
+    .xl-field select, .xl-field input { width: 100%; max-width: 360px; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
+    .xl-textarea { width: 100%; min-height: 220px; margin-top: 1rem; padding: 0.85rem 1rem; border: 1px solid var(--border); border-radius: 14px; font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace; font-size: 0.85rem; line-height: 1.6; resize: vertical; background: var(--bg); color: var(--text); }
+    .xl-preview { margin-top: 1rem; overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; max-height: 320px; overflow-y: auto; }
+    .xl-preview table { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
+    .xl-preview th, .xl-preview td { padding: 0.5rem 0.75rem; border: 1px solid var(--border); white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+    .xl-preview th { background: var(--bg); font-weight: 600; position: sticky; top: 0; }
+    .xl-hint { font-size: 0.8rem; color: var(--text-light); margin-top: 0.75rem; line-height: 1.6; }
+
+    @media (max-width: 768px) {
+        .xl-hero { padding: 6rem 0 1.5rem; }
+        .xl-hero h1 { font-size: 1.85rem; }
+        .xl-tabs { padding: 0.75rem 1rem 0; }
+        .xl-panel { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #16A34A, #22C55E);">
+                    <i data-lucide="table"></i>
+                </div>
+                <span class="logo-text">Excel 工具</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#excel" class="nav-link active">Excel 工具</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="xl-hero">
+            <div class="hero-badge"><i data-lucide="table"></i><span>Excel 合并 · 拆分 · 格式转换</span></div>
+            <h1 class="hero-title">Excel <span class="gradient-text" style="background:linear-gradient(135deg,#16A34A,#22C55E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">工具箱</span></h1>
+            <p class="hero-description">合并多个表格、按工作表拆分、Excel 与 JSON/CSV 互转，数据全程在浏览器本地处理，不会上传服务器。</p>
+        </section>
+
+        <section id="excel" class="xl-section">
+            <div class="container">
+                <div class="xl-card">
+                    <div class="xl-tabs">
+                        <button type="button" class="xl-tab active" data-tab="merge"><i data-lucide="combine"></i>合并表格</button>
+                        <button type="button" class="xl-tab" data-tab="split"><i data-lucide="unplug"></i>拆分表格</button>
+                        <button type="button" class="xl-tab" data-tab="tojson"><i data-lucide="braces"></i>Excel 转 JSON/CSV</button>
+                        <button type="button" class="xl-tab" data-tab="fromjson"><i data-lucide="file-spreadsheet"></i>JSON/CSV 转 Excel</button>
+                    </div>
+
+                    <!-- 合并 -->
+                    <div class="xl-panel active" id="panel-merge">
+                        <div class="xl-dropzone multiple" id="dz-merge">
+                            <i data-lucide="files"></i>
+                            <p><strong>点击选择多个 Excel 文件</strong> 或拖拽到此处</p>
+                            <p class="sub">支持 .xlsx / .xls，可多选，最多 10 个</p>
+                        </div>
+                        <input type="file" id="file-merge" accept=".xlsx,.xls,.csv" multiple hidden>
+                        <div class="xl-file-list" id="merge-list"></div>
+                        <div class="xl-field"><label>合并方式</label>
+                            <select id="merge-mode">
+                                <option value="sheets">同名工作表合并 + 其余追加（推荐）</option>
+                                <option value="first">所有数据合并到第一个工作表</option>
+                            </select>
+                        </div>
+                        <div class="xl-actions">
+                            <button type="button" class="xl-btn xl-btn-primary" id="btn-merge"><i data-lucide="combine"></i>开始合并</button>
+                        </div>
+                        <div class="xl-preview" id="merge-preview" style="display:none;"></div>
+                        <div class="xl-result" id="result-merge"><i data-lucide="check-circle"></i><span id="result-merge-info"></span><a id="dl-merge" class="xl-btn xl-btn-primary" download><i data-lucide="download"></i>下载</a></div>
+                    </div>
+
+                    <!-- 拆分 -->
+                    <div class="xl-panel" id="panel-split">
+                        <div class="xl-dropzone" id="dz-split">
+                            <i data-lucide="unplug"></i>
+                            <p><strong>点击选择 Excel 文件</strong> 或拖拽到此处</p>
+                            <p class="sub">按工作表拆分为多个文件，打包 zip 下载</p>
+                        </div>
+                        <input type="file" id="file-split" accept=".xlsx,.xls" hidden>
+                        <div class="xl-file-list" id="split-list"></div>
+                        <div class="xl-field"><label>拆分方式</label>
+                            <select id="split-mode">
+                                <option value="sheet">按工作表拆分（每个工作表一个文件）</option>
+                                <option value="rows">按行数拆分（每个文件固定行数）</option>
+                            </select>
+                        </div>
+                        <div class="xl-field" id="split-rows-field" style="display:none;"><label>每个文件行数</label><input type="number" id="split-rows" value="1000" min="1" max="100000"></div>
+                        <div class="xl-actions">
+                            <button type="button" class="xl-btn xl-btn-primary" id="btn-split"><i data-lucide="unplug"></i>开始拆分</button>
+                        </div>
+                        <div class="xl-result" id="result-split"><i data-lucide="check-circle"></i><span id="result-split-info"></span><a id="dl-split" class="xl-btn xl-btn-primary" download><i data-lucide="download"></i>下载 ZIP</a></div>
+                    </div>
+
+                    <!-- Excel 转 JSON/CSV -->
+                    <div class="xl-panel" id="panel-tojson">
+                        <div class="xl-dropzone" id="dz-tojson">
+                            <i data-lucide="braces"></i>
+                            <p><strong>点击选择 Excel 文件</strong> 或拖拽到此处</p>
+                            <p class="sub">选择工作表并导出为 JSON 或 CSV</p>
+                        </div>
+                        <input type="file" id="file-tojson" accept=".xlsx,.xls,.csv" hidden>
+                        <div class="xl-field"><label>选择工作表</label><select id="tojson-sheet"></select></div>
+                        <div class="xl-field"><label>导出格式</label>
+                            <select id="tojson-format">
+                                <option value="json">JSON（对象数组，首行为字段名）</option>
+                                <option value="jsonrows">JSON（二维数组）</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
+                        <div class="xl-actions">
+                            <button type="button" class="xl-btn xl-btn-primary" id="btn-tojson"><i data-lucide="download"></i>导出并下载</button>
+                            <button type="button" class="xl-btn" id="btn-tojson-preview"><i data-lucide="eye"></i>预览</button>
+                        </div>
+                        <div class="xl-preview" id="tojson-preview" style="display:none;"></div>
+                    </div>
+
+                    <!-- JSON/CSV 转 Excel -->
+                    <div class="xl-panel" id="panel-fromjson">
+                        <div class="xl-field"><label>选择输入格式</label>
+                            <select id="fromjson-format">
+                                <option value="json">JSON（对象数组或二维数组）</option>
+                                <option value="csv">CSV 文本</option>
+                            </select>
+                        </div>
+                        <textarea class="xl-textarea" id="fromjson-input" placeholder='粘贴 JSON 或 CSV 内容，例如：&#10;[{"姓名":"张三","年龄":25},{"姓名":"李四","年龄":30}]&#10;或 CSV：&#10;姓名,年龄&#10;张三,25'></textarea>
+                        <div class="xl-actions">
+                            <button type="button" class="xl-btn xl-btn-primary" id="btn-fromjson"><i data-lucide="file-spreadsheet"></i>生成 Excel</button>
+                            <button type="button" class="xl-btn" id="fromjson-demo"><i data-lucide="flask-conical"></i>填入示例</button>
+                        </div>
+                        <div class="xl-result" id="result-fromjson"><i data-lucide="check-circle"></i><span id="result-fromjson-info"></span><a id="dl-fromjson" class="xl-btn xl-btn-primary" download><i data-lucide="download"></i>下载 Excel</a></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #16A34A, #22C55E);">
+                    <i data-lucide="table"></i>
+                </div>
+                <span>Excel 工具</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        /* ===== Tab 切换 ===== */
+        var tabs = document.querySelectorAll('.xl-tab');
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                tabs.forEach(function(t) { t.classList.remove('active'); });
+                tab.classList.add('active');
+                document.querySelectorAll('.xl-panel').forEach(function(p) { p.classList.remove('active'); });
+                document.getElementById('panel-' + tab.getAttribute('data-tab')).classList.add('active');
+            });
+        });
+
+        /* ===== 公共 ===== */
+        function fmtBytes(b) { return b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(2) + ' MB'; }
+        function bindDropzone(dzId, inputId) {
+            var dz = document.getElementById(dzId);
+            var input = document.getElementById(inputId);
+            dz.addEventListener('click', function() { input.click(); });
+            dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag'); });
+            dz.addEventListener('dragleave', function() { dz.classList.remove('drag'); });
+            dz.addEventListener('drop', function(e) {
+                e.preventDefault(); dz.classList.remove('drag');
+                if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); }
+            });
+        }
+        bindDropzone('dz-merge', 'file-merge');
+        bindDropzone('dz-split', 'file-split');
+        bindDropzone('dz-tojson', 'file-tojson');
+
+        function showToast(msg, type) {
+            var el = document.getElementById('toast');
+            var msgEl = document.getElementById('toastMessage');
+            if (!el) { alert(msg); return; }
+            msgEl.textContent = msg;
+            el.className = 'pm-toast ' + (type === 'error' ? 'pm-toast-error' : type === 'success' ? 'pm-toast-success' : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function() { el.className = 'pm-toast hidden'; }, 2600);
+        }
+        function renderTablePreview(el, rows, maxRows) {
+            maxRows = maxRows || 50;
+            var html = '<table><thead><tr>';
+            var headers = rows[0] || [];
+            headers.forEach(function(h) { html += '<th>' + esc(h) + '</th>'; });
+            html += '</tr></thead><tbody>';
+            for (var i = 1; i < Math.min(rows.length, maxRows + 1); i++) {
+                html += '<tr>';
+                (rows[i] || []).forEach(function(c) { html += '<td>' + esc(c) + '</td>'; });
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+            el.innerHTML = html;
+            el.style.display = 'block';
+        }
+        function esc(s) {
+            if (s === null || s === undefined) return '';
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        /* ===== 合并 ===== */
+        var mergeFiles = [];
+        document.getElementById('file-merge').addEventListener('change', function() {
+            mergeFiles = Array.prototype.slice.call(this.files).slice(0, 10);
+            var list = document.getElementById('merge-list');
+            list.innerHTML = '';
+            mergeFiles.forEach(function(f, idx) {
+                var item = document.createElement('div');
+                item.className = 'xl-file-item';
+                item.innerHTML = '<i data-lucide="file-spreadsheet"></i><span>' + esc(f.name) + '</span><span class="xl-file-size">' + fmtBytes(f.size) + '</span><button data-idx="' + idx + '"><i data-lucide="x"></i></button>';
+                list.appendChild(item);
+            });
+            if (window.lucide) lucide.createIcons();
+            list.querySelectorAll('button').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    mergeFiles.splice(parseInt(btn.getAttribute('data-idx')), 1);
+                    document.getElementById('file-merge').value = '';
+                    btn.closest('.xl-file-item').remove();
+                });
+            });
+            document.getElementById('result-merge').classList.remove('show');
+            document.getElementById('merge-preview').style.display = 'none';
+        });
+
+        document.getElementById('btn-merge').addEventListener('click', function() {
+            if (!mergeFiles.length) { showToast('请先选择 Excel 文件', 'error'); return; }
+            var btn = this;
+            btn.disabled = true;
+            var mode = document.getElementById('merge-mode').value;
+            var jobs = mergeFiles.map(function(f) { return f.arrayBuffer(); });
+            Promise.all(jobs).then(function(bufs) {
+                var wbs = bufs.map(function(b, i) { return XLSX.read(new Uint8Array(b), { type: 'array' }); });
+                var out = XLSX.utils.book_new();
+                var sheetMap = {};
+                wbs.forEach(function(wb, wi) {
+                    var prefix = wbs.length > 1 ? (wi + 1) + '_' : '';
+                    wb.SheetNames.forEach(function(sn) {
+                        var ws = wb.Sheets[sn];
+                        if (mode === 'sheets') {
+                            var key = sn;
+                            if (!sheetMap[key]) {
+                                var name = (prefix + sn).slice(0, 31);
+                                var finalName = name;
+                                var n = 1;
+                                while (XLSX.utils.book_get_sheet(out, finalName)) { finalName = name.slice(0, 28) + '_' + n; n++; }
+                                XLSX.utils.book_append_sheet(out, ws, finalName);
+                                sheetMap[key] = true;
+                            } else {
+                                var rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+                                var target = out.Sheets[sn] || out.Sheets[prefix + sn];
+                                if (target && rows.length) {
+                                    var existing = XLSX.utils.sheet_to_json(target, { header: 1 });
+                                    if (existing.length && rows.length && JSON.stringify(existing[0]) === JSON.stringify(rows[0])) rows.shift();
+                                    XLSX.utils.sheet_add_aoa(target, rows, { origin: -1 });
+                                }
+                            }
+                        } else {
+                            var rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+                            var first = out.SheetNames.length ? out.Sheets[out.SheetNames[0]] : null;
+                            if (!first) {
+                                XLSX.utils.book_append_sheet(out, XLSX.utils.aoa_to_sheet(rows), '合并数据');
+                            } else {
+                                var existing = XLSX.utils.sheet_to_json(first, { header: 1 });
+                                if (existing.length && rows.length && JSON.stringify(existing[0]) === JSON.stringify(rows[0])) rows.shift();
+                                XLSX.utils.sheet_add_aoa(first, rows, { origin: -1 });
+                            }
+                        }
+                    });
+                });
+                var wbout = XLSX.write(out, { bookType: 'xlsx', type: 'array' });
+                var blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                var u = URL.createObjectURL(blob);
+                var name = '合并_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+                var info = document.getElementById('result-merge-info');
+                info.textContent = '合并成功：' + mergeFiles.length + ' 个文件，' + out.SheetNames.length + ' 个工作表';
+                var a = document.getElementById('dl-merge');
+                a.href = u; a.download = name;
+                document.getElementById('result-merge').classList.add('show');
+                // 预览第一个表
+                var firstWs = out.Sheets[out.SheetNames[0]];
+                renderTablePreview(document.getElementById('merge-preview'), XLSX.utils.sheet_to_json(firstWs, { header: 1 }));
+                btn.disabled = false;
+            }).catch(function(e) {
+                console.error(e);
+                btn.disabled = false;
+                showToast('处理失败：' + e.message, 'error');
+            });
+        });
+
+        /* ===== 拆分 ===== */
+        var splitFile = null;
+        document.getElementById('file-split').addEventListener('change', function() {
+            if (!this.files.length) return;
+            splitFile = this.files[0];
+            document.getElementById('split-list').innerHTML =
+                '<div class="xl-file-item"><i data-lucide="file-spreadsheet"></i><span>' + esc(splitFile.name) + '</span><span class="xl-file-size">' + fmtBytes(splitFile.size) + '</span></div>';
+            if (window.lucide) lucide.createIcons();
+            document.getElementById('result-split').classList.remove('show');
+        });
+        document.getElementById('split-mode').addEventListener('change', function() {
+            document.getElementById('split-rows-field').style.display = this.value === 'rows' ? 'block' : 'none';
+        });
+
+        document.getElementById('btn-split').addEventListener('click', function() {
+            if (!splitFile) { showToast('请先选择 Excel 文件', 'error'); return; }
+            var btn = this;
+            btn.disabled = true;
+            var mode = document.getElementById('split-mode').value;
+            splitFile.arrayBuffer().then(function(buf) {
+                var wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
+                var zip = new JSZip();
+                var count = 0;
+                if (mode === 'sheet') {
+                    wb.SheetNames.forEach(function(sn) {
+                        var nwb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(nwb, wb.Sheets[sn], sn.slice(0, 31));
+                        var data = XLSX.write(nwb, { bookType: 'xlsx', type: 'array' });
+                        var safe = sn.replace(/[\\/:*?"<>|]/g, '_').slice(0, 40);
+                        zip.file(safe + '.xlsx', data);
+                        count++;
+                    });
+                } else {
+                    var rowsCount = Math.max(1, parseInt(document.getElementById('split-rows').value) || 1000);
+                    wb.SheetNames.forEach(function(sn) {
+                        var rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1 });
+                        if (!rows.length) return;
+                        var header = rows[0];
+                        var fileIdx = 1;
+                        for (var i = 1; i < rows.length; i += rowsCount - 1) {
+                            var part = [header].concat(rows.slice(i, i + rowsCount - 1));
+                            var nwb = XLSX.utils.book_new();
+                            XLSX.utils.book_append_sheet(nwb, XLSX.utils.aoa_to_sheet(part), sn.slice(0, 31));
+                            var data = XLSX.write(nwb, { bookType: 'xlsx', type: 'array' });
+                            var safe = (sn + '_' + fileIdx).replace(/[\\/:*?"<>|]/g, '_').slice(0, 40);
+                            zip.file(safe + '.xlsx', data);
+                            fileIdx++;
+                            count++;
+                        }
+                    });
+                }
+                return zip.generateAsync({ type: 'blob' }).then(function(blob) {
+                    var u = URL.createObjectURL(blob);
+                    var a = document.getElementById('dl-split');
+                    a.href = u;
+                    a.download = '拆分_' + splitFile.name.replace(/\.[^.]+$/, '') + '_' + count + '个.zip';
+                    document.getElementById('result-split-info').textContent = '拆分成功：共 ' + count + ' 个文件';
+                    document.getElementById('result-split').classList.add('show');
+                    btn.disabled = false;
+                });
+            }).catch(function(e) {
+                console.error(e);
+                btn.disabled = false;
+                showToast('处理失败：' + e.message, 'error');
+            });
+        });
+
+        /* ===== Excel 转 JSON/CSV ===== */
+        var tojsonWb = null;
+        document.getElementById('file-tojson').addEventListener('change', function() {
+            if (!this.files.length) return;
+            var f = this.files[0];
+            f.arrayBuffer().then(function(buf) {
+                tojsonWb = XLSX.read(new Uint8Array(buf), { type: 'array' });
+                var sel = document.getElementById('tojson-sheet');
+                sel.innerHTML = '';
+                tojsonWb.SheetNames.forEach(function(sn) {
+                    var opt = document.createElement('option');
+                    opt.value = sn; opt.textContent = sn;
+                    sel.appendChild(opt);
+                });
+                document.getElementById('tojson-preview').style.display = 'none';
+            }).catch(function(e) { showToast('读取失败：' + e.message, 'error'); });
+        });
+
+        function getTojsonOutput() {
+            if (!tojsonWb) { showToast('请先选择 Excel 文件', 'error'); return null; }
+            var sn = document.getElementById('tojson-sheet').value;
+            var ws = tojsonWb.Sheets[sn];
+            if (!ws) { showToast('工作表不存在', 'error'); return null; }
+            var fmt = document.getElementById('tojson-format').value;
+            var content, ext, mime;
+            if (fmt === 'json') {
+                content = JSON.stringify(XLSX.utils.sheet_to_json(ws), null, 2);
+                ext = 'json'; mime = 'application/json';
+            } else if (fmt === 'jsonrows') {
+                content = JSON.stringify(XLSX.utils.sheet_to_json(ws, { header: 1 }), null, 2);
+                ext = 'json'; mime = 'application/json';
+            } else {
+                content = XLSX.utils.sheet_to_csv(ws);
+                ext = 'csv'; mime = 'text/csv';
+            }
+            return { content: content, ext: ext, mime: mime, rows: XLSX.utils.sheet_to_json(ws, { header: 1 }) };
+        }
+        document.getElementById('btn-tojson-preview').addEventListener('click', function() {
+            var out = getTojsonOutput();
+            if (!out) return;
+            renderTablePreview(document.getElementById('tojson-preview'), out.rows);
+        });
+        document.getElementById('btn-tojson').addEventListener('click', function() {
+            var out = getTojsonOutput();
+            if (!out) return;
+            var blob = new Blob([out.content], { type: out.mime + ';charset=utf-8' });
+            var u = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = u;
+            a.download = document.getElementById('tojson-sheet').value + '.' + out.ext;
+            document.body.appendChild(a); a.click(); a.remove();
+        });
+
+        /* ===== JSON/CSV 转 Excel ===== */
+        document.getElementById('fromjson-demo').addEventListener('click', function() {
+            document.getElementById('fromjson-format').value = 'json';
+            document.getElementById('fromjson-input').value = '[{"姓名":"张三","部门":"技术部","工资":12500},{"姓名":"李四","部门":"市场部","工资":9800},{"姓名":"王五","部门":"人事部","工资":10200}]';
+            showToast('已填入示例数据', 'success');
+        });
+        document.getElementById('btn-fromjson').addEventListener('click', function() {
+            var fmt = document.getElementById('fromjson-format').value;
+            var raw = document.getElementById('fromjson-input').value.trim();
+            if (!raw) { showToast('请先粘贴内容', 'error'); return; }
+            var rows;
+            try {
+                if (fmt === 'json') {
+                    var data = JSON.parse(raw);
+                    if (Array.isArray(data) && data.length && !Array.isArray(data[0])) {
+                        rows = [Object.keys(data[0])].concat(data.map(function(o) { return Object.keys(o).map(function(k) { return o[k]; }); }));
+                    } else if (Array.isArray(data)) {
+                        rows = data;
+                    } else {
+                        throw new Error('JSON 必须是数组');
+                    }
+                } else {
+                    var wb2 = XLSX.read(raw, { type: 'string' });
+                    rows = XLSX.utils.sheet_to_json(wb2.Sheets[wb2.SheetNames[0]], { header: 1 });
+                }
+            } catch (e) {
+                showToast('解析失败：' + e.message, 'error');
+                return;
+            }
+            if (!rows.length) { showToast('没有可导出的数据', 'error'); return; }
+            var nwb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(nwb, XLSX.utils.aoa_to_sheet(rows), 'Sheet1');
+            var wbout = XLSX.write(nwb, { bookType: 'xlsx', type: 'array' });
+            var blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            var u = URL.createObjectURL(blob);
+            var a = document.getElementById('dl-fromjson');
+            a.href = u;
+            a.download = '导出_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+            document.getElementById('result-fromjson-info').textContent = '已生成：' + rows.length + ' 行 × ' + (rows[0] || []).length + ' 列';
+            document.getElementById('result-fromjson').classList.add('show');
+        });
+    })();
+    </script>
+</body>
+</html>

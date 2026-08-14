@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIF制作 - 视频转GIF/图片合成GIF</title>
+    <meta name="description" content="免费在线GIF制作工具：支持视频转GIF动图、多张图片合成GIF动画，可设置帧延迟、尺寸、帧率，纯本地处理保护隐私">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js" defer></script>
+    <style>
+        .gif-hero { padding: 7rem 0 2rem; text-align: center; }
+        .gif-hero .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem; background: rgba(16,185,129,0.1); color: #34D399;
+            border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem;
+        }
+        .gif-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .gif-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+        .gif-section { padding: 1rem 0 2rem; max-width: 1000px; margin: 0 auto; }
+        .gif-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 1.75rem; box-shadow: var(--shadow-lg);
+        }
+        .gif-tabs {
+            display: inline-flex; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 999px; padding: 0.3rem; gap: 0.25rem; margin-bottom: 1.5rem;
+        }
+        .gif-tab {
+            border: none; background: transparent; padding: 0.5rem 1.2rem;
+            border-radius: 999px; font-family: inherit; font-size: 0.85rem; font-weight: 600;
+            color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+        }
+        .gif-tab i { width: 15px; height: 15px; }
+        .gif-tab.active { background: linear-gradient(135deg, #059669, #10B981); color: #fff; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+
+        .gif-upload {
+            border: 2px dashed var(--border); border-radius: 18px;
+            padding: 2.5rem 1.5rem; text-align: center; cursor: pointer;
+            transition: all 0.25s ease; background: var(--bg);
+        }
+        .gif-upload:hover, .gif-upload.dragover { border-color: #34D399; background: rgba(16,185,129,0.06); }
+        .gif-upload i { width: 40px; height: 40px; color: #34D399; margin-bottom: 0.75rem; }
+        .gif-upload p { color: var(--text-secondary); font-size: 0.9rem; }
+
+        .gif-controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-top: 1.25rem; }
+        .gif-ctl { flex: 1; min-width: 150px; }
+        .gif-ctl label { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.4rem; font-weight: 500; }
+        .gif-ctl input[type="range"], .gif-ctl input[type="number"] { width: 100%; accent-color: #10B981; }
+        .gif-ctl input[type="number"] {
+            padding: 0.45rem; border: 1px solid var(--border); border-radius: 8px;
+            background: var(--bg); color: var(--text); font-family: inherit;
+        }
+        .gif-ctl .val { font-weight: 700; color: #34D399; }
+
+        .gif-btn {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            padding: 0.6rem 1.2rem; border: none; border-radius: 12px;
+            font-family: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .gif-btn i { width: 16px; height: 16px; }
+        .gif-btn-primary { background: linear-gradient(135deg, #059669, #10B981); color: #fff; }
+        .gif-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(16,185,129,0.35); }
+        .gif-btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .gif-btn-ghost:hover { border-color: #34D399; color: #34D399; }
+        .gif-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        .gif-frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
+        .gif-frame {
+            position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden;
+            border: 1.5px solid var(--border); background: var(--bg);
+        }
+        .gif-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .gif-frame .del {
+            position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
+            background: rgba(15,23,42,0.7); color: #fff; border: none; border-radius: 50%;
+            cursor: pointer; font-size: 0.75rem; line-height: 1; display: flex; align-items: center; justify-content: center;
+        }
+        .gif-frame .num {
+            position: absolute; left: 4px; bottom: 4px; background: rgba(15,23,42,0.7);
+            color: #fff; font-size: 0.65rem; padding: 1px 6px; border-radius: 6px;
+        }
+
+        .gif-progress { display: none; margin-top: 1.25rem; }
+        .gif-progress.visible { display: block; }
+        .gif-progress .bar { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
+        .gif-progress .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #059669, #10B981); border-radius: 999px; transition: width 0.2s; }
+        .gif-progress .txt { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; text-align: center; }
+
+        .gif-result { display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .gif-result.visible { display: block; }
+        .gif-result .preview { text-align: center; }
+        .gif-result img { max-width: 100%; max-height: 320px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); }
+        .gif-result .size { text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin: 0.75rem 0; }
+        .gif-result .actions { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+
+        .gif-video-box { display: none; margin-top: 1rem; text-align: center; }
+        .gif-video-box.visible { display: block; }
+        .gif-video-box video { max-width: 100%; max-height: 300px; border-radius: 12px; border: 1px solid var(--border); background: #000; }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <section class="gif-hero">
+        <div class="hero-badge"><i data-lucide="clapperboard"></i><span>GIF 制作 · 视频转动图 · 图片合成</span></div>
+        <h1 class="hero-title">GIF <span class="gradient-text" style="background:linear-gradient(135deg,#059669,#10B981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">制作</span></h1>
+        <p class="hero-description">将视频片段转为 GIF 动图，或用多张图片合成动画。支持帧延迟、输出尺寸、帧率设置，全部本地处理。</p>
+    </section>
+
+    <section class="gif-section">
+        <div class="gif-card">
+            <div class="gif-tabs">
+                <button class="gif-tab active" data-mode="video" onclick="gifSwitchMode('video')"><i data-lucide="video"></i>视频转GIF</button>
+                <button class="gif-tab" data-mode="frames" onclick="gifSwitchMode('frames')"><i data-lucide="images"></i>图片合成GIF</button>
+            </div>
+
+            <!-- 视频模式 -->
+            <div id="mode-video">
+                <div class="gif-upload" id="videoZone">
+                    <i data-lucide="upload"></i>
+                    <p><strong>点击选择视频</strong> 或拖拽视频到此处</p>
+                    <p>支持 MP4 / WebM / MOV，建议时长 30 秒内</p>
+                </div>
+                <input type="file" id="videoInput" accept="video/*" hidden>
+                <div class="gif-video-box" id="videoBox">
+                    <video id="srcVideo" controls></video>
+                </div>
+                <div class="gif-controls">
+                    <div class="gif-ctl">
+                        <label>输出宽度：<span class="val" id="wVal">400</span>px</label>
+                        <input type="range" id="outWidth" min="120" max="800" value="400">
+                    </div>
+                    <div class="gif-ctl">
+                        <label>帧率（fps）：<span class="val" id="fpsVal">10</span></label>
+                        <input type="range" id="outFps" min="2" max="25" value="10">
+                    </div>
+                    <div class="gif-ctl">
+                        <label>帧延迟（毫秒）：<span class="val" id="delayVal">100</span></label>
+                        <input type="range" id="outDelay" min="20" max="500" value="100">
+                    </div>
+                </div>
+                <div class="gif-btns" style="margin-top:1.25rem; display:flex; gap:0.6rem; flex-wrap:wrap;">
+                    <button class="gif-btn gif-btn-primary" id="btnVideoToGif"><i data-lucide="play"></i>开始转换</button>
+                </div>
+            </div>
+
+            <!-- 图片模式 -->
+            <div id="mode-frames" style="display:none;">
+                <div class="gif-upload" id="frameZone">
+                    <i data-lucide="images"></i>
+                    <p><strong>添加图片帧</strong>（可多选）或拖拽到此处</p>
+                    <p>将按顺序合成为动画，建议 2~20 张</p>
+                </div>
+                <input type="file" id="frameInput" accept="image/*" multiple hidden>
+                <div class="gif-frames" id="frameList"></div>
+                <div class="gif-controls">
+                    <div class="gif-ctl">
+                        <label>帧延迟：<span class="val" id="fDelayVal">150</span>ms</label>
+                        <input type="range" id="frameDelay" min="20" max="1000" value="150">
+                    </div>
+                    <div class="gif-ctl">
+                        <label>输出宽度：<span class="val" id="fWVal">400</span>px</label>
+                        <input type="range" id="frameWidth" min="120" max="800" value="400">
+                    </div>
+                </div>
+                <div class="gif-btns" style="margin-top:1.25rem; display:flex; gap:0.6rem; flex-wrap:wrap;">
+                    <button class="gif-btn gif-btn-primary" id="btnFramesToGif" disabled><i data-lucide="play"></i>合成GIF</button>
+                    <button class="gif-btn gif-btn-ghost" id="btnClearFrames"><i data-lucide="trash-2"></i>清空</button>
+                </div>
+            </div>
+
+            <div class="gif-progress" id="progressBox">
+                <div class="bar"><div class="fill" id="progressFill"></div></div>
+                <div class="txt" id="progressTxt">正在处理…</div>
+            </div>
+
+            <div class="gif-result" id="resultBox">
+                <div class="preview"><img id="resultImg" alt="GIF预览"></div>
+                <div class="size" id="resultSize"></div>
+                <div class="actions">
+                    <button class="gif-btn gif-btn-primary" onclick="gifDownload()"><i data-lucide="download"></i>下载 GIF</button>
+                    <button class="gif-btn gif-btn-ghost" onclick="gifReset()"><i data-lucide="rotate-ccw"></i>重新制作</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        var gifState = { mode: 'video', frames: [], videoFile: null, result: null };
+        window.gifSwitchMode = function(mode) {
+            gifState.mode = mode;
+            document.querySelectorAll('.gif-tab').forEach(function(t) {
+                t.classList.toggle('active', t.getAttribute('data-mode') === mode);
+            });
+            document.getElementById('mode-video').style.display = mode === 'video' ? '' : 'none';
+            document.getElementById('mode-frames').style.display = mode === 'frames' ? '' : 'none';
+        };
+        window.gifDownload = function() {
+            if (!gifState.result) return;
+            var a = document.createElement('a');
+            a.download = 'toolbox_' + Date.now() + '.gif';
+            a.href = gifState.result;
+            a.click();
+        };
+        window.gifReset = function() {
+            gifState.result = null;
+            document.getElementById('resultBox').classList.remove('visible');
+        };
+
+        function showProgress(pct, txt) {
+            var box = document.getElementById('progressBox');
+            box.classList.add('visible');
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('progressTxt').textContent = txt || (pct + '%');
+            if (pct >= 100) setTimeout(function() { box.classList.remove('visible'); }, 800);
+        }
+
+        function renderResult(url, sizeLabel) {
+            gifState.result = url;
+            document.getElementById('resultImg').src = url;
+            document.getElementById('resultSize').textContent = '大小：' + sizeLabel + ' · 右键可另存为';
+            document.getElementById('resultBox').classList.add('visible');
+        }
+
+        // ===== 视频转 GIF =====
+        var videoZone = document.getElementById('videoZone');
+        videoZone.addEventListener('click', function() { document.getElementById('videoInput').click(); });
+        videoZone.addEventListener('dragover', function(e) { e.preventDefault(); videoZone.classList.add('dragover'); });
+        videoZone.addEventListener('dragleave', function() { videoZone.classList.remove('dragover'); });
+        videoZone.addEventListener('drop', function(e) {
+            e.preventDefault(); videoZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) loadVideo(e.dataTransfer.files[0]);
+        });
+        document.getElementById('videoInput').addEventListener('change', function() {
+            if (this.files.length) loadVideo(this.files[0]);
+        });
+
+        function loadVideo(file) {
+            if (!/^video\//.test(file.type)) { Auth.showToast && Auth.showToast('请选择视频文件', 'error'); return; }
+            gifState.videoFile = file;
+            var url = URL.createObjectURL(file);
+            var v = document.getElementById('srcVideo');
+            v.src = url;
+            document.getElementById('videoBox').classList.add('visible');
+        }
+
+        document.getElementById('btnVideoToGif').addEventListener('click', function() {
+            var v = document.getElementById('srcVideo');
+            if (!v.src) { Auth.showToast && Auth.showToast('请先选择视频', 'error'); return; }
+            if (typeof GIF === 'undefined') { Auth.showToast && Auth.showToast('GIF 库加载中，请稍后重试', 'error'); return; }
+            var width = parseInt(document.getElementById('outWidth').value);
+            var fps = parseInt(document.getElementById('outFps').value);
+            var delay = parseInt(document.getElementById('outDelay').value);
+            v.currentTime = 0;
+            v.onseeked = function() {
+                var duration = v.duration;
+                var totalFrames = Math.max(1, Math.floor(duration * fps));
+                var height = Math.round(v.videoHeight * width / v.videoWidth);
+                var canvas = document.createElement('canvas');
+                canvas.width = width; canvas.height = height;
+                var ctx = canvas.getContext('2d');
+
+                var gif = new GIF({ workers: 0, quality: 8, width: width, height: height });
+                var frameIdx = 0;
+                gif.on('progress', function(p) { showProgress(Math.round(p * 100)); });
+                gif.on('finished', function(blob) {
+                    var url = URL.createObjectURL(blob);
+                    renderResult(url, (blob.size / 1024).toFixed(1) + ' KB');
+                    showProgress(100, '完成！');
+                });
+
+                function addNextFrame() {
+                    if (frameIdx >= totalFrames) { gif.render(); return; }
+                    v.currentTime = frameIdx / fps;
+                    v.onseeked = function() {
+                        ctx.drawImage(v, 0, 0, width, height);
+                        gif.addFrame(ctx, { delay: delay, copy: true });
+                        frameIdx++;
+                        addNextFrame();
+                    };
+                }
+                addNextFrame();
+            };
+            try { v.currentTime = 0.001; } catch (e) { v.currentTime = 0; }
+        });
+
+        // ===== 图片合成 GIF =====
+        var frameZone = document.getElementById('frameZone');
+        frameZone.addEventListener('click', function() { document.getElementById('frameInput').click(); });
+        frameZone.addEventListener('dragover', function(e) { e.preventDefault(); frameZone.classList.add('dragover'); });
+        frameZone.addEventListener('dragleave', function() { frameZone.classList.remove('dragover'); });
+        frameZone.addEventListener('drop', function(e) {
+            e.preventDefault(); frameZone.classList.remove('dragover');
+            for (var i = 0; i < e.dataTransfer.files.length; i++) addFrameFile(e.dataTransfer.files[i]);
+        });
+        document.getElementById('frameInput').addEventListener('change', function() {
+            for (var i = 0; i < this.files.length; i++) addFrameFile(this.files[i]);
+            this.value = '';
+        });
+
+        function addFrameFile(file) {
+            if (!/^image\//.test(file.type)) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    gifState.frames.push(img);
+                    renderFrames();
+                    document.getElementById('btnFramesToGif').disabled = false;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderFrames() {
+            var list = document.getElementById('frameList');
+            list.innerHTML = '';
+            gifState.frames.forEach(function(img, i) {
+                var div = document.createElement('div');
+                div.className = 'gif-frame';
+                div.innerHTML = '<img src="' + img.src + '" alt="帧' + (i + 1) + '"><span class="num">' + (i + 1) + '</span><button class="del" title="移除">×</button>';
+                div.querySelector('.del').addEventListener('click', function() {
+                    gifState.frames.splice(i, 1);
+                    renderFrames();
+                    document.getElementById('btnFramesToGif').disabled = gifState.frames.length < 2;
+                });
+                list.appendChild(div);
+            });
+        }
+
+        document.getElementById('btnClearFrames').addEventListener('click', function() {
+            gifState.frames = [];
+            renderFrames();
+            document.getElementById('btnFramesToGif').disabled = true;
+        });
+
+        document.getElementById('btnFramesToGif').addEventListener('click', function() {
+            if (gifState.frames.length < 2) { Auth.showToast && Auth.showToast('至少需要 2 张图片', 'error'); return; }
+            if (typeof GIF === 'undefined') { Auth.showToast && Auth.showToast('GIF 库加载中，请稍后重试', 'error'); return; }
+            var width = parseInt(document.getElementById('frameWidth').value);
+            var delay = parseInt(document.getElementById('frameDelay').value);
+            var gif = new GIF({ workers: 0, quality: 8, width: width });
+            gif.on('progress', function(p) { showProgress(Math.round(p * 100)); });
+            gif.on('finished', function(blob) {
+                renderResult(URL.createObjectURL(blob), (blob.size / 1024).toFixed(1) + ' KB');
+                showProgress(100, '完成！');
+            });
+            gifState.frames.forEach(function(img) {
+                var scale = width / img.width;
+                var h = Math.round(img.height * scale);
+                var c = document.createElement('canvas');
+                c.width = width; c.height = h;
+                c.getContext('2d').drawImage(img, 0, 0, width, h);
+                gif.addFrame(c, { delay: delay });
+            });
+            gif.render();
+        });
+
+        // 滑块联动
+        ['outWidth', 'outFps', 'outDelay', 'frameDelay', 'frameWidth'].forEach(function(id) {
+            var el = document.getElementById(id);
+            el.addEventListener('input', function() {
+                var map = { outWidth: 'wVal', outFps: 'fpsVal', outDelay: 'delayVal', frameDelay: 'fDelayVal', frameWidth: 'fWVal' };
+                document.getElementById(map[id]).textContent = el.value;
+            });
+        });
+    </script>
+<footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #7C3AED, #EC4899);">
+                    <i data-lucide="clapperboard"></i>
+                </div>
+                <span>GIF制作</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

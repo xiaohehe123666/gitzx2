@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世界时钟 - 多城市时区换算</title>
+    <meta name="description" content="免费在线世界时钟与时区换算工具：实时显示全球主要城市时间，支持自定义城市时区、会议时间换算，浏览器本地运行">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    .wc-hero { padding: 7rem 0 2rem; text-align: center; }
+    .wc-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(217, 119, 6, 0.1); color: #D97706; border-radius: 999px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .wc-hero .hero-badge i { width: 16px; height: 16px; }
+    .wc-hero h1 { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .wc-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 640px; margin: 0 auto; }
+
+    .wc-section { padding: 1rem 0 2rem; }
+    .wc-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow-lg); max-width: 900px; margin: 0 auto; }
+    .wc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.85rem; }
+    .wc-city { background: var(--bg); border: 1px solid var(--border); border-radius: 18px; padding: 1.1rem 1.2rem; position: relative; overflow: hidden; }
+    .wc-city.day { border-color: rgba(217, 119, 6, 0.4); }
+    .wc-city-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; }
+    .wc-flag { font-size: 1.3rem; line-height: 1; }
+    .wc-city-name { font-size: 0.9rem; font-weight: 700; flex: 1; }
+    .wc-tz { font-size: 0.7rem; color: var(--text-secondary); }
+    .wc-time { font-size: 1.7rem; font-weight: 700; font-family: 'Space Grotesk', monospace; letter-spacing: 1px; }
+    .wc-date { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .wc-offset { position: absolute; top: 0.9rem; right: 1rem; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 999px; background: rgba(217, 119, 6, 0.12); color: #D97706; }
+    .wc-tag { display: inline-block; margin-top: 0.5rem; font-size: 0.7rem; padding: 0.12rem 0.5rem; border-radius: 999px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); }
+
+    .wc-converter { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    .wc-conv-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem; }
+    .wc-conv-title i { width: 18px; height: 18px; color: var(--primary-light); }
+    .wc-conv-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+    .wc-conv-input { padding: 0.65rem 0.85rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.9rem; }
+    .wc-conv-select { padding: 0.65rem 0.85rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.9rem; cursor: pointer; }
+    .wc-conv-arrow { color: var(--text-secondary); }
+    .wc-conv-arrow i { width: 18px; height: 18px; }
+    .wc-btn { padding: 0.65rem 1.3rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text); transition: all .2s; }
+    .wc-btn i { width: 16px; height: 16px; }
+    .wc-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .wc-btn-primary { background: linear-gradient(135deg, #D97706, #F59E0B); color: #fff; border: none; }
+    .wc-btn-primary:hover { box-shadow: 0 6px 16px rgba(217, 119, 6, 0.3); }
+    .wc-conv-result { margin-top: 0.75rem; font-size: 0.95rem; color: var(--text-secondary); min-height: 1.5em; }
+    .wc-conv-result b { color: var(--text); }
+
+    @media (max-width: 768px) {
+        .wc-hero { padding: 6rem 0 1.5rem; }
+        .wc-hero h1 { font-size: 1.85rem; }
+        .wc-card { padding: 1rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="globe-2"></i>
+                </div>
+                <span class="logo-text">世界时钟</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 返回首页</a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#world-clock" class="nav-link active">世界时钟</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="wc-hero">
+            <div class="hero-badge"><i data-lucide="globe-2"></i><span>全球时区 · 会议时间换算</span></div>
+            <h1 class="hero-title">世界<span class="gradient-text" style="background:linear-gradient(135deg,#D97706,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">时钟</span></h1>
+            <p class="hero-description">实时显示全球主要城市时间，快速换算不同时区的会议时间。</p>
+        </section>
+
+        <section id="world-clock" class="wc-section">
+            <div class="container">
+                <div class="wc-card">
+                    <div class="wc-grid" id="clockGrid"></div>
+
+                    <div class="wc-converter">
+                        <div class="wc-conv-title"><i data-lucide="arrow-left-right"></i>时区时间换算</div>
+                        <div class="wc-conv-row">
+                            <input type="time" id="convTime" class="wc-conv-input" value="09:00">
+                            <select id="convFrom" class="wc-conv-select"></select>
+                            <span class="wc-conv-arrow"><i data-lucide="arrow-right"></i></span>
+                            <select id="convTo" class="wc-conv-select"></select>
+                            <button type="button" class="wc-btn wc-btn-primary" id="btnConvert"><i data-lucide="repeat"></i>换算</button>
+                        </div>
+                        <div class="wc-conv-result" id="convResult"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #D97706, #F59E0B);">
+                    <i data-lucide="globe-2"></i>
+                </div>
+                <span>世界时钟</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="pm-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var CITIES = [
+            { name: '北京', tz: 'Asia/Shanghai', flag: '🇨🇳' },
+            { name: '东京', tz: 'Asia/Tokyo', flag: '🇯🇵' },
+            { name: '首尔', tz: 'Asia/Seoul', flag: '🇰🇷' },
+            { name: '新加坡', tz: 'Asia/Singapore', flag: '🇸🇬' },
+            { name: '曼谷', tz: 'Asia/Bangkok', flag: '🇹🇭' },
+            { name: '孟买', tz: 'Asia/Kolkata', flag: '🇮🇳' },
+            { name: '迪拜', tz: 'Asia/Dubai', flag: '🇦🇪' },
+            { name: '莫斯科', tz: 'Europe/Moscow', flag: '🇷🇺' },
+            { name: '伦敦', tz: 'Europe/London', flag: '🇬🇧' },
+            { name: '巴黎', tz: 'Europe/Paris', flag: '🇫🇷' },
+            { name: '柏林', tz: 'Europe/Berlin', flag: '🇩🇪' },
+            { name: '纽约', tz: 'America/New_York', flag: '🇺🇸' },
+            { name: '洛杉矶', tz: 'America/Los_Angeles', flag: '🇺🇸' },
+            { name: '芝加哥', tz: 'America/Chicago', flag: '🇺🇸' },
+            { name: '圣保罗', tz: 'America/Sao_Paulo', flag: '🇧🇷' },
+            { name: '悉尼', tz: 'Australia/Sydney', flag: '🇦🇺' },
+            { name: '奥克兰', tz: 'Pacific/Auckland', flag: '🇳🇿' }
+        ];
+
+        function fmtTime(date, tz) {
+            var parts = new Intl.DateTimeFormat('zh-CN', {
+                timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            }).formatToParts(date);
+            var h = parts.find(function(p) { return p.type === 'hour'; }).value;
+            var m = parts.find(function(p) { return p.type === 'minute'; }).value;
+            var s = parts.find(function(p) { return p.type === 'second'; }).value;
+            return h + ':' + m + ':' + s;
+        }
+
+        function fmtDate(date, tz) {
+            return new Intl.DateTimeFormat('zh-CN', {
+                timeZone: tz, weekday: 'short', month: 'numeric', day: 'numeric'
+            }).format(date);
+        }
+
+        function getOffset(tz) {
+            var now = new Date();
+            var local = now.getTime();
+            var tzTime = new Date(now.toLocaleString('en-US', { timeZone: tz })).getTime();
+            // 与 UTC 的差值（分钟）
+            var utc = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' })).getTime();
+            return Math.round((tzTime - utc) / 60000);
+        }
+
+        function fmtOffset(min) {
+            var sign = min >= 0 ? '+' : '-';
+            var abs = Math.abs(min);
+            var h = Math.floor(abs / 60);
+            var m = abs % 60;
+            return 'UTC' + sign + h + (m ? ':' + String(m).padStart(2, '0') : '');
+        }
+
+        var grid = document.getElementById('clockGrid');
+
+        function renderClocks() {
+            var now = new Date();
+            grid.innerHTML = '';
+            CITIES.forEach(function(c) {
+                var h = parseInt(fmtTime(now, c.tz).substring(0, 2), 10);
+                var isDay = h >= 6 && h < 18;
+                var card = document.createElement('div');
+                card.className = 'wc-city' + (isDay ? ' day' : '');
+                card.innerHTML =
+                    '<div class="wc-city-head">' +
+                        '<span class="wc-flag">' + c.flag + '</span>' +
+                        '<span class="wc-city-name">' + c.name + '</span>' +
+                        '<span class="wc-offset">' + fmtOffset(getOffset(c.tz)) + '</span>' +
+                    '</div>' +
+                    '<div class="wc-time">' + fmtTime(now, c.tz) + '</div>' +
+                    '<div class="wc-date">' + fmtDate(now, c.tz) + '</div>' +
+                    '<span class="wc-tag">' + (isDay ? '☀️ 白天' : '🌙 夜间') + '</span>';
+                grid.appendChild(card);
+            });
+        }
+
+        /* 时区换算 */
+        var fromSel = document.getElementById('convFrom');
+        var toSel = document.getElementById('convTo');
+        CITIES.forEach(function(c, i) {
+            fromSel.innerHTML += '<option value="' + c.tz + '">' + c.name + '（' + c.tz + '）</option>';
+            toSel.innerHTML += '<option value="' + c.tz + '">' + c.name + '（' + c.tz + '）</option>';
+        });
+        fromSel.value = 'Asia/Shanghai';
+        toSel.value = 'America/New_York';
+
+        document.getElementById('btnConvert').addEventListener('click', function() {
+            var timeStr = document.getElementById('convTime').value;
+            var from = fromSel.value;
+            var to = toSel.value;
+            if (!timeStr) { document.getElementById('convResult').textContent = '请选择时间'; return; }
+
+            var parts = timeStr.split(':');
+            var h = parseInt(parts[0], 10);
+            var m = parseInt(parts[1], 10);
+
+            // 构造一个"假"时间点：今天本地 to from 时区
+            var now = new Date();
+            var utcToday = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h - getOffset(from) / 60, m);
+            var d = new Date(utcToday);
+
+            var targetH = new Intl.DateTimeFormat('en-US', { timeZone: to, hour: '2-digit', minute: '2-digit', hour12: false }).format(d);
+            var targetDate = new Intl.DateTimeFormat('zh-CN', { timeZone: to, month: 'numeric', day: 'numeric' }).format(d);
+
+            var fromName = CITIES.find(function(c) { return c.tz === from; });
+            var toName = CITIES.find(function(c) { return c.tz === to; });
+            var label = fromName && toName ? (fromName.name + ' → ' + toName.name) : '换算结果';
+            document.getElementById('convResult').innerHTML = label + '：<b>' + targetH + '</b>（' + targetDate + '）';
+        });
+
+        renderClocks();
+        setInterval(renderClocks, 1000);
+    })();
+    </script>
+</body>
+</html>

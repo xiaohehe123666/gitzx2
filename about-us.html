@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于我们 - 在线工具箱</title>
+    <meta name="description" content="关于在线工具箱：了解我们团队、网站使命与隐私承诺，所有工具免费且本地处理">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        .about-hero {
+            padding: 4rem 1.5rem 3rem;
+            text-align: center;
+            position: relative;
+        }
+        .about-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+        .about-hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        .about-hero-title .gradient-text {
+            background: linear-gradient(135deg, var(--primary), #8B5CF6, #EC4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .about-hero-desc {
+            max-width: 640px;
+            margin: 0 auto;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .about-section {
+            padding: 2rem 1.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .about-section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+        .about-section-sub {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .team-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+        .team-header {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .team-logo {
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #111827, #374151);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+        .team-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .team-tagline {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        .team-desc {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 0.9375rem;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 1.5rem;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-light);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.12);
+        }
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--product-gradient, linear-gradient(90deg, var(--primary), var(--primary-light)));
+        }
+        .product-icon-wrap {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        .product-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.375rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .product-badge {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            background: rgba(99, 102, 241, 0.12);
+            color: var(--primary);
+        }
+        .product-badge.flagship {
+            background: rgba(245, 158, 11, 0.15);
+            color: #D97706;
+        }
+        .product-desc {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+        .product-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1rem;
+        }
+        .product-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            padding: 0.25rem 0;
+            line-height: 1.5;
+        }
+        .product-features li svg {
+            color: var(--primary);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .product-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-decoration: none;
+            transition: gap 0.2s ease;
+        }
+        .product-link:hover {
+            gap: 0.625rem;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .value-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .value-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+            color: white;
+        }
+        .value-title {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9375rem;
+            margin-bottom: 0.25rem;
+        }
+        .value-desc {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .footer-note {
+            text-align: center;
+            padding: 2rem 1.5rem 3rem;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+        }
+
+        /* 关于本站 */
+        .site-intro-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            margin-bottom: 1.5rem;
+        }
+        .site-intro-card p {
+            color: var(--text-secondary);
+            line-height: 1.85;
+            font-size: 0.9375rem;
+            margin: 0 0 0.75rem;
+        }
+        .site-intro-card p:last-child { margin-bottom: 0; }
+        .site-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .site-stat {
+            text-align: center;
+        }
+        .site-stat-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), #8B5CF6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+        .site-stat-label {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .site-features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .site-feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            transition: all 0.2s ease;
+        }
+        .site-feature-item:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(99,102,241,0.08);
+        }
+        .site-feature-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+        .site-feature-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9375rem;
+            margin-bottom: 0.125rem;
+        }
+        .site-feature-desc {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .site-tech-list {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+        .site-tech-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: 0.5rem 0.875rem;
+            background: rgba(99, 102, 241, 0.04);
+            border-radius: 10px;
+        }
+        .site-tech-list li svg {
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 640px) {
+            .team-card { padding: 1.25rem; }
+            .team-header { flex-direction: column; text-align: center; }
+            .site-intro-card { padding: 1.25rem; }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <span class="logo-text">在线工具箱</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="about-hero">
+            <div class="about-hero-badge">
+                <i data-lucide="heart" style="width:14px;height:14px;"></i>
+                <span>关于我们</span>
+            </div>
+            <h1 class="about-hero-title">
+                我们是 <span class="gradient-text">GIT 团队</span>
+            </h1>
+            <p class="about-hero-desc">
+                一群热爱技术的开发者聚在一起，致力于打造真正实用、尊重隐私、简单易用的工具产品，
+                让每一位用户都能享受科技带来的便捷。
+            </p>
+        </section>
+
+        <!-- 团队介绍 -->
+        <section class="about-section">
+            <div class="team-card">
+                <div class="team-header">
+                    <div class="team-logo">GIT</div>
+                    <div>
+                        <div class="team-name">GIT 开发团队</div>
+                        <div class="team-tagline">Great Ideas in Technology · 让技术服务更多人</div>
+                    </div>
+                </div>
+                <div class="team-desc">
+                    <p style="margin:0 0 0.75rem;">
+                        GIT 团队是一支专注于实用工具与效率软件研发的团队。我们相信，
+                        优秀的工具应该是「开箱即用」的——不需要复杂的注册流程、不需要上传隐私数据、更不需要付费会员。
+                    </p>
+                    <p style="margin:0;">
+                        团队核心成员来自各大互联网公司的研发一线，深耕前端、Python 生态、数据处理等方向多年，
+                        把对技术的热爱转化为实实在在的产品，希望每一件作品都能真正解决用户的问题。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 价值观 -->
+        <section class="about-section">
+            <div class="about-section-title">
+                <i data-lucide="sparkles" style="width:24px;height:24px;color:var(--primary);"></i>
+                我们的理念
+            </div>
+            <div class="about-section-sub">做产品先做价值观</div>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">
+                        <i data-lucide="shield-check" style="width:22px;height:22px;"></i>
+                    </div>
+                    <div class="value-title">尊重隐私</div>
+                    <div class="value-desc">文件与数据全部在浏览器本地处理，不上传任何服务器</div>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon" style="background:linear-gradient(135deg,#059669,#10B981);">
+                        <i data-lucide="zap" style="width:22px;height:22px;"></i>
+                    </div>
+                    <div class="value-title">简单高效</div>
+                    <div class="value-desc">打开即用，无需安装，追求极致的响应速度和使用体验</div>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon" style="background:linear-gradient(135deg,#DC2626,#F59E0B);">
+                        <i data-lucide="gift" style="width:22px;height:22px;"></i>
+                    </div>
+                    <div class="value-title">完全免费</div>
+                    <div class="value-desc">核心功能永久免费开放，不设会员门槛、不诱导付费</div>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon" style="background:linear-gradient(135deg,#0891B2,#06B6D4);">
+                        <i data-lucide="rocket" style="width:22px;height:22px;"></i>
+                    </div>
+                    <div class="value-title">持续更新</div>
+                    <div class="value-desc">不断迭代新工具、新功能，聆听用户的每一条反馈</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 旗下产品 -->
+        <section class="about-section">
+            <div class="about-section-title">
+                <i data-lucide="package" style="width:24px;height:24px;color:var(--primary);"></i>
+                旗下产品
+            </div>
+            <div class="about-section-sub">GIT 团队出品，值得信赖</div>
+            <div class="products-grid">
+                <!-- python智解库 旗舰产品 -->
+                <div class="product-card" style="--product-gradient: linear-gradient(90deg,#306998,#FFD43B);">
+                    <div class="product-icon-wrap" style="background:linear-gradient(135deg,#306998,#FFD43B);">
+                        <i data-lucide="code-2" style="width:26px;height:26px;"></i>
+                    </div>
+                    <div class="product-title">
+                        Python 智解库
+                        <span class="product-badge flagship">旗舰产品</span>
+                    </div>
+                    <div class="product-desc">
+                        一款面向 Python 学习者与开发者的智能题库与解析工具，覆盖基础语法、数据结构、算法、数据分析等核心领域。
+                        每道题均提供详细思路讲解、多解法对比与逐步调试分析，帮助用户「知其然更知其所以然」。
+                    </div>
+                    <ul class="product-features">
+                        <li><i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>海量题库：覆盖入门到进阶的 1000+ 经典题目</li>
+                        <li><i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>智能讲解：AI 思路点拨 + 逐步推理，让难题不再难</li>
+                        <li><i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>多解对比：同一题目提供多种解法，培养编程思维</li>
+                        <li><i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>学习路径：从零基础到实战，系统化成长路线</li>
+                    </ul>
+                    <div class="product-link">
+                        <span>了解更多</span>
+                        <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+                    </div>
+                </div>
+
+                <!-- 在线工具箱 -->
+                <div class="product-card" style="--product-gradient: linear-gradient(90deg,#6366F1,#8B5CF6);">
+                    <div class="product-icon-wrap" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">
+                        <i data-lucide="wrench" style="width:26px;height:26px;"></i>
+                    </div>
+                    <div class="product-title">
+                        在线工具箱
+                        <span class="product-badge">当前产品</span>
+                    </div>
+                    <div class="product-desc">
+                        收录各种日常实用小工具的一站式平台，包含 PDF 处理、图片压缩、二维码生成、格式转换、颜色选择、JSON 美化、AI 对话等功能，
+                        所有工具纯前端本地运行，隐私有保障。
+                    </div>
+                    <ul class="product-features">
+                        <li><i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>纯前端：文件不会上传任何服务器</li>
+                        <li><i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>响应式：手机、平板、电脑全适配</li>
+                        <li><i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>用户系统：个人资料自定义、数据隔离</li>
+                        <li><i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>持续扩展：新工具定期上线中</li>
+                    </ul>
+                    <a href="index.html" class="product-link">
+                        <span>立即使用</span>
+                        <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于本站 -->
+        <section class="about-section">
+            <div class="about-section-title">
+                <i data-lucide="info" style="width:24px;height:24px;color:var(--primary);"></i>
+                关于本站
+            </div>
+            <div class="about-section-sub">了解在线工具箱的方方面面</div>
+
+            <!-- 站点简介 -->
+            <div class="site-intro-card">
+                <p>
+                    <strong style="color:var(--text);">在线工具箱</strong> 是 GIT 团队推出的一款纯前端在线工具集合平台。
+                    我们把日常办公、学习、开发中常用的小工具整合到一个网站中，用户无需下载安装任何软件，
+                    打开浏览器即可使用，并且所有文件处理均在本地完成，不会上传到任何服务器。
+                </p>
+                <p>
+                    本站面向所有需要高效处理数字文件的用户：学生可以压缩 PDF 作业、生成二维码；
+                    设计师可以拾取颜色、转换图片格式；开发者可以格式化 JSON、与 AI 对话辅助编程；
+                    普通办公族可以转换文档格式、压缩大图片……一切操作都在浏览器里完成，简单、安全、免费。
+                </p>
+                <div class="site-stats">
+                    <div class="site-stat">
+                        <div class="site-stat-num">8+</div>
+                        <div class="site-stat-label">实用工具</div>
+                    </div>
+                    <div class="site-stat">
+                        <div class="site-stat-num">0</div>
+                        <div class="site-stat-label">文件上传</div>
+                    </div>
+                    <div class="site-stat">
+                        <div class="site-stat-num">100%</div>
+                        <div class="site-stat-label">免费开放</div>
+                    </div>
+                    <div class="site-stat">
+                        <div class="site-stat-num">∞</div>
+                        <div class="site-stat-label">使用次数</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 功能清单 -->
+            <div class="about-section-title" style="font-size:1.125rem;margin-top:1.5rem;">
+                <i data-lucide="grid-3x3" style="width:20px;height:20px;color:var(--primary);"></i>
+                功能清单
+            </div>
+            <div class="site-features-grid">
+                <div class="site-feature-item">
+                    <div class="site-feature-icon" style="background:linear-gradient(135deg,#DC2626,#EF4444);">
+                        <i data-lucide="file-text" style="width:18px;height:18px;"></i>
+                    </div>
+                    <div>
+                        <div class="site-feature-name">PDF 转 Word</div>
+                        <div class="site-feature-desc">提取 PDF 内容生成可编辑的 Word 文档</div>
+                    </div>
+                </div>
+                <div class="site-feature-item">
+                    <div class="site-feature-icon" style="background:linear-gradient(135deg,#059669,#10B981);">
+                        <i data-lucide="image" style="width:18px;height:18px;"></i>
+                    </div>
+                    <div>
+                        <div class="site-feature-name">图片压缩</div>
+                        <div class="site-feature-desc">智能压缩 JPG/PNG，体积更小画质不变</div>
+                    </div>
+                </div>
+                <div class="site-feature-item">
+                    <div class="site-feature-icon" style="background:linear-gradient(135deg,#2563EB,#3B82F6);">
+                        <i data-lucide="qr-code" style="width:18px;height:18px;"></i>
+                    </div>
+                    <div>
+                        <div class="site-feature-name">二维码生成</div>
+                        <div class="site-feature-desc">文本、网址一键生成二维码，支持自定义样式</div>
+                    </div>
+                </div>
+                <div class="site-feature-item">
+                    <div class="site-feature-icon" style="background:linear-gradient(135deg,#DC2626,#F59E0B);">
+                        <i data-lucide="file-down" style="width:18px;height:18px;"></i>
+                    </div>
+                    <div>
+                        <div class="site-feature-name">PDF 压缩</div>
+                        <div class="site-feature-desc">减小 PDF 文件体积，便于分享与存储</div>
+                    </div>
+                </div>
+                <div class="site-feature-item">
+                    <div class="site-feature-icon" style="background:linear-gradient(135deg,#7C3AED,#A855F7);">
+                        <i data-lucide="palette" style="width:18px;height:18px;"></i>
+                    </div>
+                    <div>
+                        <div class="site-feature-name">颜色选择器</div>
+                        <div class="site-feature-desc">屏幕拾色、HEX/RGB/HSL 多格式互转</div>
+                    </div>
+                </div>
+                <div class="site-feature-item">
+                    <div class="site-feature-icon" style="background:linear-gradient(135deg,#0891B2,#06B6D4);">
+                        <i data-lucide="repeat" style="width:18px;height:18px;"></i>
+                    </div>
+                    <div>
+                        <div class="site-feature-name">格式转换器</div>
+                        <div class="site-feature-desc">图片、文档等多种格式互相转换</div>
+                    </div>
+                </div>
+                <div class="site-feature-item">
+                    <div class="site-feature-icon" style="background:linear-gradient(135deg,#D97706,#F59E0B);">
+                        <i data-lucide="braces" style="width:18px;height:18px;"></i>
+                    </div>
+                    <div>
+                        <div class="site-feature-name">JSON 格式化</div>
+                        <div class="site-feature-desc">美化、压缩、校验 JSON 数据，支持高亮</div>
+                    </div>
+                </div>
+                <div class="site-feature-item">
+                    <div class="site-feature-icon" style="background:linear-gradient(135deg,#0891B2,#06B6D4);">
+                        <i data-lucide="bot" style="width:18px;height:18px;"></i>
+                    </div>
+                    <div>
+                        <div class="site-feature-name">AI 对话</div>
+                        <div class="site-feature-desc">支持自定义 API，多模型对话，Markdown 渲染</div>
+                    </div>
+                </div>
+                <div class="site-feature-item">
+                    <div class="site-feature-icon" style="background:linear-gradient(135deg,#111827,#374151);">
+                        <i data-lucide="search" style="width:18px;height:18px;"></i>
+                    </div>
+                    <div>
+                        <div class="site-feature-name">Git 搜索</div>
+                        <div class="site-feature-desc">6 大搜索引擎切换，一键搜索代码与项目</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技术特点 -->
+            <div class="about-section-title" style="font-size:1.125rem;margin-top:1.75rem;">
+                <i data-lucide="cpu" style="width:20px;height:20px;color:var(--primary);"></i>
+                技术特点
+            </div>
+            <ul class="site-tech-list">
+                <li><i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>纯前端实现，零后端依赖</li>
+                <li><i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>文件本地处理，隐私不外泄</li>
+                <li><i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>响应式布局，多端适配</li>
+                <li><i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>Web Crypto 加密存储用户数据</li>
+                <li><i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>CDN 加载成熟库，稳定可靠</li>
+                <li><i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>模块化结构，持续扩展中</li>
+            </ul>
+        </section>
+
+        <div class="footer-note">
+            © GIT 团队 · Great Ideas in Technology · 用心打造每一款产品
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) lucide.createIcons();
+            if (window.Auth && Auth.updateNavUserState) Auth.updateNavUserState();
+        });
+    </script>
+</body>
+</html>

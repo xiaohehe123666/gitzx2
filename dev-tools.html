@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开发者工具集 - 密码生成/编解码/哈希/时间戳</title>
+    <meta name="description" content="开发者常用工具集合：密码生成器、Base64/URL编解码、哈希计算、时间戳转换">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+        /* ===== 开发者工具集专用样式 ===== */
+        :root {
+            --dev-green-1: #059669;
+            --dev-green-2: #10B981;
+        }
+
+        /* Tab 导航 */
+        .dev-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            padding: 0.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+        .dev-tab {
+            flex: 1 1 auto;
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .dev-tab i {
+            width: 18px;
+            height: 18px;
+        }
+        .dev-tab:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+        .dev-tab.active {
+            background: linear-gradient(135deg, var(--dev-green-1), var(--dev-green-2));
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* 工具面板 */
+        .dev-panel {
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.75rem;
+            box-shadow: var(--shadow);
+        }
+        .dev-panel.active {
+            display: block;
+            animation: devFadeIn 0.3s ease;
+        }
+        @keyframes devFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dev-panel-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .dev-panel-title .dev-panel-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--dev-green-1), var(--dev-green-2));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .dev-panel-title .dev-panel-icon i {
+            width: 22px;
+            height: 22px;
+        }
+        .dev-panel-title h2 {
+            font-size: 1.25rem;
+            color: var(--text);
+            margin: 0;
+        }
+        .dev-panel-title p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* 通用表单元素 */
+        .dev-field {
+            margin-bottom: 1.1rem;
+        }
+        .dev-field-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        .dev-input,
+        .dev-textarea,
+        .dev-select {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', 'Consolas', 'Inter', monospace;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .dev-input:focus,
+        .dev-textarea:focus,
+        .dev-select:focus {
+            border-color: var(--dev-green-2);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+            background: var(--bg-card);
+        }
+        .dev-textarea {
+            min-height: 130px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        .dev-select {
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* 按钮 */
+        .dev-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.25rem;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .dev-btn i {
+            width: 18px;
+            height: 18px;
+        }
+        .dev-btn-primary {
+            background: linear-gradient(135deg, var(--dev-green-1), var(--dev-green-2));
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .dev-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+        .dev-btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .dev-btn-secondary:hover {
+            background: var(--border);
+        }
+        .dev-btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.85rem;
+            font-size: 0.85rem;
+        }
+        .dev-btn-ghost:hover {
+            color: var(--dev-green-2);
+            border-color: var(--dev-green-2);
+        }
+        .dev-btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 0.75rem;
+        }
+
+        /* 输出框 */
+        .dev-output {
+            position: relative;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.9rem;
+            min-height: 80px;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 0.9rem;
+            color: var(--text);
+            word-break: break-all;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        .dev-output .dev-copy-fab {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+        }
+        .dev-output.empty {
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        /* 复选框组 */
+        .dev-check-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.6rem;
+        }
+        .dev-check {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 0.85rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .dev-check:hover {
+            border-color: var(--dev-green-2);
+        }
+        .dev-check input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--dev-green-2);
+            cursor: pointer;
+        }
+        .dev-check code {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        /* 方向切换 */
+        .dev-direction {
+            display: inline-flex;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.25rem;
+            gap: 0.25rem;
+        }
+        .dev-direction button {
+            padding: 0.45rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .dev-direction button.active {
+            background: linear-gradient(135deg, var(--dev-green-1), var(--dev-green-2));
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        /* 密码生成器 */
+        .pw-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.9rem 1rem;
+        }
+        .pw-display .pw-text {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            word-break: break-all;
+            letter-spacing: 0.5px;
+            min-height: 1.5em;
+        }
+        .pw-display .pw-text.empty {
+            color: var(--text-light);
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .pw-length-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .pw-length-row input[type="range"] {
+            flex: 1;
+            accent-color: var(--dev-green-2);
+            cursor: pointer;
+        }
+        .pw-length-value {
+            min-width: 48px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--dev-green-1);
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* 密码强度指示器 */
+        .pw-strength {
+            margin-top: 0.75rem;
+        }
+        .pw-strength-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .pw-strength-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+        .pw-strength-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .pw-strength-label {
+            font-weight: 700;
+        }
+
+        /* 批量密码列表 */
+        .pw-batch {
+            margin-top: 1.25rem;
+        }
+        .pw-batch-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .pw-batch-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.6rem 0.85rem;
+        }
+        .pw-batch-item .pw-batch-text {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        .pw-batch-item .pw-batch-idx {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            min-width: 24px;
+        }
+
+        /* 时间戳工具 */
+        .ts-now-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            background: linear-gradient(135deg, rgba(5, 150, 105, 0.08), rgba(16, 185, 129, 0.08));
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 14px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+        .ts-now-card .ts-now-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        .ts-now-card .ts-now-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dev-green-1);
+        }
+        .ts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.1rem;
+        }
+        .ts-unit-toggle {
+            display: inline-flex;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.2rem;
+            gap: 0.2rem;
+        }
+        .ts-unit-toggle button {
+            padding: 0.35rem 0.85rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .ts-unit-toggle button.active {
+            background: var(--dev-green-2);
+            color: #fff;
+        }
+
+        /* 哈希结果列表 */
+        .hash-result {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        .hash-result-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+        }
+        .hash-result-item .hash-result-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+        .hash-result-item .hash-result-label span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--dev-green-1);
+        }
+        .hash-result-item .hash-result-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text);
+            word-break: break-all;
+            line-height: 1.5;
+        }
+        .hash-result-item .hash-result-value.empty {
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .dev-panel {
+                padding: 1.25rem;
+            }
+            .dev-tab {
+                min-width: 100px;
+                font-size: 0.85rem;
+                padding: 0.6rem 0.5rem;
+            }
+            .dev-tab span {
+                display: none;
+            }
+            .dev-tab i {
+                width: 20px;
+                height: 20px;
+            }
+            .ts-grid {
+                grid-template-columns: 1fr;
+            }
+            .pw-display .pw-text {
+                font-size: 0.95rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .dev-tab {
+                min-width: 60px;
+            }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #059669, #10B981);">
+                    <i data-lucide="terminal"></i>
+                </div>
+                <span class="logo-text">开发者工具集</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#tools" class="nav-link active">工具集</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="shield-check"></i>
+                    <span>本地运行 · 隐私安全 · 离线可用</span>
+                </div>
+                <h1 class="hero-title">
+                    开发者<span class="gradient-text">工具集</span>
+                </h1>
+                <p class="hero-description">
+                    集成密码生成器、Base64/URL 编解码、哈希计算、时间戳转换等常用开发工具，
+                    所有操作在浏览器本地完成，数据不上传，安全高效。
+                </p>
+            </div>
+        </section>
+
+        <section id="tools" class="tools-section">
+            <!-- Tab 导航 -->
+            <div class="dev-tabs" role="tablist">
+                <button type="button" class="dev-tab active" data-tab="password" role="tab">
+                    <i data-lucide="key-round"></i>
+                    <span>密码生成器</span>
+                </button>
+                <button type="button" class="dev-tab" data-tab="base64" role="tab">
+                    <i data-lucide="binary"></i>
+                    <span>Base64</span>
+                </button>
+                <button type="button" class="dev-tab" data-tab="url" role="tab">
+                    <i data-lucide="link"></i>
+                    <span>URL 编解码</span>
+                </button>
+                <button type="button" class="dev-tab" data-tab="hash" role="tab">
+                    <i data-lucide="hash"></i>
+                    <span>哈希计算</span>
+                </button>
+                <button type="button" class="dev-tab" data-tab="timestamp" role="tab">
+                    <i data-lucide="clock"></i>
+                    <span>时间戳转换</span>
+                </button>
+            </div>
+
+            <!-- Tab 1: 密码生成器 -->
+            <div class="dev-panel active" id="panel-password" role="tabpanel">
+                <div class="dev-panel-title">
+                    <div class="dev-panel-icon">
+                        <i data-lucide="key-round"></i>
+                    </div>
+                    <div>
+                        <h2>密码生成器</h2>
+                        <p>可调长度、字符集，支持批量生成与强度评估</p>
+                    </div>
+                </div>
+
+                <!-- 当前密码显示 -->
+                <div class="dev-field">
+                    <label class="dev-field-label">生成的密码</label>
+                    <div class="pw-display">
+                        <span class="pw-text empty" id="pwText">点击下方按钮生成密码</span>
+                        <button type="button" class="dev-btn dev-btn-ghost" id="pwCopyBtn" title="复制密码">
+                            <i data-lucide="copy"></i>
+                            <span>复制</span>
+                        </button>
+                        <button type="button" class="dev-btn dev-btn-ghost" id="pwRefreshBtn" title="重新生成">
+                            <i data-lucide="refresh-cw"></i>
+                        </button>
+                    </div>
+                    <!-- 强度指示器 -->
+                    <div class="pw-strength">
+                        <div class="pw-strength-bar">
+                            <div class="pw-strength-fill" id="pwStrengthFill"></div>
+                        </div>
+                        <div class="pw-strength-text">
+                            <span>密码强度</span>
+                            <span class="pw-strength-label" id="pwStrengthLabel">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 长度 -->
+                <div class="dev-field">
+                    <label class="dev-field-label">密码长度</label>
+                    <div class="pw-length-row">
+                        <input type="range" id="pwLength" min="4" max="64" value="16">
+                        <span class="pw-length-value" id="pwLengthValue">16</span>
+                    </div>
+                </div>
+
+                <!-- 字符集 -->
+                <div class="dev-field">
+                    <label class="dev-field-label">字符集</label>
+                    <div class="dev-check-group">
+                        <label class="dev-check">
+                            <input type="checkbox" id="pwUpper" checked>
+                            <span>大写字母</span>
+                            <code>A-Z</code>
+                        </label>
+                        <label class="dev-check">
+                            <input type="checkbox" id="pwLower" checked>
+                            <span>小写字母</span>
+                            <code>a-z</code>
+                        </label>
+                        <label class="dev-check">
+                            <input type="checkbox" id="pwDigits" checked>
+                            <span>数字</span>
+                            <code>0-9</code>
+                        </label>
+                        <label class="dev-check">
+                            <input type="checkbox" id="pwSpecial" checked>
+                            <span>特殊字符</span>
+                            <code>!@#$%</code>
+                        </label>
+                        <label class="dev-check">
+                            <input type="checkbox" id="pwExcludeSimilar">
+                            <span>排除相似字符</span>
+                            <code>il1O0</code>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="dev-btn-row">
+                    <button type="button" class="dev-btn dev-btn-primary" id="pwGenerateBtn">
+                        <i data-lucide="sparkles"></i>
+                        <span>生成密码</span>
+                    </button>
+                    <button type="button" class="dev-btn dev-btn-secondary" id="pwBatchBtn">
+                        <i data-lucide="layers"></i>
+                        <span>批量生成（10个）</span>
+                    </button>
+                </div>
+
+                <!-- 批量结果 -->
+                <div class="pw-batch" id="pwBatch" style="display:none;">
+                    <label class="dev-field-label">批量生成结果</label>
+                    <div class="dev-btn-row" style="margin-top:0;">
+                        <button type="button" class="dev-btn dev-btn-ghost" id="pwBatchCopyBtn">
+                            <i data-lucide="clipboard-copy"></i>
+                            <span>复制全部</span>
+                        </button>
+                    </div>
+                    <div class="pw-batch-list" id="pwBatchList"></div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Base64 编解码 -->
+            <div class="dev-panel" id="panel-base64" role="tabpanel">
+                <div class="dev-panel-title">
+                    <div class="dev-panel-icon">
+                        <i data-lucide="binary"></i>
+                    </div>
+                    <div>
+                        <h2>Base64 编解码</h2>
+                        <p>文本与 Base64 互转，完整支持 UTF-8 中文</p>
+                    </div>
+                </div>
+
+                <div class="dev-field">
+                    <label class="dev-field-label">操作方向</label>
+                    <div class="dev-direction" id="base64Direction">
+                        <button type="button" class="active" data-dir="encode">编码（文本 → Base64）</button>
+                        <button type="button" data-dir="decode">解码（Base64 → 文本）</button>
+                    </div>
+                </div>
+
+                <div class="dev-field">
+                    <label class="dev-field-label" id="base64InputLabel">输入文本</label>
+                    <textarea class="dev-textarea" id="base64Input" placeholder="在此输入要编码的文本..."></textarea>
+                </div>
+
+                <div class="dev-btn-row">
+                    <button type="button" class="dev-btn dev-btn-primary" id="base64RunBtn">
+                        <i data-lucide="arrow-right"></i>
+                        <span id="base64RunLabel">编码</span>
+                    </button>
+                    <button type="button" class="dev-btn dev-btn-secondary" id="base64SwapBtn">
+                        <i data-lucide="arrow-left-right"></i>
+                        <span>切换方向</span>
+                    </button>
+                    <button type="button" class="dev-btn dev-btn-ghost" id="base64ClearBtn">
+                        <i data-lucide="trash-2"></i>
+                        <span>清空</span>
+                    </button>
+                </div>
+
+                <div class="dev-field" style="margin-top:1.1rem;">
+                    <label class="dev-field-label">输出结果</label>
+                    <div class="dev-output empty" id="base64Output">结果将显示在这里</div>
+                    <button type="button" class="dev-btn dev-btn-ghost dev-copy-fab" id="base64CopyBtn">
+                        <i data-lucide="copy"></i>
+                        <span>复制</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 3: URL 编解码 -->
+            <div class="dev-panel" id="panel-url" role="tabpanel">
+                <div class="dev-panel-title">
+                    <div class="dev-panel-icon">
+                        <i data-lucide="link"></i>
+                    </div>
+                    <div>
+                        <h2>URL 编解码</h2>
+                        <p>使用 encodeURI / decodeURI 进行 URL 互转</p>
+                    </div>
+                </div>
+
+                <div class="dev-field">
+                    <label class="dev-field-label">操作方向</label>
+                    <div class="dev-direction" id="urlDirection">
+                        <button type="button" class="active" data-dir="encode">编码（encodeURI）</button>
+                        <button type="button" data-dir="decode">解码（decodeURI）</button>
+                    </div>
+                </div>
+
+                <div class="dev-field">
+                    <label class="dev-field-label" id="urlInputLabel">输入 URL</label>
+                    <textarea class="dev-textarea" id="urlInput" placeholder="在此输入要编码的 URL..."></textarea>
+                </div>
+
+                <div class="dev-btn-row">
+                    <button type="button" class="dev-btn dev-btn-primary" id="urlRunBtn">
+                        <i data-lucide="arrow-right"></i>
+                        <span id="urlRunLabel">编码</span>
+                    </button>
+                    <button type="button" class="dev-btn dev-btn-secondary" id="urlSwapBtn">
+                        <i data-lucide="arrow-left-right"></i>
+                        <span>切换方向</span>
+                    </button>
+                    <button type="button" class="dev-btn dev-btn-ghost" id="urlClearBtn">
+                        <i data-lucide="trash-2"></i>
+                        <span>清空</span>
+                    </button>
+                </div>
+
+                <div class="dev-field" style="margin-top:1.1rem;">
+                    <label class="dev-field-label">输出结果</label>
+                    <div class="dev-output empty" id="urlOutput">结果将显示在这里</div>
+                    <button type="button" class="dev-btn dev-btn-ghost dev-copy-fab" id="urlCopyBtn">
+                        <i data-lucide="copy"></i>
+                        <span>复制</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 4: 哈希计算 -->
+            <div class="dev-panel" id="panel-hash" role="tabpanel">
+                <div class="dev-panel-title">
+                    <div class="dev-panel-icon">
+                        <i data-lucide="hash"></i>
+                    </div>
+                    <div>
+                        <h2>哈希计算</h2>
+                        <p>基于 Web Crypto API，计算 SHA-1 / SHA-256 / SHA-512</p>
+                    </div>
+                </div>
+
+                <div class="dev-field">
+                    <label class="dev-field-label">输入文本</label>
+                    <textarea class="dev-textarea" id="hashInput" placeholder="在此输入要计算哈希的文本..."></textarea>
+                </div>
+
+                <div class="dev-field">
+                    <label class="dev-field-label">哈希算法</label>
+                    <div class="dev-check-group" id="hashAlgoGroup">
+                        <label class="dev-check">
+                            <input type="checkbox" class="hash-algo" value="SHA-1">
+                            <span>SHA-1</span>
+                        </label>
+                        <label class="dev-check">
+                            <input type="checkbox" class="hash-algo" value="SHA-256" checked>
+                            <span>SHA-256</span>
+                        </label>
+                        <label class="dev-check">
+                            <input type="checkbox" class="hash-algo" value="SHA-512">
+                            <span>SHA-512</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="dev-btn-row">
+                    <button type="button" class="dev-btn dev-btn-primary" id="hashRunBtn">
+                        <i data-lucide="cpu"></i>
+                        <span>计算哈希</span>
+                    </button>
+                    <button type="button" class="dev-btn dev-btn-ghost" id="hashClearBtn">
+                        <i data-lucide="trash-2"></i>
+                        <span>清空</span>
+                    </button>
+                </div>
+
+                <div class="dev-field" style="margin-top:1.1rem;">
+                    <label class="dev-field-label">计算结果</label>
+                    <div class="hash-result" id="hashResult">
+                        <div class="hash-result-item">
+                            <div class="hash-result-label">
+                                <span>SHA-1</span>
+                                <button type="button" class="dev-btn dev-btn-ghost hash-copy-btn" data-target="hashSHA1">
+                                    <i data-lucide="copy"></i>
+                                </button>
+                            </div>
+                            <div class="hash-result-value empty" id="hashSHA1">尚未计算</div>
+                        </div>
+                        <div class="hash-result-item">
+                            <div class="hash-result-label">
+                                <span>SHA-256</span>
+                                <button type="button" class="dev-btn dev-btn-ghost hash-copy-btn" data-target="hashSHA256">
+                                    <i data-lucide="copy"></i>
+                                </button>
+                            </div>
+                            <div class="hash-result-value empty" id="hashSHA256">尚未计算</div>
+                        </div>
+                        <div class="hash-result-item">
+                            <div class="hash-result-label">
+                                <span>SHA-512</span>
+                                <button type="button" class="dev-btn dev-btn-ghost hash-copy-btn" data-target="hashSHA512">
+                                    <i data-lucide="copy"></i>
+                                </button>
+                            </div>
+                            <div class="hash-result-value empty" id="hashSHA512">尚未计算</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 5: 时间戳转换 -->
+            <div class="dev-panel" id="panel-timestamp" role="tabpanel">
+                <div class="dev-panel-title">
+                    <div class="dev-panel-icon">
+                        <i data-lucide="clock"></i>
+                    </div>
+                    <div>
+                        <h2>时间戳转换</h2>
+                        <p>Unix 时间戳与日期互转，支持秒 / 毫秒</p>
+                    </div>
+                </div>
+
+                <!-- 当前时间戳 -->
+                <div class="ts-now-card">
+                    <div>
+                        <div class="ts-now-label">当前时间戳</div>
+                        <div class="ts-now-value" id="tsNow">0</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="ts-now-label">当前日期</div>
+                        <div style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);" id="tsNowDate">--</div>
+                    </div>
+                </div>
+
+                <!-- 单位切换 -->
+                <div class="dev-field">
+                    <label class="dev-field-label">时间戳单位</label>
+                    <div class="ts-unit-toggle" id="tsUnitToggle">
+                        <button type="button" class="active" data-unit="s">秒</button>
+                        <button type="button" data-unit="ms">毫秒</button>
+                    </div>
+                </div>
+
+                <div class="ts-grid">
+                    <!-- 时间戳 → 日期 -->
+                    <div class="dev-field">
+                        <label class="dev-field-label">时间戳 → 日期</label>
+                        <input type="text" class="dev-input" id="tsToInput" placeholder="输入时间戳...">
+                        <div class="dev-btn-row">
+                            <button type="button" class="dev-btn dev-btn-primary" id="tsToBtn">
+                                <i data-lucide="calendar"></i>
+                                <span>转换</span>
+                            </button>
+                            <button type="button" class="dev-btn dev-btn-ghost" id="tsToCopyBtn">
+                                <i data-lucide="copy"></i>
+                                <span>复制结果</span>
+                            </button>
+                        </div>
+                        <div class="dev-output empty" id="tsToOutput" style="margin-top:0.75rem;">转换结果将显示在这里</div>
+                    </div>
+
+                    <!-- 日期 → 时间戳 -->
+                    <div class="dev-field">
+                        <label class="dev-field-label">日期 → 时间戳</label>
+                        <input type="datetime-local" class="dev-input" id="tsFromInput" step="1">
+                        <div class="dev-btn-row">
+                            <button type="button" class="dev-btn dev-btn-primary" id="tsFromBtn">
+                                <i data-lucide="hash"></i>
+                                <span>转换</span>
+                            </button>
+                            <button type="button" class="dev-btn dev-btn-ghost" id="tsFromCopyBtn">
+                                <i data-lucide="copy"></i>
+                                <span>复制结果</span>
+                            </button>
+                        </div>
+                        <div class="dev-output empty" id="tsFromOutput" style="margin-top:0.75rem;">转换结果将显示在这里</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #059669, #10B981);">
+                    <i data-lucide="terminal"></i>
+                </div>
+                <span>开发者工具集</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <!-- 全局 Toast 提示 -->
+    <div id="toast" class="json-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ===== 全局配置 =====
+        var STORAGE_KEY = 'dev-tools-state-v1';
+
+        // 字符集定义
+        var CHAR_SETS = {
+            upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            lower: 'abcdefghijklmnopqrstuvwxyz',
+            digits: '0123456789',
+            special: '!@#$%^&*()_+-=[]{}|;:,.<>?'
+        };
+        // 相似字符
+        var SIMILAR_CHARS = 'il1Lo0O';
+
+        // 状态对象
+        var state = {
+            tab: 'password',
+            password: {
+                length: 16,
+                upper: true,
+                lower: true,
+                digits: true,
+                special: true,
+                excludeSimilar: false,
+                current: ''
+            },
+            base64: { direction: 'encode', input: '', output: '' },
+            url: { direction: 'encode', input: '', output: '' },
+            hash: { input: '', sha1: '', sha256: '', sha512: '' },
+            timestamp: { unit: 's' }
+        };
+
+        // ===== 工具函数 =====
+
+        // 显示 Toast 提示
+        var toastTimer = null;
+        function showToast(msg) {
+            var toast = document.getElementById('toast');
+            var toastMsg = document.getElementById('toastMessage');
+            toastMsg.textContent = msg;
+            toast.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(function() {
+                toast.classList.add('hidden');
+            }, 2000);
+        }
+
+        // 复制文本到剪贴板（兼容方案）
+        function copyText(text) {
+            if (!text) {
+                showToast('没有可复制的内容');
+                return;
+            }
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        showToast('已复制到剪贴板');
+                    }).catch(function() {
+                        fallbackCopy(text);
+                    });
+                } else {
+                    fallbackCopy(text);
+                }
+            } catch (e) {
+                fallbackCopy(text);
+            }
+        }
+
+        // 降级复制方案
+        function fallbackCopy(text) {
+            try {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                var ok = document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast(ok ? '已复制到剪贴板' : '复制失败');
+            } catch (e) {
+                showToast('复制失败：' + e.message);
+            }
+        }
+
+        // 保存状态到 localStorage
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                // 忽略存储异常
+            }
+        }
+
+        // 从 localStorage 加载状态
+        function loadState() {
+            try {
+                var raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                var saved = JSON.parse(raw);
+                // 合并状态，避免字段缺失
+                if (saved.tab) state.tab = saved.tab;
+                if (saved.password) {
+                    var p = saved.password;
+                    if (typeof p.length === 'number') state.password.length = p.length;
+                    if (typeof p.upper === 'boolean') state.password.upper = p.upper;
+                    if (typeof p.lower === 'boolean') state.password.lower = p.lower;
+                    if (typeof p.digits === 'boolean') state.password.digits = p.digits;
+                    if (typeof p.special === 'boolean') state.password.special = p.special;
+                    if (typeof p.excludeSimilar === 'boolean') state.password.excludeSimilar = p.excludeSimilar;
+                }
+                if (saved.base64) {
+                    if (saved.base64.direction) state.base64.direction = saved.base64.direction;
+                    if (typeof saved.base64.input === 'string') state.base64.input = saved.base64.input;
+                }
+                if (saved.url) {
+                    if (saved.url.direction) state.url.direction = saved.url.direction;
+                    if (typeof saved.url.input === 'string') state.url.input = saved.url.input;
+                }
+                if (saved.hash && typeof saved.hash.input === 'string') {
+                    state.hash.input = saved.hash.input;
+                }
+                if (saved.timestamp && saved.timestamp.unit) {
+                    state.timestamp.unit = saved.timestamp.unit;
+                }
+            } catch (e) {
+                // 忽略解析异常
+            }
+        }
+
+        // ===== Tab 切换 =====
+        function setupTabs() {
+            var tabs = document.querySelectorAll('.dev-tab');
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].addEventListener('click', function() {
+                    var tabName = this.getAttribute('data-tab');
+                    // 切换按钮激活态
+                    for (var j = 0; j < tabs.length; j++) {
+                        tabs[j].classList.remove('active');
+                    }
+                    this.classList.add('active');
+                    // 切换面板
+                    var panels = document.querySelectorAll('.dev-panel');
+                    for (var k = 0; k < panels.length; k++) {
+                        panels[k].classList.remove('active');
+                    }
+                    var target = document.getElementById('panel-' + tabName);
+                    if (target) target.classList.add('active');
+                    state.tab = tabName;
+                    saveState();
+                    // 重新渲染图标
+                    if (window.lucide) lucide.createIcons();
+                });
+            }
+        }
+
+        // 恢复 Tab
+        function restoreTab() {
+            var tabs = document.querySelectorAll('.dev-tab');
+            var panels = document.querySelectorAll('.dev-panel');
+            for (var j = 0; j < tabs.length; j++) {
+                tabs[j].classList.remove('active');
+            }
+            for (var k = 0; k < panels.length; k++) {
+                panels[k].classList.remove('active');
+            }
+            var activeTab = document.querySelector('.dev-tab[data-tab="' + state.tab + '"]');
+            var activePanel = document.getElementById('panel-' + state.tab);
+            if (activeTab && activePanel) {
+                activeTab.classList.add('active');
+                activePanel.classList.add('active');
+            } else {
+                // 默认第一个
+                var firstTab = document.querySelector('.dev-tab');
+                var firstPanel = document.querySelector('.dev-panel');
+                if (firstTab) firstTab.classList.add('active');
+                if (firstPanel) firstPanel.classList.add('active');
+            }
+        }
+
+        // ===== 密码生成器 =====
+
+        // 构建可用字符集
+        function buildCharset() {
+            var chars = '';
+            if (state.password.upper) chars += CHAR_SETS.upper;
+            if (state.password.lower) chars += CHAR_SETS.lower;
+            if (state.password.digits) chars += CHAR_SETS.digits;
+            if (state.password.special) chars += CHAR_SETS.special;
+            // 排除相似字符
+            if (state.password.excludeSimilar && chars) {
+                var filtered = '';
+                for (var i = 0; i < chars.length; i++) {
+                    if (SIMILAR_CHARS.indexOf(chars[i]) === -1) {
+                        filtered += chars[i];
+                    }
+                }
+                chars = filtered;
+            }
+            return chars;
+        }
+
+        // 使用 crypto.getRandomValues 生成安全随机整数
+        function secureRandomInt(max) {
+            if (max <= 0) return 0;
+            var maxUint32 = 4294967295;
+            var limit = maxUint32 - (maxUint32 % max);
+            var arr = new Uint32Array(1);
+            // 拒绝采样，避免模偏差
+            while (true) {
+                crypto.getRandomValues(arr);
+                if (arr[0] < limit) {
+                    return arr[0] % max;
+                }
+            }
+        }
+
+        // 生成单个密码
+        function generatePassword() {
+            var charset = buildCharset();
+            if (!charset) {
+                showToast('请至少选择一个字符集');
+                return '';
+            }
+            var length = state.password.length;
+            var result = '';
+            for (var i = 0; i < length; i++) {
+                result += charset.charAt(secureRandomInt(charset.length));
+            }
+            return result;
+        }
+
+        // 评估密码强度，返回 { score: 0-100, label: '', color: '' }
+        function evaluateStrength(password) {
+            if (!password) return { score: 0, label: '--', color: '#E2E8F0' };
+            var len = password.length;
+            var pool = 0;
+            if (state.password.upper) pool += 26;
+            if (state.password.lower) pool += 26;
+            if (state.password.digits) pool += 10;
+            if (state.password.special) pool += 26;
+            if (pool === 0) pool = 26;
+            // 熵估算：len * log2(pool)
+            var entropy = len * Math.log2(pool);
+            var score;
+            if (entropy >= 100) score = 100;
+            else score = Math.round(entropy);
+            // 限制下限，避免显示 0
+            if (score === 0 && password) score = 5;
+
+            var label, color;
+            if (entropy < 28) { label = '非常弱'; color = '#EF4444'; }
+            else if (entropy < 36) { label = '弱'; color = '#F59E0B'; }
+            else if (entropy < 60) { label = '中等'; color = '#EAB308'; }
+            else if (entropy < 80) { label = '强'; color = '#10B981'; }
+            else { label = '非常强'; color = '#059669'; }
+            return { score: score, label: label, color: color };
+        }
+
+        // 更新强度指示器
+        function updateStrength(password) {
+            var fill = document.getElementById('pwStrengthFill');
+            var label = document.getElementById('pwStrengthLabel');
+            var s = evaluateStrength(password);
+            fill.style.width = s.score + '%';
+            fill.style.background = s.color;
+            label.textContent = s.label + '（' + s.score + '%）';
+            label.style.color = s.color;
+        }
+
+        // 渲染密码生成器 UI 状态
+        function renderPasswordUI() {
+            document.getElementById('pwLength').value = state.password.length;
+            document.getElementById('pwLengthValue').textContent = state.password.length;
+            document.getElementById('pwUpper').checked = state.password.upper;
+            document.getElementById('pwLower').checked = state.password.lower;
+            document.getElementById('pwDigits').checked = state.password.digits;
+            document.getElementById('pwSpecial').checked = state.password.special;
+            document.getElementById('pwExcludeSimilar').checked = state.password.excludeSimilar;
+            var pwText = document.getElementById('pwText');
+            if (state.password.current) {
+                pwText.textContent = state.password.current;
+                pwText.classList.remove('empty');
+            } else {
+                pwText.textContent = '点击下方按钮生成密码';
+                pwText.classList.add('empty');
+            }
+            updateStrength(state.password.current);
+        }
+
+        // 生成并显示单个密码
+        function generateAndShow() {
+            var pw = generatePassword();
+            if (!pw) return;
+            state.password.current = pw;
+            var pwText = document.getElementById('pwText');
+            pwText.textContent = pw;
+            pwText.classList.remove('empty');
+            updateStrength(pw);
+            saveState();
+        }
+
+        // 批量生成 10 个密码
+        function generateBatch() {
+            var charset = buildCharset();
+            if (!charset) {
+                showToast('请至少选择一个字符集');
+                return;
+            }
+            var list = [];
+            for (var i = 0; i < 10; i++) {
+                list.push(generatePassword());
+            }
+            var container = document.getElementById('pwBatchList');
+            container.innerHTML = '';
+            for (var j = 0; j < list.length; j++) {
+                var item = document.createElement('div');
+                item.className = 'pw-batch-item';
+                var idx = document.createElement('span');
+                idx.className = 'pw-batch-idx';
+                idx.textContent = (j + 1) + '.';
+                var text = document.createElement('span');
+                text.className = 'pw-batch-text';
+                text.textContent = list[j];
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'dev-btn dev-btn-ghost';
+                btn.innerHTML = '<i data-lucide="copy"></i>';
+                (function(pw) {
+                    btn.addEventListener('click', function() {
+                        copyText(pw);
+                    });
+                })(list[j]);
+                item.appendChild(idx);
+                item.appendChild(text);
+                item.appendChild(btn);
+                container.appendChild(item);
+            }
+            document.getElementById('pwBatch').style.display = '';
+            if (window.lucide) lucide.createIcons();
+            // 同时保存到状态用于复制全部
+            state.password._batch = list;
+            saveState();
+            showToast('已批量生成 10 个密码');
+        }
+
+        function setupPasswordTool() {
+            var lengthInput = document.getElementById('pwLength');
+            var lengthValue = document.getElementById('pwLengthValue');
+            lengthInput.addEventListener('input', function() {
+                var v = parseInt(this.value, 10);
+                if (isNaN(v)) v = 16;
+                if (v < 4) v = 4;
+                if (v > 64) v = 64;
+                state.password.length = v;
+                lengthValue.textContent = v;
+                // 重新评估当前密码强度（按新长度估算）
+                saveState();
+            });
+
+            document.getElementById('pwUpper').addEventListener('change', function() {
+                state.password.upper = this.checked;
+                saveState();
+            });
+            document.getElementById('pwLower').addEventListener('change', function() {
+                state.password.lower = this.checked;
+                saveState();
+            });
+            document.getElementById('pwDigits').addEventListener('change', function() {
+                state.password.digits = this.checked;
+                saveState();
+            });
+            document.getElementById('pwSpecial').addEventListener('change', function() {
+                state.password.special = this.checked;
+                saveState();
+            });
+            document.getElementById('pwExcludeSimilar').addEventListener('change', function() {
+                state.password.excludeSimilar = this.checked;
+                saveState();
+            });
+
+            document.getElementById('pwGenerateBtn').addEventListener('click', generateAndShow);
+            document.getElementById('pwRefreshBtn').addEventListener('click', generateAndShow);
+            document.getElementById('pwCopyBtn').addEventListener('click', function() {
+                copyText(state.password.current);
+            });
+            document.getElementById('pwBatchBtn').addEventListener('click', generateBatch);
+            document.getElementById('pwBatchCopyBtn').addEventListener('click', function() {
+                var batch = state.password._batch;
+                if (!batch || batch.length === 0) {
+                    showToast('没有可复制的内容');
+                    return;
+                }
+                copyText(batch.join('\n'));
+            });
+        }
+
+        // ===== Base64 工具 =====
+
+        // UTF-8 安全的 Base64 编码
+        function base64Encode(str) {
+            try {
+                // 使用 encodeURIComponent 处理 UTF-8
+                var utf8 = unescape(encodeURIComponent(str));
+                return btoa(utf8);
+            } catch (e) {
+                throw new Error('编码失败：' + e.message);
+            }
+        }
+
+        // UTF-8 安全的 Base64 解码
+        function base64Decode(str) {
+            try {
+                var utf8 = atob(str);
+                return decodeURIComponent(escape(utf8));
+            } catch (e) {
+                throw new Error('解码失败：Base64 格式不正确');
+            }
+        }
+
+        function renderBase64UI() {
+            var dir = state.base64.direction;
+            var dirBtns = document.querySelectorAll('#base64Direction button');
+            for (var i = 0; i < dirBtns.length; i++) {
+                dirBtns[i].classList.remove('active');
+                if (dirBtns[i].getAttribute('data-dir') === dir) {
+                    dirBtns[i].classList.add('active');
+                }
+            }
+            document.getElementById('base64Input').value = state.base64.input;
+            if (dir === 'encode') {
+                document.getElementById('base64InputLabel').textContent = '输入文本';
+                document.getElementById('base64RunLabel').textContent = '编码';
+                document.getElementById('base64Input').placeholder = '在此输入要编码的文本...';
+            } else {
+                document.getElementById('base64InputLabel').textContent = '输入 Base64';
+                document.getElementById('base64RunLabel').textContent = '解码';
+                document.getElementById('base64Input').placeholder = '在此输入要解码的 Base64 字符串...';
+            }
+            // 恢复输出
+            var output = document.getElementById('base64Output');
+            if (state.base64.output) {
+                output.textContent = state.base64.output;
+                output.classList.remove('empty');
+            } else {
+                output.textContent = '结果将显示在这里';
+                output.classList.add('empty');
+            }
+        }
+
+        function runBase64() {
+            var input = document.getElementById('base64Input').value;
+            var output = document.getElementById('base64Output');
+            if (!input) {
+                showToast('请输入内容');
+                return;
+            }
+            try {
+                var result;
+                if (state.base64.direction === 'encode') {
+                    result = base64Encode(input);
+                } else {
+                    result = base64Decode(input);
+                }
+                output.textContent = result;
+                output.classList.remove('empty');
+                state.base64.output = result;
+                saveState();
+                showToast(state.base64.direction === 'encode' ? '编码成功' : '解码成功');
+            } catch (e) {
+                output.textContent = '错误：' + e.message;
+                output.classList.remove('empty');
+                state.base64.output = '';
+                saveState();
+                showToast(e.message);
+            }
+        }
+
+        function setupBase64Tool() {
+            var dirBtns = document.querySelectorAll('#base64Direction button');
+            for (var i = 0; i < dirBtns.length; i++) {
+                dirBtns[i].addEventListener('click', function() {
+                    state.base64.direction = this.getAttribute('data-dir');
+                    state.base64.output = '';
+                    renderBase64UI();
+                    saveState();
+                });
+            }
+            document.getElementById('base64Input').addEventListener('input', function() {
+                state.base64.input = this.value;
+                saveState();
+            });
+            document.getElementById('base64RunBtn').addEventListener('click', runBase64);
+            document.getElementById('base64SwapBtn').addEventListener('click', function() {
+                state.base64.direction = state.base64.direction === 'encode' ? 'decode' : 'encode';
+                state.base64.output = '';
+                renderBase64UI();
+                saveState();
+            });
+            document.getElementById('base64ClearBtn').addEventListener('click', function() {
+                document.getElementById('base64Input').value = '';
+                var output = document.getElementById('base64Output');
+                output.textContent = '结果将显示在这里';
+                output.classList.add('empty');
+                state.base64.input = '';
+                state.base64.output = '';
+                saveState();
+                showToast('已清空');
+            });
+            document.getElementById('base64CopyBtn').addEventListener('click', function() {
+                var output = document.getElementById('base64Output');
+                if (output.classList.contains('empty')) {
+                    showToast('没有可复制的内容');
+                    return;
+                }
+                copyText(output.textContent);
+            });
+        }
+
+        // ===== URL 工具 =====
+        function renderUrlUI() {
+            var dir = state.url.direction;
+            var dirBtns = document.querySelectorAll('#urlDirection button');
+            for (var i = 0; i < dirBtns.length; i++) {
+                dirBtns[i].classList.remove('active');
+                if (dirBtns[i].getAttribute('data-dir') === dir) {
+                    dirBtns[i].classList.add('active');
+                }
+            }
+            document.getElementById('urlInput').value = state.url.input;
+            if (dir === 'encode') {
+                document.getElementById('urlInputLabel').textContent = '输入 URL';
+                document.getElementById('urlRunLabel').textContent = '编码';
+                document.getElementById('urlInput').placeholder = '在此输入要编码的 URL...';
+            } else {
+                document.getElementById('urlInputLabel').textContent = '输入已编码 URL';
+                document.getElementById('urlRunLabel').textContent = '解码';
+                document.getElementById('urlInput').placeholder = '在此输入要解码的 URL...';
+            }
+            var output = document.getElementById('urlOutput');
+            if (state.url.output) {
+                output.textContent = state.url.output;
+                output.classList.remove('empty');
+            } else {
+                output.textContent = '结果将显示在这里';
+                output.classList.add('empty');
+            }
+        }
+
+        function runUrl() {
+            var input = document.getElementById('urlInput').value;
+            var output = document.getElementById('urlOutput');
+            if (!input) {
+                showToast('请输入内容');
+                return;
+            }
+            try {
+                var result;
+                if (state.url.direction === 'encode') {
+                    result = encodeURI(input);
+                } else {
+                    result = decodeURI(input);
+                }
+                output.textContent = result;
+                output.classList.remove('empty');
+                state.url.output = result;
+                saveState();
+                showToast(state.url.direction === 'encode' ? '编码成功' : '解码成功');
+            } catch (e) {
+                output.textContent = '错误：' + e.message;
+                output.classList.remove('empty');
+                state.url.output = '';
+                saveState();
+                showToast('操作失败：' + e.message);
+            }
+        }
+
+        function setupUrlTool() {
+            var dirBtns = document.querySelectorAll('#urlDirection button');
+            for (var i = 0; i < dirBtns.length; i++) {
+                dirBtns[i].addEventListener('click', function() {
+                    state.url.direction = this.getAttribute('data-dir');
+                    state.url.output = '';
+                    renderUrlUI();
+                    saveState();
+                });
+            }
+            document.getElementById('urlInput').addEventListener('input', function() {
+                state.url.input = this.value;
+                saveState();
+            });
+            document.getElementById('urlRunBtn').addEventListener('click', runUrl);
+            document.getElementById('urlSwapBtn').addEventListener('click', function() {
+                state.url.direction = state.url.direction === 'encode' ? 'decode' : 'encode';
+                state.url.output = '';
+                renderUrlUI();
+                saveState();
+            });
+            document.getElementById('urlClearBtn').addEventListener('click', function() {
+                document.getElementById('urlInput').value = '';
+                var output = document.getElementById('urlOutput');
+                output.textContent = '结果将显示在这里';
+                output.classList.add('empty');
+                state.url.input = '';
+                state.url.output = '';
+                saveState();
+                showToast('已清空');
+            });
+            document.getElementById('urlCopyBtn').addEventListener('click', function() {
+                var output = document.getElementById('urlOutput');
+                if (output.classList.contains('empty')) {
+                    showToast('没有可复制的内容');
+                    return;
+                }
+                copyText(output.textContent);
+            });
+        }
+
+        // ===== 哈希计算工具 =====
+
+        // 使用 Web Crypto API 计算哈希
+        function computeHash(algo, text) {
+            return new Promise(function(resolve, reject) {
+                try {
+                    if (!window.crypto || !window.crypto.subtle) {
+                        reject(new Error('当前浏览器不支持 Web Crypto API'));
+                        return;
+                    }
+                    var encoder = new TextEncoder();
+                    var data = encoder.encode(text);
+                    crypto.subtle.digest(algo, data).then(function(hashBuffer) {
+                        var hashArray = Array.prototype.slice.call(new Uint8Array(hashBuffer));
+                        var hex = '';
+                        for (var i = 0; i < hashArray.length; i++) {
+                            var h = hashArray[i].toString(16);
+                            if (h.length < 2) h = '0' + h;
+                            hex += h;
+                        }
+                        resolve(hex);
+                    }).catch(function(err) {
+                        reject(new Error('计算失败：' + err.message));
+                    });
+                } catch (e) {
+                    reject(new Error('计算失败：' + e.message));
+                }
+            });
+        }
+
+        function renderHashUI() {
+            document.getElementById('hashInput').value = state.hash.input;
+            var ids = ['hashSHA1', 'hashSHA256', 'hashSHA512'];
+            var keys = ['sha1', 'sha256', 'sha512'];
+            for (var i = 0; i < ids.length; i++) {
+                var el = document.getElementById(ids[i]);
+                if (state.hash[keys[i]]) {
+                    el.textContent = state.hash[keys[i]];
+                    el.classList.remove('empty');
+                } else {
+                    el.textContent = '尚未计算';
+                    el.classList.add('empty');
+                }
+            }
+        }
+
+        function setupHashTool() {
+            document.getElementById('hashInput').addEventListener('input', function() {
+                state.hash.input = this.value;
+                saveState();
+            });
+
+            document.getElementById('hashRunBtn').addEventListener('click', function() {
+                var input = document.getElementById('hashInput').value;
+                if (!input) {
+                    showToast('请输入要计算哈希的文本');
+                    return;
+                }
+                var algoChecks = document.querySelectorAll('.hash-algo');
+                var selected = [];
+                for (var i = 0; i < algoChecks.length; i++) {
+                    if (algoChecks[i].checked) selected.push(algoChecks[i].value);
+                }
+                if (selected.length === 0) {
+                    showToast('请至少选择一种哈希算法');
+                    return;
+                }
+
+                // 重置结果显示
+                var ids = ['hashSHA1', 'hashSHA256', 'hashSHA512'];
+                for (var j = 0; j < ids.length; j++) {
+                    var el = document.getElementById(ids[j]);
+                    el.textContent = '计算中...';
+                    el.classList.add('empty');
+                }
+
+                // 逐个计算（保持顺序）
+                var tasks = [];
+                for (var k = 0; k < selected.length; k++) {
+                    tasks.push({ algo: selected[k] });
+                }
+                var idx = 0;
+                function next() {
+                    if (idx >= tasks.length) {
+                        saveState();
+                        showToast('哈希计算完成');
+                        return;
+                    }
+                    var t = tasks[idx];
+                    idx++;
+                    computeHash(t.algo, input).then(function(hex) {
+                        var elId = 'hash' + t.algo.replace('-', '');
+                        var el = document.getElementById(elId);
+                        if (el) {
+                            el.textContent = hex;
+                            el.classList.remove('empty');
+                        }
+                        // 存入 state
+                        var key = t.algo.replace('-', '').toLowerCase();
+                        state.hash[key] = hex;
+                        next();
+                    }).catch(function(err) {
+                        showToast(err.message);
+                        next();
+                    });
+                }
+                next();
+            });
+
+            document.getElementById('hashClearBtn').addEventListener('click', function() {
+                document.getElementById('hashInput').value = '';
+                var ids = ['hashSHA1', 'hashSHA256', 'hashSHA512'];
+                for (var i = 0; i < ids.length; i++) {
+                    var el = document.getElementById(ids[i]);
+                    el.textContent = '尚未计算';
+                    el.classList.add('empty');
+                }
+                state.hash = { input: '', sha1: '', sha256: '', sha512: '' };
+                saveState();
+                showToast('已清空');
+            });
+
+            // 哈希结果复制按钮
+            var copyBtns = document.querySelectorAll('.hash-copy-btn');
+            for (var c = 0; c < copyBtns.length; c++) {
+                copyBtns[c].addEventListener('click', function() {
+                    var targetId = this.getAttribute('data-target');
+                    var el = document.getElementById(targetId);
+                    if (!el || el.classList.contains('empty')) {
+                        showToast('没有可复制的内容');
+                        return;
+                    }
+                    copyText(el.textContent);
+                });
+            }
+        }
+
+        // ===== 时间戳工具 =====
+        var tsNowTimer = null;
+
+        function pad2(n) {
+            return n < 10 ? '0' + n : '' + n;
+        }
+
+        // 格式化日期为本地字符串
+        function formatDate(date) {
+            try {
+                var y = date.getFullYear();
+                var M = pad2(date.getMonth() + 1);
+                var d = pad2(date.getDate());
+                var h = pad2(date.getHours());
+                var m = pad2(date.getMinutes());
+                var s = pad2(date.getSeconds());
+                return y + '-' + M + '-' + d + ' ' + h + ':' + m + ':' + s;
+            } catch (e) {
+                return '无效日期';
+            }
+        }
+
+        // 更新当前时间戳显示
+        function updateTsNow() {
+            try {
+                var now = new Date();
+                var ms = now.getTime();
+                var s = Math.floor(ms / 1000);
+                var display = state.timestamp.unit === 'ms' ? ms : s;
+                document.getElementById('tsNow').textContent = display;
+                document.getElementById('tsNowDate').textContent = formatDate(now);
+            } catch (e) {
+                // 忽略
+            }
+        }
+
+        function renderTimestampUI() {
+            var unitBtns = document.querySelectorAll('#tsUnitToggle button');
+            for (var i = 0; i < unitBtns.length; i++) {
+                unitBtns[i].classList.remove('active');
+                if (unitBtns[i].getAttribute('data-unit') === state.timestamp.unit) {
+                    unitBtns[i].classList.add('active');
+                }
+            }
+        }
+
+        function setupTimestampTool() {
+            // 单位切换
+            var unitBtns = document.querySelectorAll('#tsUnitToggle button');
+            for (var i = 0; i < unitBtns.length; i++) {
+                unitBtns[i].addEventListener('click', function() {
+                    state.timestamp.unit = this.getAttribute('data-unit');
+                    renderTimestampUI();
+                    updateTsNow();
+                    saveState();
+                });
+            }
+
+            // 时间戳 -> 日期
+            document.getElementById('tsToBtn').addEventListener('click', function() {
+                var input = document.getElementById('tsToInput').value.trim();
+                var output = document.getElementById('tsToOutput');
+                if (!input) {
+                    showToast('请输入时间戳');
+                    return;
+                }
+                try {
+                    var num = parseInt(input, 10);
+                    if (isNaN(num)) {
+                        throw new Error('时间戳必须是数字');
+                    }
+                    // 根据单位换算为毫秒
+                    var ms;
+                    if (state.timestamp.unit === 's') {
+                        ms = num * 1000;
+                    } else {
+                        ms = num;
+                    }
+                    var date = new Date(ms);
+                    if (isNaN(date.getTime())) {
+                        throw new Error('无效的时间戳');
+                    }
+                    // 简化时区显示
+                    var tzOffset = date.getTimezoneOffset();
+                    var tzSign = tzOffset <= 0 ? '+' : '-';
+                    var tzHours = Math.abs(Math.floor(tzOffset / 60));
+                    var tzMins = Math.abs(tzOffset % 60);
+                    var tzStr = 'UTC' + tzSign + pad2(tzHours) + ':' + pad2(tzMins);
+                    var result = formatDate(date) + '  [' + tzStr + ']';
+                    output.textContent = result;
+                    output.classList.remove('empty');
+                    showToast('转换成功');
+                } catch (e) {
+                    output.textContent = '错误：' + e.message;
+                    output.classList.remove('empty');
+                    showToast(e.message);
+                }
+            });
+
+            document.getElementById('tsToCopyBtn').addEventListener('click', function() {
+                var output = document.getElementById('tsToOutput');
+                if (output.classList.contains('empty')) {
+                    showToast('没有可复制的内容');
+                    return;
+                }
+                copyText(output.textContent);
+            });
+
+            // 日期 -> 时间戳
+            document.getElementById('tsFromBtn').addEventListener('click', function() {
+                var input = document.getElementById('tsFromInput').value;
+                var output = document.getElementById('tsFromOutput');
+                if (!input) {
+                    showToast('请选择日期时间');
+                    return;
+                }
+                try {
+                    var date = new Date(input);
+                    if (isNaN(date.getTime())) {
+                        throw new Error('无效的日期');
+                    }
+                    var ms = date.getTime();
+                    var result = state.timestamp.unit === 's' ? Math.floor(ms / 1000) : ms;
+                    output.textContent = result;
+                    output.classList.remove('empty');
+                    showToast('转换成功');
+                } catch (e) {
+                    output.textContent = '错误：' + e.message;
+                    output.classList.remove('empty');
+                    showToast(e.message);
+                }
+            });
+
+            document.getElementById('tsFromCopyBtn').addEventListener('click', function() {
+                var output = document.getElementById('tsFromOutput');
+                if (output.classList.contains('empty')) {
+                    showToast('没有可复制的内容');
+                    return;
+                }
+                copyText(output.textContent);
+            });
+
+            // 启动当前时间戳定时器
+            updateTsNow();
+            tsNowTimer = setInterval(updateTsNow, 1000);
+        }
+
+        // ===== 初始化 =====
+        function init() {
+            // 加载已保存状态
+            loadState();
+
+            // 渲染各工具 UI
+            renderPasswordUI();
+            renderBase64UI();
+            renderUrlUI();
+            renderHashUI();
+            renderTimestampUI();
+
+            // 恢复 Tab
+            restoreTab();
+
+            // 绑定事件
+            setupTabs();
+            setupPasswordTool();
+            setupBase64Tool();
+            setupUrlTool();
+            setupHashTool();
+            setupTimestampTool();
+
+            // 渲染图标
+            if (window.lucide) lucide.createIcons();
+
+            // 更新导航栏用户状态
+            if (window.Auth && Auth.updateNavUserState) {
+                try {
+                    Auth.updateNavUserState();
+                } catch (e) {}
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

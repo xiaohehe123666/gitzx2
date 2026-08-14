@@ -1,0 +1,14 @@
+# Netlify 部署配置
+# 站点采用默认静态部署，无需构建命令
+
+# 全站统一安全响应头
+[[headers]]
+for = "/*"
+[headers.values]
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "DENY"
+Referrer-Policy = "strict-origin-when-cross-origin"
+Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+X-XSS-Protection = "1; mode=block"
+Permissions-Policy = "camera=(), geolocation=(), payment=(), usb=(), gyroscope=(), accelerometer=(), magnetometer=(), microphone=(self), interest-cohort=()"
+Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: data:; connect-src 'self' https: data: blob:; frame-src *; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https:; frame-ancestors 'none'"

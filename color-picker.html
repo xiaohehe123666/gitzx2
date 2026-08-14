@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>颜色选择器 - 在线颜色转换工具</title>
+    <meta name="description" content="免费在线颜色选择器，支持RGB、HEX、HSL、HSV格式互转，生成色阶和调色板">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #DC2626, #F59E0B);">
+                    <i data-lucide="palette"></i>
+                </div>
+                <span class="logo-text">颜色选择器</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#picker" class="nav-link active">选择</a>
+                <a href="#features" class="nav-link">特性</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="droplets"></i>
+                    <span>格式转换 · 实时预览</span>
+                </div>
+                <h1 class="hero-title">
+                    颜色选择器<br>
+                    <span class="gradient-text">格式转换工具</span>
+                </h1>
+                <p class="hero-description">
+                    免费在线颜色选择器，支持 HEX、RGB、HSL、HSV 等格式互转，
+                    生成色阶和调色板，所有操作在浏览器本地完成。
+                </p>
+            </div>
+        </section>
+
+        <section id="picker" class="converter-section">
+            <div class="converter-card">
+                <div class="color-picker-main">
+                    <div class="color-preview-panel">
+                        <div class="color-preview-large" id="colorPreviewLarge">
+                            <div class="preview-checker" id="previewChecker"></div>
+                            <div class="preview-color" id="previewColor"></div>
+                            <div class="preview-hex" id="previewHex">#1E293B</div>
+                        </div>
+
+                        <div class="color-input-row">
+                            <label for="colorPicker">选择颜色</label>
+                            <input type="color" id="colorPicker" value="#1E293B">
+                        </div>
+
+                        <div class="color-presets">
+                            <h4>预设颜色</h4>
+                            <div class="preset-grid" id="presetGrid">
+                                <button class="preset-color" style="background:#EF4444" data-color="#EF4444"></button>
+                                <button class="preset-color" style="background:#F59E0B" data-color="#F59E0B"></button>
+                                <button class="preset-color" style="background:#EAB308" data-color="#EAB308"></button>
+                                <button class="preset-color" style="background:#22C55E" data-color="#22C55E"></button>
+                                <button class="preset-color" style="background:#14B8A6" data-color="#14B8A6"></button>
+                                <button class="preset-color" style="background:#06B6D4" data-color="#06B6D4"></button>
+                                <button class="preset-color" style="background:#3B82F6" data-color="#3B82F6"></button>
+                                <button class="preset-color" style="background:#8B5CF6" data-color="#8B5CF6"></button>
+                                <button class="preset-color" style="background:#EC4899" data-color="#EC4899"></button>
+                                <button class="preset-color" style="background:#F43F5E" data-color="#F43F5E"></button>
+                                <button class="preset-color" style="background:#0F172A" data-color="#0F172A"></button>
+                                <button class="preset-color" style="background:#FFFFFF;border:1px solid #CBD5E1" data-color="#FFFFFF"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="color-formats-panel">
+                        <div class="format-group">
+                            <div class="format-label">
+                                <h3>HEX</h3>
+                                <span class="format-desc">十六进制</span>
+                            </div>
+                            <div class="format-input-row">
+                                <input type="text" id="hexInput" value="#1E293B" maxlength="7">
+                                <button class="copy-btn" data-copy="hex" title="复制">
+                                    <i data-lucide="copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="format-group">
+                            <div class="format-label">
+                                <h3>RGB</h3>
+                                <span class="format-desc">红 / 绿 / 蓝</span>
+                            </div>
+                            <div class="rgb-inputs">
+                                <div class="rgb-input">
+                                    <label>R</label>
+                                    <input type="number" id="rInput" min="0" max="255" value="30">
+                                </div>
+                                <div class="rgb-input">
+                                    <label>G</label>
+                                    <input type="number" id="gInput" min="0" max="255" value="41">
+                                </div>
+                                <div class="rgb-input">
+                                    <label>B</label>
+                                    <input type="number" id="bInput" min="0" max="255" value="59">
+                                </div>
+                                <button class="copy-btn" data-copy="rgb" title="复制">
+                                    <i data-lucide="copy"></i>
+                                </button>
+                            </div>
+                            <div class="format-input-row result-row">
+                                <span id="rgbText">rgb(30, 41, 59)</span>
+                            </div>
+                        </div>
+
+                        <div class="format-group">
+                            <div class="format-label">
+                                <h3>HSL</h3>
+                                <span class="format-desc">色相 / 饱和度 / 亮度</span>
+                            </div>
+                            <div class="hsl-inputs">
+                                <div class="hsl-input">
+                                    <label>H</label>
+                                    <input type="number" id="hInput" min="0" max="360" value="220">
+                                    <span class="unit">°</span>
+                                </div>
+                                <div class="hsl-input">
+                                    <label>S</label>
+                                    <input type="number" id="sInput" min="0" max="100" value="56">
+                                    <span class="unit">%</span>
+                                </div>
+                                <div class="hsl-input">
+                                    <label>L</label>
+                                    <input type="number" id="lInput" min="0" max="100" value="17">
+                                    <span class="unit">%</span>
+                                </div>
+                                <button class="copy-btn" data-copy="hsl" title="复制">
+                                    <i data-lucide="copy"></i>
+                                </button>
+                            </div>
+                            <div class="format-input-row result-row">
+                                <span id="hslText">hsl(220, 56%, 17%)</span>
+                            </div>
+                        </div>
+
+                        <div class="format-group">
+                            <div class="format-label">
+                                <h3>HSV</h3>
+                                <span class="format-desc">色相 / 饱和度 / 明度</span>
+                            </div>
+                            <div class="hsl-inputs">
+                                <div class="hsl-input">
+                                    <label>H</label>
+                                    <input type="number" id="hsvHInput" min="0" max="360" value="220">
+                                    <span class="unit">°</span>
+                                </div>
+                                <div class="hsl-input">
+                                    <label>S</label>
+                                    <input type="number" id="hsvSInput" min="0" max="100" value="49">
+                                    <span class="unit">%</span>
+                                </div>
+                                <div class="hsl-input">
+                                    <label>V</label>
+                                    <input type="number" id="hsvVInput" min="0" max="100" value="23">
+                                    <span class="unit">%</span>
+                                </div>
+                                <button class="copy-btn" data-copy="hsv" title="复制">
+                                    <i data-lucide="copy"></i>
+                                </button>
+                            </div>
+                            <div class="format-input-row result-row">
+                                <span id="hsvText">hsv(220, 49%, 23%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="color-shades-section">
+                    <div class="shades-header">
+                        <h3>色阶生成</h3>
+                        <p>基于当前颜色生成10级色阶</p>
+                    </div>
+                    <div class="shades-grid" id="shadesGrid"></div>
+                </div>
+
+                <div class="color-info-section">
+                    <div class="info-card">
+                        <i data-lucide="contrast"></i>
+                        <div>
+                            <h4>相对亮度</h4>
+                            <span id="luminanceValue">0.04</span>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <i data-lucide="eye"></i>
+                        <div>
+                            <h4>文字颜色</h4>
+                            <span id="textColorValue">#FFFFFF</span>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <i data-lucide="check"></i>
+                        <div>
+                            <h4>AA对比度</h4>
+                            <span id="contrastValue">8.5 : 1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、高效、安全的颜色工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(245, 158, 11, 0.1)); color: #DC2626;">
+                        <i data-lucide="refresh-cw"></i>
+                    </div>
+                    <h3>多格式互转</h3>
+                    <p>HEX、RGB、HSL、HSV 四种格式实时同步转换</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(245, 158, 11, 0.1)); color: #DC2626;">
+                        <i data-lucide="palette"></i>
+                    </div>
+                    <h3>色阶生成</h3>
+                    <p>一键生成10级明暗色阶，适合设计和开发使用</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(245, 158, 11, 0.1)); color: #DC2626;">
+                        <i data-lucide="copy"></i>
+                    </div>
+                    <h3>一键复制</h3>
+                    <p>每个格式支持一键复制到剪贴板，提高效率</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(245, 158, 11, 0.1)); color: #DC2626;">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+                    <h3>隐私安全</h3>
+                    <p>所有转换在浏览器本地完成，不上传任何数据</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(245, 158, 11, 0.1)); color: #DC2626;">
+                        <i data-lucide="sparkles"></i>
+                    </div>
+                    <h3>预设颜色</h3>
+                    <p>提供12种常用预设颜色，快速选择和参考</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(245, 158, 11, 0.1)); color: #DC2626;">
+                        <i data-lucide="check-circle"></i>
+                    </div>
+                    <h3>对比度检测</h3>
+                    <p>自动检测背景亮度和文字颜色，确保可读性</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #DC2626, #F59E0B);">
+                    <i data-lucide="palette"></i>
+                </div>
+                <span>颜色选择器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var state = {
+            hex: '#1E293B',
+            rgb: { r: 30, g: 41, b: 59 },
+            hsl: { h: 220, s: 56, l: 17 },
+            hsv: { h: 220, s: 49, v: 23 }
+        };
+
+        var els = {
+            colorPicker: document.getElementById('colorPicker'),
+            previewColor: document.getElementById('previewColor'),
+            previewHex: document.getElementById('previewHex'),
+            previewChecker: document.getElementById('previewChecker'),
+            hexInput: document.getElementById('hexInput'),
+            rInput: document.getElementById('rInput'),
+            gInput: document.getElementById('gInput'),
+            bInput: document.getElementById('bInput'),
+            rgbText: document.getElementById('rgbText'),
+            hInput: document.getElementById('hInput'),
+            sInput: document.getElementById('sInput'),
+            lInput: document.getElementById('lInput'),
+            hslText: document.getElementById('hslText'),
+            hsvHInput: document.getElementById('hsvHInput'),
+            hsvSInput: document.getElementById('hsvSInput'),
+            hsvVInput: document.getElementById('hsvVInput'),
+            hsvText: document.getElementById('hsvText'),
+            presetGrid: document.getElementById('presetGrid'),
+            shadesGrid: document.getElementById('shadesGrid'),
+            luminanceValue: document.getElementById('luminanceValue'),
+            textColorValue: document.getElementById('textColorValue'),
+            contrastValue: document.getElementById('contrastValue')
+        };
+
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(function(x) {
+                var hex = Math.round(Math.max(0, Math.min(255, x))).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('').toUpperCase();
+        }
+
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            var max = Math.max(r, g, b), min = Math.min(r, g, b);
+            var h, s, l = (max + min) / 2;
+            if (max === min) {
+                h = s = 0;
+            } else {
+                var d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+        }
+
+        function rgbToHsv(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            var max = Math.max(r, g, b), min = Math.min(r, g, b);
+            var h, s, v = max;
+            var d = max - min;
+            s = max === 0 ? 0 : d / max;
+            if (max === min) {
+                h = 0;
+            } else {
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return { h: Math.round(h * 360), s: Math.round(s * 100), v: Math.round(v * 100) };
+        }
+
+        function hslToRgb(h, s, l) {
+            h /= 360; s /= 100; l /= 100;
+            if (s === 0) {
+                var val = Math.round(l * 255);
+                return { r: val, g: val, b: val };
+            }
+            function hue2rgb(p, q, t) {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            }
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
+            return {
+                r: Math.round(hue2rgb(p, q, h + 1/3) * 255),
+                g: Math.round(hue2rgb(p, q, h) * 255),
+                b: Math.round(hue2rgb(p, q, h - 1/3) * 255)
+            };
+        }
+
+        function getLuminance(r, g, b) {
+            var a = [r, g, b].map(function(v) {
+                v /= 255;
+                return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+            });
+            return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+        }
+
+        function generateShades(hex) {
+            var rgb = hexToRgb(hex);
+            var hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+            var shades = [];
+            for (var i = 0; i <= 10; i++) {
+                var l = i * 10;
+                var newRgb = hslToRgb(hsl.h, hsl.s, l);
+                shades.push({
+                    hex: rgbToHex(newRgb.r, newRgb.g, newRgb.b),
+                    l: l
+                });
+            }
+            return shades;
+        }
+
+        function renderShades() {
+            var shades = generateShades(state.hex);
+            els.shadesGrid.innerHTML = '';
+            shades.forEach(function(shade) {
+                var btn = document.createElement('button');
+                btn.className = 'shade-item';
+                btn.style.background = shade.hex;
+                btn.style.color = shade.l > 50 ? '#1E293B' : '#FFFFFF';
+                btn.innerHTML = '<span class="shade-label">' + shade.l + '%</span>' +
+                    '<span class="shade-hex">' + shade.hex + '</span>';
+                btn.addEventListener('click', function() {
+                    setColor(shade.hex);
+                });
+                els.shadesGrid.appendChild(btn);
+            });
+        }
+
+        function renderInfo() {
+            var lum = getLuminance(state.rgb.r, state.rgb.g, state.rgb.b);
+            els.luminanceValue.textContent = lum.toFixed(2);
+
+            var isDark = lum < 0.5;
+            var textColor = isDark ? '#FFFFFF' : '#1E293B';
+            els.textColorValue.textContent = textColor;
+
+            var lumWhite = getLuminance(255, 255, 255);
+            var lumBlack = getLuminance(30, 41, 59);
+            var contrastWhite = (Math.max(lum, lumWhite) + 0.05) / (Math.min(lum, lumWhite) + 0.05);
+            var contrastBlack = (Math.max(lum, lumBlack) + 0.05) / (Math.min(lum, lumBlack) + 0.05);
+            var contrast = Math.max(contrastWhite, contrastBlack);
+            els.contrastValue.textContent = contrast.toFixed(1) + ' : 1';
+        }
+
+        function render() {
+            els.previewColor.style.background = state.hex;
+            els.previewHex.textContent = state.hex;
+            els.colorPicker.value = state.hex;
+            els.hexInput.value = state.hex;
+
+            els.rInput.value = state.rgb.r;
+            els.gInput.value = state.rgb.g;
+            els.bInput.value = state.rgb.b;
+            els.rgbText.textContent = 'rgb(' + state.rgb.r + ', ' + state.rgb.g + ', ' + state.rgb.b + ')';
+
+            els.hInput.value = state.hsl.h;
+            els.sInput.value = state.hsl.s;
+            els.lInput.value = state.hsl.l;
+            els.hslText.textContent = 'hsl(' + state.hsl.h + ', ' + state.hsl.s + '%, ' + state.hsl.l + '%)';
+
+            els.hsvHInput.value = state.hsv.h;
+            els.hsvSInput.value = state.hsv.s;
+            els.hsvVInput.value = state.hsv.v;
+            els.hsvText.textContent = 'hsv(' + state.hsv.h + ', ' + state.hsv.s + '%, ' + state.hsv.v + '%)';
+
+            renderShades();
+            renderInfo();
+        }
+
+        function setColor(hex) {
+            var rgb = hexToRgb(hex);
+            if (!rgb) return;
+
+            state.hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+            state.rgb = rgb;
+            state.hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+            state.hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+
+            render();
+        }
+
+        function setFromRgb(r, g, b) {
+            state.rgb = { r: r, g: g, b: b };
+            state.hex = rgbToHex(r, g, b);
+            state.hsl = rgbToHsl(r, g, b);
+            state.hsv = rgbToHsv(r, g, b);
+            render();
+        }
+
+        function setFromHsl(h, s, l) {
+            var rgb = hslToRgb(h, s, l);
+            state.hsl = { h: h, s: s, l: l };
+            state.rgb = rgb;
+            state.hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+            state.hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+            render();
+        }
+
+        function setupEvents() {
+            els.colorPicker.addEventListener('input', function() {
+                setColor(this.value);
+            });
+
+            els.hexInput.addEventListener('input', function() {
+                var val = this.value;
+                if (/^#([0-9A-Fa-f]{6})$/.test(val)) {
+                    setColor(val);
+                }
+            });
+
+            els.hexInput.addEventListener('blur', function() {
+                if (!/^#([0-9A-Fa-f]{6})$/.test(this.value)) {
+                    this.value = state.hex;
+                }
+            });
+
+            ['r', 'g', 'b'].forEach(function(ch) {
+                var input = els[ch + 'Input'];
+                input.addEventListener('input', function() {
+                    var r = parseInt(els.rInput.value, 10) || 0;
+                    var g = parseInt(els.gInput.value, 10) || 0;
+                    var b = parseInt(els.bInput.value, 10) || 0;
+                    r = Math.max(0, Math.min(255, r));
+                    g = Math.max(0, Math.min(255, g));
+                    b = Math.max(0, Math.min(255, b));
+                    setFromRgb(r, g, b);
+                });
+            });
+
+            ['h', 's', 'l'].forEach(function(ch) {
+                var input = els[ch + 'Input'];
+                input.addEventListener('input', function() {
+                    var h = parseInt(els.hInput.value, 10) || 0;
+                    var s = parseInt(els.sInput.value, 10) || 0;
+                    var l = parseInt(els.lInput.value, 10) || 0;
+                    h = Math.max(0, Math.min(360, h));
+                    s = Math.max(0, Math.min(100, s));
+                    l = Math.max(0, Math.min(100, l));
+                    setFromHsl(h, s, l);
+                });
+            });
+
+            ['hsvH', 'hsvS', 'hsvV'].forEach(function(key) {
+                var input = els[key + 'Input'];
+                input.addEventListener('input', function() {
+                    var h = parseInt(els.hsvHInput.value, 10) || 0;
+                    var s = parseInt(els.hsvSInput.value, 10) || 0;
+                    var v = parseInt(els.hsvVInput.value, 10) || 0;
+                    h = Math.max(0, Math.min(360, h));
+                    s = Math.max(0, Math.min(100, s));
+                    v = Math.max(0, Math.min(100, v));
+
+                    var l = v * (1 - s / 200);
+                    var sNew = l === 0 || l === 100 ? 0 : (v - l) / Math.min(l, 100 - l) * 100;
+                    setFromHsl(h, sNew, l);
+                });
+            });
+
+            els.presetGrid.addEventListener('click', function(e) {
+                var btn = e.target.closest('.preset-color');
+                if (btn) {
+                    setColor(btn.getAttribute('data-color'));
+                }
+            });
+
+            document.querySelectorAll('.copy-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var type = this.getAttribute('data-copy');
+                    var text = '';
+                    if (type === 'hex') text = state.hex;
+                    else if (type === 'rgb') text = 'rgb(' + state.rgb.r + ', ' + state.rgb.g + ', ' + state.rgb.b + ')';
+                    else if (type === 'hsl') text = 'hsl(' + state.hsl.h + ', ' + state.hsl.s + '%, ' + state.hsl.l + '%)';
+                    else if (type === 'hsv') text = 'hsv(' + state.hsv.h + ', ' + state.hsv.s + '%, ' + state.hsv.v + '%)';
+
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(text).then(function() {
+                            var originalHTML = btn.innerHTML;
+                            btn.innerHTML = '<i data-lucide="check" style="color:#10B981"></i>';
+                            if (window.lucide) lucide.createIcons();
+                            setTimeout(function() {
+                                btn.innerHTML = originalHTML;
+                                if (window.lucide) lucide.createIcons();
+                            }, 1500);
+                        });
+                    }
+                });
+            });
+        }
+
+        function init() {
+            setupEvents();
+            render();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

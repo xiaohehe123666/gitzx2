@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片转文字 - 在线OCR文字识别</title>
+    <meta name="description" content="免费在线OCR文字识别工具，基于Tesseract.js纯前端实现，支持中英文识别，文件不上传服务器，隐私安全">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #14B8A6, #06B6D4);">
+                    <i data-lucide="scan-text"></i>
+                </div>
+                <span class="logo-text">图片转文字</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#ocr-tool" class="nav-link active">识别</a>
+                <a href="#features" class="nav-link">特性</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="scan-text"></i>
+                    <span>纯前端OCR · 支持中英文 · 免费识别</span>
+                </div>
+                <h1 class="hero-title">
+                    图片转<span class="gradient-text" style="background:linear-gradient(135deg,#14B8A6,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">文字</span>
+                </h1>
+                <p class="hero-description">
+                    基于 Tesseract.js 的纯前端 OCR 文字识别工具，支持中文、英文识别。
+                    所有处理在浏览器本地完成，图片不会上传到任何服务器，确保您的隐私安全。
+                </p>
+            </div>
+        </section>
+
+        <section id="ocr-tool" class="converter-section">
+            <div class="converter-card">
+                <div class="converter-header">
+                    <h2>上传图片</h2>
+                    <p>支持 PNG、JPG、WebP、BMP、GIF，建议 5MB 以内</p>
+                </div>
+
+                <div id="uploadZone" class="upload-zone">
+                    <div class="upload-content">
+                        <div class="upload-icon" style="background: linear-gradient(135deg, #14B8A6, #06B6D4);">
+                            <i data-lucide="upload-cloud"></i>
+                        </div>
+                        <h3>拖拽图片到此处</h3>
+                        <p>或者点击按钮选择文件</p>
+                        <button id="selectBtn" class="btn-select" style="background: linear-gradient(135deg, #14B8A6, #06B6D4);">
+                            <i data-lucide="folder-open"></i>
+                            选择图片
+                        </button>
+                        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif" hidden>
+                    </div>
+                </div>
+
+                <div id="ocrPanel" class="compress-panel hidden">
+                    <div class="preview-container">
+                        <div class="preview-box">
+                            <div class="preview-label">
+                                <span class="preview-tag original-tag">图片预览</span>
+                                <span id="fileInfo" class="preview-size">0 KB</span>
+                            </div>
+                            <div class="preview-image-wrapper">
+                                <img id="imagePreview" alt="图片预览">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="compress-controls">
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>识别语言</span>
+                            </label>
+                            <div class="format-options">
+                                <button class="format-btn active" data-lang="chi_sim+eng">中文 + 英文</button>
+                                <button class="format-btn" data-lang="eng">仅英文</button>
+                                <button class="format-btn" data-lang="chi_sim">仅中文</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="progressSection" class="compress-stats hidden">
+                        <div class="stat-item">
+                            <span class="stat-label">识别状态</span>
+                            <span id="ocrStatus" class="stat-value">准备中...</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">进度</span>
+                            <span id="progressValue" class="stat-value">0%</span>
+                        </div>
+                        <div style="width:100%;margin-top:8px;">
+                            <div style="width:100%;height:8px;background:rgba(0,0,0,0.08);border-radius:999px;overflow:hidden;">
+                                <div id="progressBar" style="width:0%;height:100%;background:linear-gradient(135deg,#14B8A6,#06B6D4);transition:width 0.3s ease;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="compress-actions">
+                        <button id="recognizeBtn" class="btn-download" style="background: linear-gradient(135deg, #14B8A6, #06B6D4);">
+                            <i data-lucide="scan-text"></i>
+                            开始识别
+                        </button>
+                        <button id="resetBtn" class="btn-secondary">
+                            <i data-lucide="refresh-cw"></i>
+                            重新选择
+                        </button>
+                    </div>
+
+                    <div id="resultSection" class="compress-stats hidden" style="flex-direction:column;align-items:stretch;gap:12px;">
+                        <div class="control-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span>识别结果（可编辑）</span>
+                            <span id="charCount" class="control-value">0 字</span>
+                        </div>
+                        <textarea id="resultText" rows="8" placeholder="识别结果将显示在此处..." style="width:100%;padding:12px;border:1px solid rgba(0,0,0,0.1);border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;resize:vertical;min-height:160px;background:#fff;color:#111;"></textarea>
+                        <div class="compress-actions">
+                            <button id="copyBtn" class="btn-download" style="background: linear-gradient(135deg, #14B8A6, #06B6D4);">
+                                <i data-lucide="copy"></i>
+                                复制结果
+                            </button>
+                            <button id="downloadTxtBtn" class="btn-secondary">
+                                <i data-lucide="download"></i>
+                                下载为 TXT
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="errorSection" class="error-section hidden">
+                    <div class="error-icon">
+                        <i data-lucide="alert-circle"></i>
+                    </div>
+                    <h3>处理失败</h3>
+                    <p id="errorMessage">请重试或更换文件</p>
+                    <button id="retryBtn" class="btn-secondary">
+                        <i data-lucide="rotate-ccw"></i>
+                        重新尝试
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、高效、安全的在线 OCR 识别</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(6, 182, 212, 0.1)); color: #14B8A6;">
+                        <i data-lucide="lock"></i>
+                    </div>
+                    <h3>隐私保护</h3>
+                    <p>所有识别在浏览器本地完成，图片不会上传到任何服务器</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(6, 182, 212, 0.1)); color: #14B8A6;">
+                        <i data-lucide="languages"></i>
+                    </div>
+                    <h3>中英文支持</h3>
+                    <p>支持中文简体、英文识别，可单独或混合识别</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(6, 182, 212, 0.1)); color: #14B8A6;">
+                        <i data-lucide="bar-chart-3"></i>
+                    </div>
+                    <h3>进度可视</h3>
+                    <p>识别过程中实时显示进度百分比，了解处理状态</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(6, 182, 212, 0.1)); color: #14B8A6;">
+                        <i data-lucide="edit-3"></i>
+                    </div>
+                    <h3>结果可编辑</h3>
+                    <p>识别结果可二次编辑，方便校对和修改</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(6, 182, 212, 0.1)); color: #14B8A6;">
+                        <i data-lucide="copy"></i>
+                    </div>
+                    <h3>一键复制</h3>
+                    <p>识别结果可一键复制到剪贴板，方便粘贴使用</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(6, 182, 212, 0.1)); color: #14B8A6;">
+                        <i data-lucide="file-down"></i>
+                    </div>
+                    <h3>下载为 TXT</h3>
+                    <p>识别结果可下载为 TXT 文本文件，便于保存归档</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #14B8A6, #06B6D4);">
+                    <i data-lucide="scan-text"></i>
+                </div>
+                <span>图片转文字</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var state = {
+            originalFile: null,
+            imageUrl: null,
+            lang: 'chi_sim+eng',
+            isRecognizing: false,
+            worker: null
+        };
+
+        var els = {
+            uploadZone: document.getElementById('uploadZone'),
+            fileInput: document.getElementById('fileInput'),
+            selectBtn: document.getElementById('selectBtn'),
+            ocrPanel: document.getElementById('ocrPanel'),
+            imagePreview: document.getElementById('imagePreview'),
+            fileInfo: document.getElementById('fileInfo'),
+            langBtns: document.querySelectorAll('.format-btn'),
+            progressSection: document.getElementById('progressSection'),
+            ocrStatus: document.getElementById('ocrStatus'),
+            progressValue: document.getElementById('progressValue'),
+            progressBar: document.getElementById('progressBar'),
+            recognizeBtn: document.getElementById('recognizeBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            resultSection: document.getElementById('resultSection'),
+            resultText: document.getElementById('resultText'),
+            charCount: document.getElementById('charCount'),
+            copyBtn: document.getElementById('copyBtn'),
+            downloadTxtBtn: document.getElementById('downloadTxtBtn'),
+            errorSection: document.getElementById('errorSection'),
+            errorMessage: document.getElementById('errorMessage'),
+            retryBtn: document.getElementById('retryBtn')
+        };
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        function show(el) { el.classList.remove('hidden'); }
+        function hide(el) { el.classList.add('hidden'); }
+
+        function showError(msg) {
+            els.errorMessage.textContent = msg;
+            show(els.errorSection);
+            hide(els.ocrPanel);
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+
+            if (!file.type.match(/^image\/(png|jpeg|webp|bmp|gif)$/)) {
+                showError('请选择 PNG、JPG、WebP、BMP 或 GIF 格式的图片');
+                return;
+            }
+
+            if (file.size > 5 * 1048576) {
+                showError('文件大小建议在 5MB 以内，当前文件 ' + formatSize(file.size) + ' 可能识别较慢');
+                return;
+            }
+
+            hide(els.errorSection);
+            state.originalFile = file;
+            els.fileInfo.textContent = formatSize(file.size);
+
+            try {
+                if (state.imageUrl) URL.revokeObjectURL(state.imageUrl);
+                state.imageUrl = URL.createObjectURL(file);
+                els.imagePreview.src = state.imageUrl;
+                show(els.ocrPanel);
+                hide(els.progressSection);
+                hide(els.resultSection);
+            } catch (err) {
+                showError('图片加载失败：' + err.message);
+            }
+        }
+
+        function updateProgress(status, progress) {
+            var statusMap = {
+                'loading tesseract core': '加载核心...',
+                'initializing tesseract': '初始化...',
+                'loading language traineddata': '加载语言包...',
+                'initializing api': '初始化 API...',
+                'recognizing text': '识别中...'
+            };
+            els.ocrStatus.textContent = statusMap[status] || status || '处理中...';
+            var pct = Math.round((progress || 0) * 100);
+            els.progressValue.textContent = pct + '%';
+            els.progressBar.style.width = pct + '%';
+        }
+
+        function recognize() {
+            if (!state.originalFile || state.isRecognizing) return;
+
+            try {
+                if (typeof Tesseract === 'undefined') {
+                    showError('Tesseract.js 加载失败，请检查网络后刷新页面');
+                    return;
+                }
+
+                state.isRecognizing = true;
+                els.recognizeBtn.disabled = true;
+                show(els.progressSection);
+                hide(els.resultSection);
+                updateProgress('初始化...', 0);
+
+                Tesseract.recognize(state.imageUrl, state.lang, {
+                    logger: function(m) {
+                        updateProgress(m.status, m.progress);
+                    }
+                }).then(function(result) {
+                    var text = (result && result.data && result.data.text) ? result.data.text : '';
+                    els.resultText.value = text;
+                    els.charCount.textContent = text.length + ' 字';
+                    show(els.resultSection);
+                    updateProgress('识别完成', 1);
+                }).catch(function(err) {
+                    showError('识别失败：' + (err && err.message ? err.message : '未知错误'));
+                }).finally(function() {
+                    state.isRecognizing = false;
+                    els.recognizeBtn.disabled = false;
+                });
+            } catch (err) {
+                state.isRecognizing = false;
+                els.recognizeBtn.disabled = false;
+                showError('识别过程出错：' + err.message);
+            }
+        }
+
+        function copyResult() {
+            try {
+                var text = els.resultText.value;
+                if (!text) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        var orig = els.copyBtn.innerHTML;
+                        els.copyBtn.innerHTML = '<i data-lucide="check"></i> 已复制';
+                        if (window.lucide) lucide.createIcons();
+                        setTimeout(function() {
+                            els.copyBtn.innerHTML = orig;
+                            if (window.lucide) lucide.createIcons();
+                        }, 1500);
+                    }).catch(function() {
+                        fallbackCopy(text);
+                    });
+                } else {
+                    fallbackCopy(text);
+                }
+            } catch (err) {
+                fallbackCopy(els.resultText.value);
+            }
+        }
+
+        function fallbackCopy(text) {
+            try {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            } catch (e) {}
+        }
+
+        function downloadTxt() {
+            try {
+                var text = els.resultText.value || '';
+                var baseName = state.originalFile ? state.originalFile.name.replace(/\.[^/.]+$/, '') : 'ocr-result';
+                var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                var url = URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = baseName + '.txt';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+            } catch (err) {
+                showError('下载失败：' + err.message);
+            }
+        }
+
+        function reset() {
+            state.originalFile = null;
+            if (state.imageUrl) {
+                URL.revokeObjectURL(state.imageUrl);
+                state.imageUrl = null;
+            }
+            els.fileInput.value = '';
+            els.imagePreview.src = '';
+            els.resultText.value = '';
+            els.charCount.textContent = '0 字';
+            hide(els.ocrPanel);
+            hide(els.errorSection);
+            hide(els.progressSection);
+            hide(els.resultSection);
+        }
+
+        els.selectBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            els.fileInput.click();
+        });
+
+        els.uploadZone.addEventListener('click', function(e) {
+            if (e.target === els.selectBtn || e.target.closest('.btn-select')) return;
+            els.fileInput.click();
+        });
+
+        els.fileInput.addEventListener('change', function(e) {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
+
+        els.uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        els.uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        els.uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        });
+
+        els.langBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                els.langBtns.forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                state.lang = this.getAttribute('data-lang');
+            });
+        });
+
+        els.resultText.addEventListener('input', function() {
+            els.charCount.textContent = this.value.length + ' 字';
+        });
+
+        els.recognizeBtn.addEventListener('click', recognize);
+        els.resetBtn.addEventListener('click', reset);
+        els.retryBtn.addEventListener('click', reset);
+        els.copyBtn.addEventListener('click', copyResult);
+        els.downloadTxtBtn.addEventListener('click', downloadTxt);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) lucide.createIcons();
+        });
+    })();
+    </script>
+</body>
+</html>

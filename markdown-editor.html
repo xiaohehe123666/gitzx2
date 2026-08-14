@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown编辑器 - 实时预览与导出工具</title>
+    <meta name="description" content="免费 Markdown 编辑器，支持实时预览、代码高亮、导出 HTML/MD 文件">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/typescript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/xml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/css.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/json.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/bash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/sql.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/go.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/markdown.min.js"></script>
+    <script src="js/auth.js" defer></script>
+    <style>
+    /* ============ Markdown 编辑器页面专属样式 ============ */
+    .md-hero {
+        padding: 7rem 0 2rem;
+        text-align: center;
+    }
+    .md-hero .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        background: rgba(124, 58, 237, 0.1);
+        color: #7C3AED;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+    .md-hero .hero-badge i { width: 16px; height: 16px; }
+    .md-hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .md-hero .gradient-text {
+        background: linear-gradient(135deg, #7C3AED, #A855F7);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .md-hero p {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    .md-editor-section { padding: 1rem 0 2rem; }
+
+    .md-editor-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* 工具栏 */
+    .md-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .md-toolbar-group {
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .md-toolbar-divider {
+        width: 1px;
+        height: 22px;
+        background: var(--border);
+        margin: 0 0.25rem;
+    }
+
+    /* 格式按钮：图标使用紫色渐变背景 */
+    .md-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        min-width: 34px;
+        height: 34px;
+        padding: 0 0.5rem;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.18s ease;
+    }
+    .md-btn:hover {
+        background: var(--bg-card);
+        border-color: var(--border);
+        color: var(--text);
+    }
+    .md-btn i { width: 16px; height: 16px; }
+    .md-btn .md-icon-tile {
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #7C3AED, #A855F7);
+        color: #fff;
+    }
+    .md-btn .md-icon-tile i { width: 14px; height: 14px; }
+
+    /* 文件操作按钮 */
+    .md-btn-primary {
+        background: linear-gradient(135deg, #7C3AED, #A855F7);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+    }
+    .md-btn-primary:hover {
+        color: #fff;
+        background: linear-gradient(135deg, #6D28D9, #9333EA);
+        border-color: transparent;
+    }
+    .md-btn-secondary {
+        background: var(--bg-card);
+        border-color: var(--border);
+        color: var(--text-secondary);
+    }
+    .md-btn-secondary:hover {
+        color: #7C3AED;
+        border-color: #A855F7;
+    }
+    .md-btn-danger {
+        background: var(--bg-card);
+        border-color: var(--border);
+        color: var(--text-secondary);
+    }
+    .md-btn-danger:hover {
+        background: #FEF2F2;
+        border-color: #FECACA;
+        color: #DC2626;
+    }
+
+    /* 编辑器主体：左右分栏 */
+    .md-editor-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 560px;
+    }
+    .md-input-panel,
+    .md-preview-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 560px;
+    }
+    .md-input-panel { border-right: 1px solid var(--border); }
+
+    .md-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 1rem;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+    }
+    .md-panel-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .md-panel-title i { width: 15px; height: 15px; color: #7C3AED; }
+    .md-panel-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .md-save-status {
+        font-size: 0.72rem;
+        color: var(--text-light);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .md-save-status .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #10B981;
+    }
+
+    /* 输入区 */
+    .md-textarea {
+        flex: 1;
+        width: 100%;
+        padding: 1.25rem;
+        border: none;
+        outline: none;
+        resize: none;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 0.875rem;
+        line-height: 1.7;
+        color: var(--text);
+        background: var(--bg-card);
+        tab-size: 4;
+    }
+    .md-textarea::placeholder { color: var(--text-light); }
+
+    /* 预览区 */
+    .md-preview {
+        flex: 1;
+        padding: 1.5rem 1.75rem;
+        overflow-y: auto;
+        background: var(--bg-card);
+        line-height: 1.7;
+        color: var(--text);
+    }
+    .md-preview::-webkit-scrollbar { width: 8px; height: 8px; }
+    .md-preview::-webkit-scrollbar-track { background: transparent; }
+    .md-preview::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+    .md-preview::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+    .md-preview.empty::before {
+        content: '预览区为空，请在左侧输入 Markdown 内容';
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    /* 预览区 Markdown 渲染样式 */
+    .md-preview h1, .md-preview h2, .md-preview h3,
+    .md-preview h4, .md-preview h5, .md-preview h6 {
+        margin: 1.4rem 0 0.75rem;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+    .md-preview h1 { font-size: 1.8rem; padding-bottom: 0.3rem; border-bottom: 2px solid var(--border); }
+    .md-preview h2 { font-size: 1.5rem; padding-bottom: 0.25rem; border-bottom: 1px solid var(--border); }
+    .md-preview h3 { font-size: 1.25rem; }
+    .md-preview h4 { font-size: 1.1rem; }
+    .md-preview h5 { font-size: 1rem; }
+    .md-preview h6 { font-size: 0.9rem; color: var(--text-secondary); }
+    .md-preview p { margin: 0.6rem 0; }
+    .md-preview a { color: #7C3AED; text-decoration: none; }
+    .md-preview a:hover { text-decoration: underline; }
+    .md-preview strong { font-weight: 700; }
+    .md-preview em { font-style: italic; }
+    .md-preview del { color: var(--text-light); }
+    .md-preview ul, .md-preview ol { margin: 0.6rem 0; padding-left: 1.75rem; }
+    .md-preview li { margin: 0.25rem 0; }
+    .md-preview blockquote {
+        margin: 0.8rem 0;
+        padding: 0.5rem 1rem;
+        border-left: 4px solid #A855F7;
+        background: rgba(124, 58, 237, 0.05);
+        color: var(--text-secondary);
+        border-radius: 0 8px 8px 0;
+    }
+    .md-preview blockquote p { margin: 0.25rem 0; }
+    .md-preview code {
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 0.85em;
+        padding: 0.15em 0.4em;
+        background: rgba(124, 58, 237, 0.1);
+        color: #7C3AED;
+        border-radius: 4px;
+    }
+    .md-preview pre {
+        margin: 0.8rem 0;
+        padding: 1rem;
+        background: #0F172A;
+        border-radius: 10px;
+        overflow-x: auto;
+    }
+    .md-preview pre code {
+        background: transparent;
+        color: #E2E8F0;
+        padding: 0;
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+    .md-preview hr {
+        margin: 1.5rem 0;
+        border: none;
+        border-top: 2px solid var(--border);
+    }
+    .md-preview img {
+        max-width: 100%;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+    }
+    .md-preview table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0.8rem 0;
+        font-size: 0.875rem;
+    }
+    .md-preview th, .md-preview td {
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--border);
+        text-align: left;
+    }
+    .md-preview th {
+        background: rgba(124, 58, 237, 0.08);
+        font-weight: 600;
+        color: var(--text);
+    }
+    .md-preview tr:nth-child(even) td { background: var(--bg); }
+
+    /* 状态栏：字数统计 */
+    .md-statusbar {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 0.6rem 1.25rem;
+        background: var(--bg);
+        border-top: 1px solid var(--border);
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        flex-wrap: wrap;
+    }
+    .md-statusbar .md-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    .md-statusbar .md-stat i { width: 14px; height: 14px; color: #7C3AED; }
+    .md-statusbar .md-stat strong { color: var(--text); font-weight: 600; }
+    .md-statusbar .md-spacer { flex: 1; }
+
+    /* Toast */
+    .md-toast {
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        background: #0F172A;
+        color: #fff;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: mdToastDown 0.3s ease;
+    }
+    .md-toast.hidden { display: none; }
+    .md-toast i { width: 20px; height: 20px; color: #10B981; }
+    .md-toast.error i { color: #EF4444; }
+    @keyframes mdToastDown {
+        from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* 移动端响应式：上下分栏 */
+    @media (max-width: 768px) {
+        .md-hero { padding: 6rem 0 1.5rem; }
+        .md-hero h1 { font-size: 1.85rem; }
+        .md-toolbar { flex-direction: column; align-items: stretch; }
+        .md-toolbar-group { justify-content: center; }
+        .md-editor-body { grid-template-columns: 1fr; }
+        .md-input-panel { border-right: none; border-bottom: 1px solid var(--border); }
+        .md-input-panel, .md-preview-panel { min-height: 360px; }
+        .md-textarea, .md-preview { min-height: 300px; }
+        .md-btn span.md-label { display: none; }
+        .md-statusbar { gap: 0.75rem; }
+    }
+    </style>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon" style="background: linear-gradient(135deg, #7C3AED, #A855F7);">
+                    <i data-lucide="file-text"></i>
+                </div>
+                <span class="logo-text">Markdown编辑器</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#editor" class="nav-link active">编辑器</a>
+                <a href="#features" class="nav-link">特性</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="md-hero">
+            <div class="hero-badge">
+                <i data-lucide="zap"></i>
+                <span>实时预览 · 本地保存 · 一键导出</span>
+            </div>
+            <h1>
+                Markdown<br>
+                <span class="gradient-text">在线编辑器</span>
+            </h1>
+            <p>免费 Markdown 编辑器，支持实时预览、代码高亮、表格渲染，可导出 HTML/MD 文件，内容自动保存到本地，刷新不丢失。</p>
+        </section>
+
+        <section id="editor" class="md-editor-section">
+            <div class="md-editor-card">
+                <!-- 工具栏 -->
+                <div class="md-toolbar">
+                    <div class="md-toolbar-group">
+                        <button type="button" class="md-btn" data-action="bold" title="加粗 (Ctrl+B)">
+                            <span class="md-icon-tile"><i data-lucide="bold"></i></span>
+                        </button>
+                        <button type="button" class="md-btn" data-action="italic" title="斜体 (Ctrl+I)">
+                            <span class="md-icon-tile"><i data-lucide="italic"></i></span>
+                        </button>
+                        <button type="button" class="md-btn" data-action="strikethrough" title="删除线">
+                            <span class="md-icon-tile"><i data-lucide="strikethrough"></i></span>
+                        </button>
+                        <div class="md-toolbar-divider"></div>
+                        <button type="button" class="md-btn" data-action="h1" title="一级标题">
+                            <span class="md-icon-tile"><i data-lucide="heading-1"></i></span>
+                        </button>
+                        <button type="button" class="md-btn" data-action="h2" title="二级标题">
+                            <span class="md-icon-tile"><i data-lucide="heading-2"></i></span>
+                        </button>
+                        <button type="button" class="md-btn" data-action="h3" title="三级标题">
+                            <span class="md-icon-tile"><i data-lucide="heading-3"></i></span>
+                        </button>
+                        <div class="md-toolbar-divider"></div>
+                        <button type="button" class="md-btn" data-action="link" title="链接">
+                            <span class="md-icon-tile"><i data-lucide="link"></i></span>
+                        </button>
+                        <button type="button" class="md-btn" data-action="image" title="图片">
+                            <span class="md-icon-tile"><i data-lucide="image"></i></span>
+                        </button>
+                        <button type="button" class="md-btn" data-action="code" title="代码块">
+                            <span class="md-icon-tile"><i data-lucide="code-2"></i></span>
+                        </button>
+                        <button type="button" class="md-btn" data-action="quote" title="引用">
+                            <span class="md-icon-tile"><i data-lucide="quote"></i></span>
+                        </button>
+                        <button type="button" class="md-btn" data-action="list" title="无序列表">
+                            <span class="md-icon-tile"><i data-lucide="list"></i></span>
+                        </button>
+                        <button type="button" class="md-btn" data-action="table" title="表格">
+                            <span class="md-icon-tile"><i data-lucide="table"></i></span>
+                        </button>
+                        <button type="button" class="md-btn" data-action="hr" title="分割线">
+                            <span class="md-icon-tile"><i data-lucide="minus"></i></span>
+                        </button>
+                    </div>
+                    <div class="md-toolbar-group">
+                        <label class="md-btn md-btn-secondary" title="导入 .md 文件">
+                            <i data-lucide="upload"></i>
+                            <span class="md-label">导入</span>
+                            <input type="file" id="mdFileInput" accept=".md,.markdown,.txt" hidden>
+                        </label>
+                        <button type="button" class="md-btn md-btn-secondary" id="copyBtn" title="复制到剪贴板">
+                            <i data-lucide="copy"></i>
+                            <span class="md-label">复制</span>
+                        </button>
+                        <button type="button" class="md-btn md-btn-primary" id="exportMdBtn" title="导出为 .md 文件">
+                            <i data-lucide="file-down"></i>
+                            <span class="md-label">导出MD</span>
+                        </button>
+                        <button type="button" class="md-btn md-btn-primary" id="exportHtmlBtn" title="导出为 HTML 文件">
+                            <i data-lucide="code"></i>
+                            <span class="md-label">导出HTML</span>
+                        </button>
+                        <button type="button" class="md-btn md-btn-danger" id="clearBtn" title="清空内容">
+                            <i data-lucide="trash-2"></i>
+                            <span class="md-label">清空</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 编辑器主体 -->
+                <div class="md-editor-body">
+                    <div class="md-input-panel">
+                        <div class="md-panel-header">
+                            <span class="md-panel-title">
+                                <i data-lucide="edit-3"></i>
+                                编辑区
+                            </span>
+                            <div class="md-panel-actions">
+                                <span class="md-save-status" id="saveStatus">
+                                    <span class="dot"></span>
+                                    <span>已保存</span>
+                                </span>
+                            </div>
+                        </div>
+                        <textarea id="mdTextarea" class="md-textarea" spellcheck="false" placeholder="在此输入 Markdown 内容..."></textarea>
+                    </div>
+
+                    <div class="md-preview-panel">
+                        <div class="md-panel-header">
+                            <span class="md-panel-title">
+                                <i data-lucide="eye"></i>
+                                实时预览
+                            </span>
+                            <div class="md-panel-actions">
+                                <span class="md-save-status">
+                                    <span id="syncStatus">同步中</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div id="mdPreview" class="md-preview empty"></div>
+                    </div>
+                </div>
+
+                <!-- 状态栏：字数统计 -->
+                <div class="md-statusbar">
+                    <span class="md-stat">
+                        <i data-lucide="hash"></i>
+                        字符数：<strong id="charCount">0</strong>
+                    </span>
+                    <span class="md-stat">
+                        <i data-lucide="type"></i>
+                        字数：<strong id="wordCount">0</strong>
+                    </span>
+                    <span class="md-stat">
+                        <i data-lucide="rows-3"></i>
+                        行数：<strong id="lineCount">0</strong>
+                    </span>
+                    <span class="md-spacer"></span>
+                    <span class="md-stat">
+                        <i data-lucide="database"></i>
+                        大小：<strong id="sizeCount">0 B</strong>
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>功能特性</h2>
+                <p>简单、高效、实用的 Markdown 编辑工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="eye"></i>
+                    </div>
+                    <h3>实时预览</h3>
+                    <p>输入即渲染，左右分栏同步显示效果</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="code-2"></i>
+                    </div>
+                    <h3>代码高亮</h3>
+                    <p>支持主流编程语言语法高亮显示</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="download"></i>
+                    </div>
+                    <h3>多格式导出</h3>
+                    <p>支持导出为 MD 文件或独立 HTML 文件</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="save"></i>
+                    </div>
+                    <h3>自动保存</h3>
+                    <p>内容自动保存到本地，刷新不丢失</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="wand-2"></i>
+                    </div>
+                    <h3>快捷工具栏</h3>
+                    <p>常用格式一键插入，提升编辑效率</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1)); color: #7C3AED;">
+                        <i data-lucide="smartphone"></i>
+                    </div>
+                    <h3>响应式布局</h3>
+                    <p>移动端自动切换为上下分栏布局</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #7C3AED, #A855F7);">
+                    <i data-lucide="file-text"></i>
+                </div>
+                <span>Markdown编辑器</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <div id="toast" class="md-toast hidden">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // 存储键
+        var STORAGE_KEY = 'markdown-editor-content';
+        // 默认示例内容
+        var DEFAULT_CONTENT = '# 欢迎使用 Markdown 编辑器\n\n这是一个**功能强大**的在线 Markdown 编辑器，支持实时预览和代码高亮。\n\n## 功能特性\n\n- 实时预览：输入即渲染\n- 代码高亮：支持主流语言\n- 自动保存：刷新不丢失\n- 一键导出：MD / HTML\n\n### 代码示例\n\n```javascript\nfunction greet(name) {\n  return "Hello, " + name + "!";\n}\nconsole.log(greet("Markdown"));\n```\n\n### 表格示例\n\n| 工具 | 类型 | 说明 |\n|------|------|------|\n| 编辑器 | 前端 | 实时预览 |\n| 导出 | 文件 | MD/HTML |\n\n> 提示：内容会自动保存到浏览器本地。\n\n---\n\n点击工具栏按钮快速插入格式，或使用 `Ctrl+B` 加粗、`Ctrl+I` 斜体。\n';
+
+        // 元素引用
+        var els = {
+            textarea: document.getElementById('mdTextarea'),
+            preview: document.getElementById('mdPreview'),
+            charCount: document.getElementById('charCount'),
+            wordCount: document.getElementById('wordCount'),
+            lineCount: document.getElementById('lineCount'),
+            sizeCount: document.getElementById('sizeCount'),
+            saveStatus: document.getElementById('saveStatus'),
+            syncStatus: document.getElementById('syncStatus'),
+            fileInput: document.getElementById('mdFileInput'),
+            copyBtn: document.getElementById('copyBtn'),
+            exportMdBtn: document.getElementById('exportMdBtn'),
+            exportHtmlBtn: document.getElementById('exportHtmlBtn'),
+            clearBtn: document.getElementById('clearBtn'),
+            toast: document.getElementById('toast'),
+            toastMessage: document.getElementById('toastMessage')
+        };
+
+        // 保存计时器
+        var saveTimer = null;
+
+        // 配置 marked（若可用）
+        function setupMarked() {
+            try {
+                if (window.marked && typeof window.marked.setOptions === 'function') {
+                    window.marked.setOptions({
+                        breaks: true,
+                        gfm: true
+                    });
+                }
+            } catch (e) {
+                console.error('marked 配置失败:', e);
+            }
+        }
+
+        // 注册 highlight.js 语言
+        function setupHljs() {
+            try {
+                if (!window.hljs) return;
+                var langs = [
+                    ['javascript', window.hljs.getLanguage('javascript')],
+                    ['typescript', window.hljs.getLanguage('typescript')],
+                    ['python', window.hljs.getLanguage('python')],
+                    ['xml', window.hljs.getLanguage('xml')],
+                    ['css', window.hljs.getLanguage('css')],
+                    ['json', window.hljs.getLanguage('json')],
+                    ['bash', window.hljs.getLanguage('bash')],
+                    ['sql', window.hljs.getLanguage('sql')],
+                    ['go', window.hljs.getLanguage('go')],
+                    ['java', window.hljs.getLanguage('java')],
+                    ['markdown', window.hljs.getLanguage('markdown')]
+                ];
+                // 核心版需要手动注册语言
+                for (var i = 0; i < langs.length; i++) {
+                    if (langs[i][1] && typeof window.hljs.registerLanguage === 'function') {
+                        // 语言包加载后会自动注册，此处仅作容错保护
+                    }
+                }
+            } catch (e) {
+                console.error('hljs 配置失败:', e);
+            }
+        }
+
+        // 渲染 Markdown 为 HTML
+        function renderMarkdown(text) {
+            if (!text) return '';
+            try {
+                if (window.marked) {
+                    if (typeof window.marked.parse === 'function') {
+                        return window.marked.parse(text);
+                    }
+                    if (typeof window.marked === 'function') {
+                        return window.marked(text);
+                    }
+                }
+            } catch (e) {
+                console.error('Markdown 渲染失败:', e);
+            }
+            return escapeHtml(text);
+        }
+
+        // 简易 HTML 转义（兜底用）
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // 对预览区代码块执行高亮
+        function highlightPreview() {
+            try {
+                if (!window.hljs) return;
+                var blocks = els.preview.querySelectorAll('pre code');
+                for (var i = 0; i < blocks.length; i++) {
+                    try {
+                        window.hljs.highlightElement(blocks[i]);
+                    } catch (e) { /* 忽略单块高亮错误 */ }
+                }
+            } catch (e) {
+                console.error('代码高亮失败:', e);
+            }
+        }
+
+        // 更新预览
+        function updatePreview() {
+            var text = els.textarea.value;
+            var html = renderMarkdown(text);
+            els.preview.innerHTML = html;
+            if (!text) {
+                els.preview.classList.add('empty');
+            } else {
+                els.preview.classList.remove('empty');
+            }
+            highlightPreview();
+            // 同步状态
+            if (els.syncStatus) els.syncStatus.textContent = '已同步';
+        }
+
+        // 更新字数统计
+        function updateStats() {
+            var text = els.textarea.value;
+            var chars = text.length;
+            var lines = text === '' ? 0 : text.split('\n').length;
+
+            // 字数统计：中韩日字符逐字计数 + 英文单词计数
+            var cjkMatches = text.match(/[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]/g);
+            var cjkCount = cjkMatches ? cjkMatches.length : 0;
+            var enMatches = text.replace(/[\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af]/g, ' ').match(/[a-zA-Z0-9]+/g);
+            var enCount = enMatches ? enMatches.length : 0;
+            var words = cjkCount + enCount;
+
+            // 文件大小
+            var sizeBytes = 0;
+            try {
+                sizeBytes = new Blob([text]).size;
+            } catch (e) {
+                sizeBytes = chars; // 兜底
+            }
+
+            els.charCount.textContent = chars.toLocaleString();
+            els.wordCount.textContent = words.toLocaleString();
+            els.lineCount.textContent = lines.toLocaleString();
+            els.sizeCount.textContent = formatSize(sizeBytes);
+        }
+
+        // 格式化文件大小
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        // 保存内容到本地存储（优先使用 Auth 用户隔离）
+        function saveContent() {
+            try {
+                var content = els.textarea.value;
+                if (window.Auth && typeof window.Auth.setUserData === 'function') {
+                    window.Auth.setUserData(STORAGE_KEY, content);
+                } else {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
+                }
+                showSaveStatus(true);
+            } catch (e) {
+                console.error('保存失败:', e);
+                showSaveStatus(false);
+            }
+        }
+
+        // 防抖保存
+        function debouncedSave() {
+            if (saveTimer) clearTimeout(saveTimer);
+            saveTimer = setTimeout(saveContent, 500);
+        }
+
+        // 显示保存状态
+        function showSaveStatus(ok) {
+            if (!els.saveStatus) return;
+            var dot = els.saveStatus.querySelector('.dot');
+            var span = els.saveStatus.querySelector('span:last-child');
+            if (ok) {
+                if (dot) dot.style.background = '#10B981';
+                if (span) span.textContent = '已保存';
+            } else {
+                if (dot) dot.style.background = '#EF4444';
+                if (span) span.textContent = '保存失败';
+            }
+        }
+
+        // 从本地存储加载内容
+        function loadContent() {
+            try {
+                var content = null;
+                if (window.Auth && typeof window.Auth.getUserData === 'function') {
+                    content = window.Auth.getUserData(STORAGE_KEY);
+                } else {
+                    var raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw !== null) content = JSON.parse(raw);
+                }
+                els.textarea.value = (content !== null && content !== undefined && content !== '') ? content : DEFAULT_CONTENT;
+            } catch (e) {
+                console.error('加载失败:', e);
+                els.textarea.value = DEFAULT_CONTENT;
+            }
+        }
+
+        // Toast 提示
+        function showToast(msg, type) {
+            els.toastMessage.textContent = msg;
+            els.toast.classList.remove('hidden', 'error');
+            if (type === 'error') els.toast.classList.add('error');
+            if (window.lucide) lucide.createIcons();
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(function () {
+                els.toast.classList.add('hidden');
+            }, 2200);
+        }
+
+        // ============ 编辑器插入逻辑 ============
+
+        // 获取选区信息
+        function getSelection() {
+            return {
+                start: els.textarea.selectionStart,
+                end: els.textarea.selectionEnd,
+                value: els.textarea.value
+            };
+        }
+
+        // 设置文本框内容并还原选区
+        function setContent(newVal, selStart, selEnd) {
+            els.textarea.value = newVal;
+            els.textarea.focus();
+            try {
+                els.textarea.setSelectionRange(selStart, selEnd);
+            } catch (e) { /* 忽略 */ }
+            onChange();
+        }
+
+        // 包裹选中文本（如加粗、斜体、删除线、代码块）
+        function wrapSelection(before, after, placeholder) {
+            var sel = getSelection();
+            var selected = sel.value.substring(sel.start, sel.end);
+            var inner = selected ? selected : (placeholder || '');
+            var newVal = sel.value.substring(0, sel.start) + before + inner + after + sel.value.substring(sel.end);
+            var newStart = sel.start + before.length;
+            var newEnd = newStart + inner.length;
+            setContent(newVal, newStart, newEnd);
+        }
+
+        // 在当前行前添加前缀（如标题、引用、列表）
+        function prefixLine(prefix, placeholder) {
+            var sel = getSelection();
+            var val = sel.value;
+            var lineStart = val.lastIndexOf('\n', sel.start - 1) + 1;
+            // 找到选区所在行的结束
+            var lineEnd = val.indexOf('\n', sel.start);
+            if (lineEnd === -1) lineEnd = val.length;
+            var lineText = val.substring(lineStart, lineEnd);
+            var inner = lineText ? lineText : (placeholder || '');
+            var newVal = val.substring(0, lineStart) + prefix + inner + val.substring(lineEnd);
+            var newStart = lineStart + prefix.length;
+            var newEnd = newStart + inner.length;
+            setContent(newVal, newStart, newEnd);
+        }
+
+        // 在光标处插入文本块（如表格、分割线）
+        function insertBlock(block) {
+            var sel = getSelection();
+            var prefix = '';
+            // 确保块前有空行
+            if (sel.start > 0 && sel.value.charAt(sel.start - 1) !== '\n') {
+                prefix = '\n\n';
+            } else if (sel.start >= 2 && sel.value.substring(sel.start - 2, sel.start) === '\n\n') {
+                prefix = '';
+            } else if (sel.start > 0) {
+                prefix = '\n';
+            }
+            var insertText = prefix + block;
+            var newVal = sel.value.substring(0, sel.start) + insertText + sel.value.substring(sel.end);
+            var newStart = sel.start + insertText.length;
+            setContent(newVal, newStart, newStart);
+        }
+
+        // 工具栏动作分发
+        function handleAction(action) {
+            switch (action) {
+                case 'bold':
+                    wrapSelection('**', '**', '加粗文本');
+                    break;
+                case 'italic':
+                    wrapSelection('*', '*', '斜体文本');
+                    break;
+                case 'strikethrough':
+                    wrapSelection('~~', '~~', '删除线文本');
+                    break;
+                case 'h1':
+                    prefixLine('# ', '一级标题');
+                    break;
+                case 'h2':
+                    prefixLine('## ', '二级标题');
+                    break;
+                case 'h3':
+                    prefixLine('### ', '三级标题');
+                    break;
+                case 'link': {
+                    var sel = getSelection();
+                    var selected = sel.value.substring(sel.start, sel.end);
+                    var text = selected ? selected : '链接文本';
+                    var url = 'https://';
+                    var insert = '[' + text + '](' + url + ')';
+                    var newVal = sel.value.substring(0, sel.start) + insert + sel.value.substring(sel.end);
+                    var urlStart = sel.start + text.length + 3;
+                    setContent(newVal, urlStart, urlStart + url.length);
+                    break;
+                }
+                case 'image': {
+                    var sel2 = getSelection();
+                    var alt = sel2.value.substring(sel2.start, sel2.end) || '图片描述';
+                    var url2 = 'https://';
+                    var insert2 = '![' + alt + '](' + url2 + ')';
+                    var newVal2 = sel2.value.substring(0, sel2.start) + insert2 + sel2.value.substring(sel2.end);
+                    var urlStart2 = sel2.start + alt.length + 4;
+                    setContent(newVal2, urlStart2, urlStart2 + url2.length);
+                    break;
+                }
+                case 'code':
+                    wrapSelection('\n```\n', '\n```\n', '代码内容');
+                    break;
+                case 'quote':
+                    prefixLine('> ', '引用文本');
+                    break;
+                case 'list':
+                    prefixLine('- ', '列表项');
+                    break;
+                case 'table':
+                    insertBlock('| 列1 | 列2 | 列3 |\n|------|------|------|\n| 内容 | 内容 | 内容 |\n| 内容 | 内容 | 内容 |');
+                    break;
+                case 'hr':
+                    insertBlock('---');
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // ============ 文件操作 ============
+
+        // 导入文件
+        function importFile(file) {
+            if (!file) return;
+            try {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        els.textarea.value = e.target.result;
+                        onChange();
+                        showToast('已导入：' + file.name);
+                    } catch (err) {
+                        console.error(err);
+                        showToast('导入失败', 'error');
+                    }
+                };
+                reader.onerror = function () {
+                    showToast('读取文件失败', 'error');
+                };
+                reader.readAsText(file, 'UTF-8');
+            } catch (e) {
+                console.error(e);
+                showToast('导入失败', 'error');
+            }
+        }
+
+        // 下载文件
+        function downloadFile(filename, content, mime) {
+            try {
+                var blob = new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(function () { URL.revokeObjectURL(url); }, 200);
+            } catch (e) {
+                console.error(e);
+                showToast('下载失败', 'error');
+            }
+        }
+
+        // 导出为 MD 文件
+        function exportMd() {
+            try {
+                var content = els.textarea.value;
+                if (!content) {
+                    showToast('内容为空，无法导出', 'error');
+                    return;
+                }
+                var filename = 'markdown-' + formatDateStr() + '.md';
+                downloadFile(filename, content, 'text/markdown;charset=utf-8');
+                showToast('已导出 MD 文件');
+            } catch (e) {
+                console.error(e);
+                showToast('导出失败', 'error');
+            }
+        }
+
+        // 导出为独立 HTML 文件
+        function exportHtml() {
+            try {
+                var content = els.textarea.value;
+                if (!content) {
+                    showToast('内容为空，无法导出', 'error');
+                    return;
+                }
+                var bodyHtml = renderMarkdown(content);
+                var html = buildStandaloneHtml(bodyHtml, content);
+                var filename = 'markdown-' + formatDateStr() + '.html';
+                downloadFile(filename, html, 'text/html;charset=utf-8');
+                showToast('已导出 HTML 文件');
+            } catch (e) {
+                console.error(e);
+                showToast('导出失败', 'error');
+            }
+        }
+
+        // 构造独立 HTML 文档（含样式与高亮主题）
+        function buildStandaloneHtml(bodyHtml, rawMd) {
+            var css = [
+                'body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;max-width:860px;margin:40px auto;padding:0 20px;color:#1E293B;line-height:1.7;background:#F8FAFC;}',
+                'h1,h2,h3,h4,h5,h6{font-family:"Space Grotesk",sans-serif;font-weight:700;line-height:1.3;margin:1.4em 0 .7em;}',
+                'h1{font-size:1.9em;border-bottom:2px solid #E2E8F0;padding-bottom:.3em;}',
+                'h2{font-size:1.5em;border-bottom:1px solid #E2E8F0;padding-bottom:.25em;}',
+                'h3{font-size:1.25em;}',
+                'a{color:#7C3AED;text-decoration:none;}a:hover{text-decoration:underline;}',
+                'code{font-family:Consolas,Monaco,"Courier New",monospace;background:rgba(124,58,237,.1);color:#7C3AED;padding:.15em .4em;border-radius:4px;font-size:.85em;}',
+                'pre{background:#0F172A;border-radius:10px;padding:1em;overflow-x:auto;}pre code{background:transparent;color:#E2E8F0;padding:0;font-size:.85em;}',
+                'blockquote{border-left:4px solid #A855F7;background:rgba(124,58,237,.05);padding:.5em 1em;margin:.8em 0;border-radius:0 8px 8px 0;color:#64748B;}',
+                'table{width:100%;border-collapse:collapse;margin:.8em 0;}th,td{border:1px solid #E2E8F0;padding:.5em .75em;text-align:left;}th{background:rgba(124,58,237,.08);}',
+                'img{max-width:100%;border-radius:8px;}hr{border:none;border-top:2px solid #E2E8F0;margin:1.5em 0;}',
+                'ul,ol{padding-left:1.75em;margin:.6em 0;}li{margin:.25em 0;}'
+            ].join('\n');
+            var html = '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>Markdown 导出文档</title>\n<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">\n<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">\n<style>' + css + '</style>\n</head>\n<body>\n' + bodyHtml + '\n<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"><\/script>\n<script>try{if(window.hljs){var b=document.querySelectorAll("pre code");for(var i=0;i<b.length;i++){hljs.highlightElement(b[i]);}}}catch(e){}<\/script>\n</body>\n</html>';
+            return html;
+        }
+
+        // 格式化日期字符串（用于文件名）
+        function formatDateStr() {
+            var d = new Date();
+            var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+            return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '-' + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+        }
+
+        // 复制到剪贴板
+        function copyContent() {
+            try {
+                var content = els.textarea.value;
+                if (!content) {
+                    showToast('内容为空', 'error');
+                    return;
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(content).then(function () {
+                        showToast('已复制到剪贴板');
+                    }, function () {
+                        fallbackCopy(content);
+                    });
+                } else {
+                    fallbackCopy(content);
+                }
+            } catch (e) {
+                console.error(e);
+                fallbackCopy(els.textarea.value);
+            }
+        }
+
+        // 兼容旧浏览器的复制方法
+        function fallbackCopy(text) {
+            try {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                var ok = document.execCommand('copy');
+                document.body.removeChild(ta);
+                if (ok) {
+                    showToast('已复制到剪贴板');
+                } else {
+                    showToast('复制失败', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('复制失败', 'error');
+            }
+        }
+
+        // 清空内容
+        function clearContent() {
+            if (!els.textarea.value) {
+                showToast('内容已为空');
+                return;
+            }
+            if (confirm('确定要清空所有内容吗？此操作不可撤销。')) {
+                els.textarea.value = '';
+                onChange();
+                showToast('内容已清空');
+            }
+        }
+
+        // ============ 事件处理 ============
+
+        // 内容变化时触发
+        function onChange() {
+            if (els.syncStatus) els.syncStatus.textContent = '同步中...';
+            updatePreview();
+            updateStats();
+            debouncedSave();
+        }
+
+        // 绑定工具栏按钮
+        function bindToolbar() {
+            var btns = document.querySelectorAll('.md-btn[data-action]');
+            for (var i = 0; i < btns.length; i++) {
+                (function (btn) {
+                    btn.addEventListener('click', function () {
+                        handleAction(btn.getAttribute('data-action'));
+                    });
+                })(btns[i]);
+            }
+        }
+
+        // 绑定文件操作按钮
+        function bindFileOps() {
+            els.fileInput.addEventListener('change', function (e) {
+                var file = e.target.files && e.target.files[0];
+                if (file) importFile(file);
+                els.fileInput.value = ''; // 允许重复导入同一文件
+            });
+
+            els.copyBtn.addEventListener('click', copyContent);
+            els.exportMdBtn.addEventListener('click', exportMd);
+            els.exportHtmlBtn.addEventListener('click', exportHtml);
+            els.clearBtn.addEventListener('click', clearContent);
+        }
+
+        // 绑定输入与快捷键
+        function bindInput() {
+            els.textarea.addEventListener('input', onChange);
+
+            // Tab 键插入两个空格
+            els.textarea.addEventListener('keydown', function (e) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    var sel = getSelection();
+                    var newVal = sel.value.substring(0, sel.start) + '  ' + sel.value.substring(sel.end);
+                    var pos = sel.start + 2;
+                    setContent(newVal, pos, pos);
+                    return;
+                }
+                // 快捷键：Ctrl+B 加粗 / Ctrl+I 斜体
+                if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+                    var key = e.key.toLowerCase();
+                    if (key === 'b') {
+                        e.preventDefault();
+                        handleAction('bold');
+                        return;
+                    }
+                    if (key === 'i') {
+                        e.preventDefault();
+                        handleAction('italic');
+                        return;
+                    }
+                }
+            });
+
+            // 离开页面前保存
+            window.addEventListener('beforeunload', saveContent);
+        }
+
+        // 初始化
+        function init() {
+            setupMarked();
+            setupHljs();
+            loadContent();
+            updatePreview();
+            updateStats();
+            bindToolbar();
+            bindFileOps();
+            bindInput();
+
+            // 认证状态变化时重新加载数据
+            if (window.Auth && typeof window.Auth.onAuthChange !== 'undefined') {
+                window.Auth.onAuthChange = function () {
+                    loadContent();
+                    updatePreview();
+                    updateStats();
+                };
+            }
+
+            // 渲染图标
+            if (window.lucide) lucide.createIcons();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF转Word - 在线免费转换工具</title>
+    <meta name="description" content="免费在线PDF转Word工具，无需安装软件，浏览器本地转换，保护隐私安全">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <div class="logo-icon">
+                    <i data-lucide="file-text"></i>
+                </div>
+                <span class="logo-text">PDF转Word</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i data-lucide="arrow-left" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
+                    返回首页
+                </a>
+                <a href="about-us.html" class="nav-link">关于我们</a>
+                <a href="customer-service.html" class="nav-link">客服</a>
+                <a href="#converter" class="nav-link active">转换</a>
+                <a href="#features" class="nav-link">特性</a>
+                <a href="#how-to" class="nav-link">使用方法</a>
+            </nav>
+            <div class="nav-user-area"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="shield-check"></i>
+                    <span>本地转换 · 隐私安全</span>
+                </div>
+                <h1 class="hero-title">
+                    PDF转Word<br>
+                    <span class="gradient-text">一键转换工具</span>
+                </h1>
+                <p class="hero-description">
+                    免费在线将PDF文档转换为可编辑的Word文件，所有转换在您的浏览器本地完成，
+                    文件不会上传到任何服务器，确保您的隐私安全。
+                </p>
+            </div>
+        </section>
+
+        <section id="converter" class="converter-section">
+            <div class="converter-card">
+                <div class="converter-header">
+                    <h2>上传PDF文件</h2>
+                    <p>支持单个文件，最大20MB</p>
+                </div>
+
+                <div id="uploadZone" class="upload-zone">
+                    <div class="upload-content">
+                        <div class="upload-icon">
+                            <i data-lucide="cloud-upload"></i>
+                        </div>
+                        <h3>拖拽PDF文件到此处</h3>
+                        <p>或者点击按钮选择文件</p>
+                        <button id="selectBtn" class="btn-select">
+                            <i data-lucide="folder-open"></i>
+                            选择文件
+                        </button>
+                        <input type="file" id="fileInput" accept=".pdf" hidden>
+                    </div>
+                </div>
+
+                <div id="fileInfo" class="file-info hidden">
+                    <div class="file-info-content">
+                        <div class="file-icon-wrapper">
+                            <i data-lucide="file-text" class="file-icon-pdf"></i>
+                        </div>
+                        <div class="file-details">
+                            <h4 id="fileName">document.pdf</h4>
+                            <div class="file-meta">
+                                <span id="fileSize">0 KB</span>
+                                <span class="meta-separator">·</span>
+                                <span id="filePages">0 页</span>
+                            </div>
+                        </div>
+                        <button id="removeFile" class="btn-remove" title="移除文件">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="progressSection" class="progress-section hidden">
+                    <div class="progress-header">
+                        <span id="progressText">正在解析PDF...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div class="progress-steps">
+                        <div class="step active" data-step="1">
+                            <span class="step-circle">1</span>
+                            <span class="step-label">解析PDF</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" data-step="2">
+                            <span class="step-circle">2</span>
+                            <span class="step-label">提取内容</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" data-step="3">
+                            <span class="step-circle">3</span>
+                            <span class="step-label">生成Word</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resultSection" class="result-section hidden">
+                    <div class="result-icon">
+                        <i data-lucide="check-circle"></i>
+                    </div>
+                    <h3>转换成功！</h3>
+                    <p id="resultSummary">已成功转换 PDF 文件</p>
+                    <div class="result-actions">
+                        <button id="downloadBtn" class="btn-download">
+                            <i data-lucide="download"></i>
+                            下载Word文件
+                        </button>
+                        <button id="convertMoreBtn" class="btn-secondary">
+                            <i data-lucide="refresh-cw"></i>
+                            继续转换
+                        </button>
+                    </div>
+                </div>
+
+                <div id="errorSection" class="error-section hidden">
+                    <div class="error-icon">
+                        <i data-lucide="alert-circle"></i>
+                    </div>
+                    <h3>转换失败</h3>
+                    <p id="errorMessage">请重试或更换文件</p>
+                    <button id="retryBtn" class="btn-secondary">
+                        <i data-lucide="rotate-ccw"></i>
+                        重新尝试
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2>为什么选择我们</h2>
+                <p>简单、安全、高效的PDF转Word工具</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="lock"></i>
+                    </div>
+                    <h3>隐私保护</h3>
+                    <p>所有转换在浏览器本地完成，文件永远不会上传到服务器</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="zap"></i>
+                    </div>
+                    <h3>快速转换</h3>
+                    <p>基于先进的PDF解析技术，快速提取文档内容并生成Word文件</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="edit-3"></i>
+                    </div>
+                    <h3>可编辑输出</h3>
+                    <p>生成的Word文档完全可编辑，方便您继续修改和完善</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="monitor"></i>
+                    </div>
+                    <h3>跨平台支持</h3>
+                    <p>支持Windows、Mac、Linux系统，无需安装任何软件</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="file-check"></i>
+                    </div>
+                    <h3>保持格式</h3>
+                    <p>尽可能保留原文档的段落、字体和基本格式结构</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="coins"></i>
+                    </div>
+                    <h3>完全免费</h3>
+                    <p>无水印、无次数限制、无任何隐藏费用</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-to" class="howto-section">
+            <div class="section-header">
+                <h2>如何使用</h2>
+                <p>简单三步完成PDF转Word</p>
+            </div>
+            <div class="steps-container">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <div class="step-icon">
+                        <i data-lucide="upload-cloud"></i>
+                    </div>
+                    <h3>上传文件</h3>
+                    <p>拖拽或点击选择您需要转换的PDF文件</p>
+                </div>
+                <div class="step-arrow">
+                    <i data-lucide="arrow-right"></i>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <div class="step-icon">
+                        <i data-lucide="loader"></i>
+                    </div>
+                    <h3>自动转换</h3>
+                    <p>系统自动解析PDF内容并生成Word文档</p>
+                </div>
+                <div class="step-arrow">
+                    <i data-lucide="arrow-right"></i>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <div class="step-icon">
+                        <i data-lucide="download"></i>
+                    </div>
+                    <h3>下载文件</h3>
+                    <p>一键下载转换完成的Word文档</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="notice-section">
+            <div class="notice-card">
+                <div class="notice-icon">
+                    <i data-lucide="info"></i>
+                </div>
+                <div class="notice-content">
+                    <h3>使用提示</h3>
+                    <ul>
+                        <li>本工具支持文本型PDF转换，扫描件或图片型PDF可能无法正常转换</li>
+                        <li>复杂表格、特殊格式的文档可能需要转换后手动调整</li>
+                        <li>建议单个文件大小不超过20MB，以获得最佳体验</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bf-footer">
+    <div class="bf-top">
+        <div class="bf-wrap">
+            <div class="bf-top-grid">
+                <div class="bf-col">
+                    <h4 class="bf-title">在线工具箱</h4>
+                    <ul class="bf-links">
+                        <li><a href="about-us.html">关于我们</a></li>
+                        <li><a href="customer-service.html">联系我们</a></li>
+                        <li><a href="user-agreement.html">用户协议</a></li>
+                        <li><a href="privacy.html">隐私协议</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col">
+                    <h4 class="bf-title">传送门</h4>
+                    <ul class="bf-links">
+                        <li><a href="dev-tools.html">开发者工具</a></li>
+                        <li><a href="text-tools.html">文本工具</a></li>
+                        <li><a href="image-compress.html">图片处理</a></li>
+                        <li><a href="pdf-merge.html">PDF 工具</a></li>
+                        <li><a href="index.html">全部工具 &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="bf-col bf-col-social">
+                    <div class="bf-social-grid">
+                        <a href="javascript:void(0)" class="bf-social-item bf-install-btn" onclick="if(window.Auth)Auth.createDesktopShortcut(event)"><i data-lucide="monitor-down"></i><span>创建桌面快捷方式</span></a>
+                        <a href="customer-service.html" class="bf-social-item"><i data-lucide="message-circle"></i><span>意见反馈</span></a>
+                        <a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener" class="bf-social-item"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>官方GitHub</span></a>
+                        <a href="https://gitglow123.netlify.app" target="_blank" rel="noopener" class="bf-social-item"><i data-lucide="globe"></i><span>其他网站</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bf-mid">
+        <div class="bf-wrap bf-mid-inner">
+            <div class="bf-tool">
+                <div class="bf-tool-icon" style="background: linear-gradient(135deg, #1D4ED8, #0284C7);">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <span>PDF转Word</span>
+            </div>
+            <p class="bf-desc">&copy; 2024 在线工具箱 &middot; 本工具在浏览器本地运行，不会上传您的文件</p>
+        </div>
+    </div>
+    <div class="bf-bottom">
+        <div class="bf-wrap">
+            <p><a href="javascript:void(0)" class="bf-dl-client" onclick="if(window.Auth)Auth.showDownloadClient(event)"><i data-lucide="download" style="width:13px;height:13px;vertical-align:-2px;display:inline-block;"></i> 下载客户端</a></p>
+            <p>本站工具均为纯前端实现 &middot; 联系GitHub：<a href="https://github.com/xiaohehe123666" target="_blank" rel="noopener">github.com/xiaohehe123666</a></p>
+            <p>Netlify 托管 &middot; 服务全球用户 &middot; 持续更新中</p>
+        </div>
+    </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="js/pdfParser.js"></script>
+    <script src="js/wordGenerator.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>
